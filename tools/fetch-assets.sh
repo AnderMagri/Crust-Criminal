@@ -2,7 +2,7 @@
 # Downloads the generated art, music and voice samples into assets/.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-mkdir -p assets/art assets/music assets/voices
+mkdir -p assets/art/logo-explorations assets/art assets/music assets/voices
 get(){ curl -fsSL -o "$1" "$2" && echo "saved $1"; }
 get assets/art/title-3d.jpg          "https://app-uploads.krea.ai/public/c339a028-217b-4a74-a28d-d93f002bf22b-image.jpeg"
 get assets/art/title-pixel-night.png "https://app-uploads.krea.ai/public/c0f2d197-6275-47ee-975c-0cd62e1bb951.png"
@@ -30,5 +30,6 @@ get assets/voices/raccoon-landing.mp3   "https://app-uploads.krea.ai/audio/18307
 get assets/voices/raccoon-cat.mp3       "https://app-uploads.krea.ai/audio/9f245a73-cf9f-4bd6-baf5-cd0567971f52.mp3"
 get assets/voices/raccoon-hum.mp3       "https://app-uploads.krea.ai/audio/38f162a5-8ace-4cd1-83a2-a849d08bbabb.mp3"
 get assets/voices/raccoon-tired.mp3     "https://app-uploads.krea.ai/audio/1cbc6108-262a-4870-a0c6-98244eaef156.mp3"
-get assets/art/logo-v1.png            "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/b428e301-b90b-4437-b975-94e24fb4e7ff-image.png"
-get assets/art/logo.png            "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/7a23a904-01c8-4af8-a94c-2e9509640708-image.png"
+get assets/art/logo-explorations/logo-v1.png            "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/b428e301-b90b-4437-b975-94e24fb4e7ff-image.png"
+get assets/art/logo-explorations/logo-v2.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/7a23a904-01c8-4af8-a94c-2e9509640708-image.png"
+get assets/art/logo.png            "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/263c0ab0-4848-4bde-99ac-2dc2c92c609a-image.png"
