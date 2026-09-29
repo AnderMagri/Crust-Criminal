@@ -17,6 +17,7 @@ Open `index.html` in a browser (phone held upright works best).
   different speeds plus a faster sous chef who whistles for the whole kitchen.
   Jumping a counter with pots or plates on it knocks them off and draws attention
   (orange jump arrows warn you).
+- **Energy:** a snack bar drains as you move (faster with the pie) and each jump costs a bite. Low energy slows you and stops vaulting. Eat candy, cookies, chocolate, fries and burgers along the way; munching is loud, so cooks may come looking. A rare golden donut gives a sugar rush.
 - **Street:** random roads, parks and fence blocks. Cars, dogs, two police officers,
   sometimes a police dog (faster than you), and a cook who chases you out the door.
 - **Audio:** all music and sound effects are synthesized in code (Web Audio): a sneak

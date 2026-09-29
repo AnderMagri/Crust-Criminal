@@ -17,6 +17,11 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;touch
 #hud{position:absolute;left:8px;right:8px;top:8px;display:flex;gap:6px;align-items:flex-start;line-height:1.2;font-family:"Silkscreen",monospace;font-size:12px;pointer-events:none;z-index:3}
 .pill{background:rgba(18,17,25,.84);border:1px solid var(--line);padding:5px 8px}
 #obj{flex:1;min-width:0}
+#energy{position:absolute;left:8px;top:40px;z-index:3;display:flex;align-items:center;gap:5px;pointer-events:none;font-family:"Silkscreen",monospace;font-size:10px;color:#e4e7ee;text-shadow:1px 1px 0 #0e0f1a}
+#energy .track{width:92px;height:9px;background:rgba(14,15,26,.85);border:1px solid #3a4468;padding:1px}
+#energy .fill{height:100%;width:70%;background:#f4a24a;transition:width .15s linear,background .2s}
+#energy.low .fill{background:#e2525a}#energy.low{animation:blink .6s steps(2) infinite}
+#energy.rush .fill{background:#ffd27a}
 #obj.run{color:var(--alert)}
 #clock{font-variant-numeric:tabular-nums}
 #mute,#music{pointer-events:auto;font-family:"Silkscreen",monospace;font-size:12px;line-height:1.2;color:var(--ink);background:rgba(18,17,25,.84);border:1px solid var(--line);padding:5px 8px;cursor:pointer;min-height:28px}
@@ -58,7 +63,7 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;touch
 </style>
 
 <div id="app">
-  <div id="stage">
+  <div id="stage" tabindex="-1" style="outline:none">
     <canvas id="game" aria-label="Game view: a raccoon sneaking through a kitchen maze and then across the street"></canvas>
     <div id="hud">
       <div class="pill" id="obj">Find the pie</div>
@@ -67,6 +72,7 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;touch
       <button id="mute" type="button" aria-pressed="false" aria-label="Toggle voices">♪</button>
     </div>
     <div id="keys" hidden><span><b>WASD</b>/<b>←↑→↓</b> move</span><span><b>Space</b> jump</span><span><b>N</b> music</span><span><b>M</b> voices</span><span><b>R</b> restart</span></div>
+    <div id="energy" hidden><span>Snack</span><div class="track"><div class="fill" id="efill"></div></div></div>
     <div id="toast" hidden></div>
     <div id="title">
       <div class="logo"><img id="logoImg" src="assets/art/logo.webp" alt="Crust Criminal" onerror="this.hidden=true;document.getElementById('logoText').hidden=false"><h1 id="logoText" hidden>Crust<span>Criminal</span></h1></div>
@@ -190,7 +196,9 @@ function genKitchen(){
     const cand=floor.filter(t=>D(t.c,t.r)>=12),sp=[];
     for(let k=0;k<300&&sp.length<6;k++){const t=pick(cand);if(sp.every(o=>Math.abs(o.c-t.c)+Math.abs(o.r-t.r)>=6))sp.push(t)}
     if(sp.length<5)continue;
-    return {kind:'kitchen',map:g.map(r=>r.join('')),cols,rows,start,pie,door:{c:dcol,r:dr,side},doorOpen:false,knocked:new Set(),debris:[],
+    const sn=[],pool=floor.filter(t=>D(t.c,t.r)>=6);
+    for(let k=0;k<60&&sn.length<9;k++){const t=pick(pool);if(sn.every(o=>Math.abs(o.c-t.c)+Math.abs(o.r-t.r)>=4))sn.push({x:t.c*TS+8,y:t.r*TS+10,type:sn.length===0&&Math.random()<.7?'donut':pick(['candy','candy','cookie','cookie','choc'])})}
+    return {kind:'kitchen',snacks:sn,map:g.map(r=>r.join('')),cols,rows,start,pie,door:{c:dcol,r:dr,side},doorOpen:false,knocked:new Set(),debris:[],
       windowClosed:false,walk:floor,spawns:sp.map((t,k)=>({kind:'cook',c:t.c,r:t.r,style:k===0?'sous':'cook'})),cars:[],lanes:[]};
   }
 }
@@ -246,7 +254,9 @@ function genStreet(){
     if(Math.random()<.45){const pool=walk.filter(t=>t.r>10&&t.r<R2-4);if(pool.length){const t=pick(pool);spawns.push({kind:'dog',style:'k9',c:t.c,r:t.r})}}
     for(const L of lanes){const n=1+rnd(2),W=cols*TS;for(let k=0;k<n;k++)
       cars.push({x:(rnd(W)+k*W/2)%W,y:L.r*TS+27,dir:L.dir,sp:L.sp,color:pick(['#c0392b','#2e6fa8','#e0b12a','#3f8a4e','#8a4fa0','#dcdad2']),voice:CAR_VOICE,cd:0,bub:null,hcd:0,off:24})}
-    return {kind:'street',map:g.map(r=>r.join('')),cols,rows:R2,start:{x:dc*TS+8,y:2*TS+12},doorCol:dc,
+    const sn=[],sp2=walk.filter(t=>t.r>4);
+    for(let k=0;k<60&&sn.length<6;k++){const t=pick(sp2);if(sn.every(o=>Math.abs(o.x/TS-t.c)+Math.abs(o.y/TS-t.r)>=4))sn.push({x:t.c*TS+8,y:t.r*TS+10,type:pick(['fries','fries','burger','candy'])})}
+    return {kind:'street',snacks:sn,map:g.map(r=>r.join('')),cols,rows:R2,start:{x:dc*TS+8,y:2*TS+12},doorCol:dc,
       home:{c:zc,r:hr},walk,spawns,lanes,cars,lamps,burstT:4,knocked:new Set(),debris:[]};
   }
 }
@@ -301,8 +311,13 @@ const LINES={
 const COON={start:['Pie time!','Sneaky sneaky...','Operation: Crust.','Ta-daaa! Let the adventure begin!'],
   idle:['Shhh... I am a ninja. A very round ninja.','\u266A Pie, pie, beautiful pie... \u266A','Dun dun dun... dun-dun...'],
   tired:['Huff... should\u2019ve skipped... second breakfast...'],
-  jump:['Hup!','Wheee!','Parkour!'],landing:['And he sticks the landing!'],window:['Uh oh. No way back.','Who closed that?!','Well... forward it is.'],
-  spotted:['Uh-oh!','Not good...','Run, run, run!','Nothing to see here... just a regular cat. Meow?'],pie:['Yoink! Heh-heh-heh!','Mine! Mine! Mine!','I say! A jolly good pie, what?'],
+  jump:['Hup!','Wheee!','Parkour!'],
+  cookie:['Ooh, a cookie! Don\u2019t mind if I do!'],choc:['Chocolate... sweet, sweet chocolate...'],candy:['Candy! Crunchity-crunch!'],
+  donut:['A golden donut?! I can see colors!'],fries:['Fries from the garbage? Five stars.'],burger:['Half a burger?! Today is my lucky day!'],
+  nom:['Nom nom nom... mmm!'],rush:['SUGAR RUSH! Wheeeee!'],
+  hungry:['Uh oh... tummy\u2019s rumbling...','I\u2019m starving! I haven\u2019t eaten in... four whole minutes!'],
+  empty:['I... can\u2019t... go on... without... a snack...','My legs are made of jelly!','Everything is going dark... is that the light? ...No, it\u2019s the fridge.'],landing:['And he sticks the landing!'],window:['Uh oh. No way back.','Who closed that?!','Well... forward it is.'],
+  spotted:['Uh-oh!','Not good...','Run, run, run!','Nothing to see here... just a regular cat. Meow?'],pie:['Ha-HA! Got it! Heh-heh-heh!','Mine! Mine! Mine!','I say! A jolly good pie, what?'],
   door:['Fresh air!','Street time.','Home is close...'],busted:['Eep!','I was just looking!','Tell my family... I loved... trash.'],
   bonk:['Oof!','Ow ow ow.'],oops:['Oopsie!','That wasn\u2019t me!','Shhh!'],win:['Home sweet trash! Heh-heh!','Pieeeeeee!','Easy as pie.']};
 
@@ -352,7 +367,8 @@ const SFX={
   win(){[[72,0],[76,.1],[79,.2],[84,.3],[83,.45],[84,.55]].forEach(([n,w])=>tone(mtof(n),.16,{vol:.06,when:ac&&ac.currentTime+w}));tone(mtof(48),.6,{type:'triangle',vol:.1,when:ac&&ac.currentTime+.55})},
   honk(){tone(330,.22,{vol:.05});tone(415,.22,{vol:.04})},
   start(){[64,67,71,76].forEach((n,k)=>tone(mtof(n),.08,{vol:.05,when:ac&&ac.currentTime+k*.05}))},
-  click(){tone(880,.03,{vol:.03})}
+  click(){tone(880,.03,{vol:.03})},
+  nom(){for(let k=0;k<3;k++){noise(.06,{lp:900,vol:.14,when:ac&&ac.currentTime+k*.12});tone(180-k*20,.05,{type:'triangle',vol:.06,when:ac&&ac.currentTime+k*.12})}tone(1320,.15,{type:'triangle',vol:.04,when:ac&&ac.currentTime+.4})}
 };
 
 // ---------- music: three composed themes that switch with the action ----------
@@ -414,7 +430,11 @@ function playStep(i,t){
     for(const[s0,m]of G.mel[bar])if(s0===st)clarinet(m,t,.24,.07);
   }
 }
+let themeBuf=null,themeSrc=null;
+function loadTheme(){fetch('assets/music/main-theme.mp3').then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(b=>ac.decodeAudioData(b)).then(buf=>{themeBuf=buf;startTheme()}).catch(()=>{})}
+function startTheme(){if(!themeBuf||themeSrc)return;themeSrc=ac.createBufferSource();themeSrc.buffer=themeBuf;themeSrc.loop=true;const g=ac.createGain();g.gain.value=1.5;themeSrc.connect(g).connect(musBus);themeSrc.start()}
 function musicTick(){
+  if(themeSrc){themeSrc.playbackRate.setTargetAtTime(intensity>0?1.06:1,ac.currentTime,.4);return}   // recorded theme playing: nudge the tempo up in chases
   if(!ac||!musicOn||ac.state!=='running')return;
   if(nextT<ac.currentTime-.2)nextT=ac.currentTime+.05;
   while(nextT<ac.currentTime+.15){playStep(stepI,nextT);nextT+=SIXTEENTH*(stepI%2?1-SONGS[song].swing:1+SONGS[song].swing);stepI=(stepI+1)%64}
@@ -439,17 +459,35 @@ function setVoice(on){voiceOn=on;const b=$('mute');b.textContent=on?'♪':'♪̸
   try{localStorage.setItem('pieheist-voices',on?'on':'off')}catch(e){}}
 // Recorded raccoon voice clips (assets/voices/raccoon-*.mp3). Missing files fall back to babble.
 const COON_VO={'Pie time!':'pietime','Ta-daaa! Let the adventure begin!':'tada','Uh-oh!':'uhoh','Nothing to see here... just a regular cat. Meow?':'cat',
-  'Yoink! Heh-heh-heh!':'yoink','I say! A jolly good pie, what?':'posh','Hup!':'hup','And he sticks the landing!':'landing','Oopsie!':'oopsie',
+  'Ha-HA! Got it! Heh-heh-heh!':'gotit','I say! A jolly good pie, what?':'posh','Hup!':'hup','And he sticks the landing!':'landing','Oopsie!':'oopsie',
   'Eep!':'eep','Tell my family... I loved... trash.':'faint','Oof!':'oof','Home sweet trash! Heh-heh!':'hometrash','Pieeeeeee!':'opera',
-  'Shhh... I am a ninja. A very round ninja.':'ninja','♪ Pie, pie, beautiful pie... ♪':'song','Dun dun dun... dun-dun...':'hum','Huff... should’ve skipped... second breakfast...':'tired'};
-const clipBuf={};let clipsLoading=false;
+  'Shhh... I am a ninja. A very round ninja.':'ninja',
+  'Ooh, a cookie! Don\u2019t mind if I do!':'cookie','Chocolate... sweet, sweet chocolate...':'chocolate','Candy! Crunchity-crunch!':'candy',
+  'A golden donut?! I can see colors!':'donut','Fries from the garbage? Five stars.':'fries','Half a burger?! Today is my lucky day!':'burger',
+  'Nom nom nom... mmm!':'nom','SUGAR RUSH! Wheeeee!':'sugarrush','Uh oh... tummy\u2019s rumbling...':'rumble',
+  'I\u2019m starving! I haven\u2019t eaten in... four whole minutes!':'starving','I... can\u2019t... go on... without... a snack...':'cantgoon',
+  'My legs are made of jelly!':'jelly','Everything is going dark... is that the light? ...No, it\u2019s the fridge.':'fridge','♪ Pie, pie, beautiful pie... ♪':'song','Dun dun dun... dun-dun...':'hum','Huff... should’ve skipped... second breakfast...':'tired'};
+const ENEMY_VO={
+  cookA:{'HEY!':'cook-a-hey','Get OUT of my kitchen!':'cook-a-getout','THE PIE!!':'cook-a-thepie','Where’d he go?':'cook-a-where',
+         'Must have been the cat.':'cook-a-cat','Gotcha, bandit!':'cook-a-gotcha','Who ate my croissant?':'cook-a-croissant'},
+  cookB:{'RACCOON!':'cook-b-raccoon','Not the pie!!':'cook-b-notpie','That took me three hours!':'cook-b-3hours','What was that?':'cook-b-what',
+         'Nobody touch the pie!':'cook-b-notouch','Back in the bin!':'cook-b-bin'},
+  sous:{'ALL HANDS! RACCOON!':'sous-allhands','THAT PIE IS FOR TABLE SIX!':'sous-table6','Fan out! Check the walk-in!':'sous-fanout','Faster, people!':'sous-faster'}};
+const clipBuf={},clipGain={};let clipsLoading=false;
 function loadClips(){if(clipsLoading||!ac)return;clipsLoading=true;
-  for(const name of new Set(Object.values(COON_VO)))fetch('assets/voices/raccoon-'+name+'.mp3').then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(b=>ac.decodeAudioData(b)).then(buf=>{clipBuf[name]=buf}).catch(()=>{})}
-const clipFor=text=>clipBuf[COON_VO[text]]||null;
+  const files=[...new Set(Object.values(COON_VO))].map(n=>'raccoon-'+n);for(const k in ENEMY_VO)files.push(...Object.values(ENEMY_VO[k]));
+  for(const name of files)fetch('assets/voices/'+name+'.mp3').then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(b=>ac.decodeAudioData(b)).then(buf=>{
+    // loudness-match every clip so no line is much louder than another
+    const d=buf.getChannelData(0);let sum=0,n=0;for(let i=0;i<d.length;i+=4){if(Math.abs(d[i])>.02){sum+=d[i]*d[i];n++}}
+    const rms=Math.sqrt(sum/Math.max(1,n))||.1;clipGain[name]=Math.min(4,Math.max(.3,.16/rms));clipBuf[name]=buf}).catch(()=>{});
+  loadTheme()}
+const clipName=(who,text)=>who===player?(COON_VO[text]&&'raccoon-'+COON_VO[text]):(who&&who.vo&&ENEMY_VO[who.vo][text]);
+const clipFor=(text,who=player)=>{const n=clipName(who,text);return n&&clipBuf[n]?n:null};
+function pickE(e,arr){if(!e.vo)return pick(arr);const rec=arr.filter(t=>clipFor(t,e));return rec.length&&Math.random()<.75?pick(rec):pick(arr)}
 // prefer recorded lines when they're available
-function pickCoon(cat){const a=COON[cat]||[];const rec=a.filter(t=>clipFor(t));return rec.length&&Math.random()<.75?pick(rec):pick(a)}
+function pickCoon(cat){const a=COON[cat]||[];const rec=a.filter(t=>clipFor(t,player));return rec.length&&Math.random()<.75?pick(rec):pick(a)}
 const CLIP_RATE=1; // <1 = lower, chubbier voice
-function playClip(buf){try{const src=ac.createBufferSource(),g=ac.createGain();src.buffer=buf;src.playbackRate.value=CLIP_RATE;g.gain.value=1.1;src.connect(g).connect(vocBus);src.start()}catch(e){}}
+function playClip(name){try{const src=ac.createBufferSource(),g=ac.createGain();src.buffer=clipBuf[name];src.playbackRate.value=CLIP_RATE;g.gain.value=1.1*(clipGain[name]||1);src.connect(g).connect(vocBus);src.start()}catch(e){}}
 function say(who,text,force){
   if(!who||(!force&&who.cd>0))return;
   if(who.bub)who.bub.el.remove();
@@ -457,7 +495,7 @@ function say(who,text,force){
   el.className='say'+(who===player?' coon':who.kind==='dog'?' dog':who.voice===CAR_VOICE?' car':'')+(/!/.test(text)&&who!==player?' yell':'');
   el.textContent=text;$('stage').appendChild(el);
   who.bub={el,t:0,life:Math.max(1.5,text.length*.075)};who.cd=who.bub.life+1.2;
-  const clip=who===player&&voiceOn&&ac?clipFor(text):null;if(clip)playClip(clip);else babble(text,who.voice);placeBubble(who);
+  const clip=voiceOn&&ac?clipFor(text,who):null;if(clip)playClip(clip);else babble(text,who.voice);placeBubble(who);
 }
 function bubbleOff(w){return w===player?(w.carry?30:22):w.kind==='dog'?30:w.kind==='cook'?46:w.off||24}
 function placeBubble(w){
@@ -479,20 +517,22 @@ function makeEnemy(sp,i){
   e.base=e.fa;
   if(sp.kind==='dog')Object.assign(e,{voice:DOG_VOICE,coat:pick(['#8b5a2b','#d6c7a8','#3b3130','#b9772f']),sp:{patrol:34,search:52,chase:66},view:72,half:.75,lostMax:1.5,lines:LINES.dog});
   else Object.assign(e,LOOKS[i%LOOKS.length],{sp:{patrol:30,search:46,chase:62},view:80,half:.6,lostMax:2.2,lines:S.kind==='street'?LINES.street:LINES.cook,style:'cook'});
+  if(sp.kind==='cook'&&S.kind==='kitchen')e.vo=i%2?'cookB':'cookA';
   if(sp.kind==='cook'){const f=.8+Math.random()*.22;e.sp={patrol:30*f,search:46*f,chase:62*f};e.fat=f<.9}   // every chef has his own pace
-  if(sp.style==='sous')Object.assign(e,{style:'sous',voice:SOUS_VOICE,sp:{patrol:36,search:58,chase:69},view:92,lostMax:3,lines:LINES.sous,fat:false,skin:'#e7b08c',hair:'#2b2d38',stache:true});
+  if(sp.style==='sous')Object.assign(e,{vo:'sous',style:'sous',voice:SOUS_VOICE,sp:{patrol:36,search:58,chase:69},view:92,lostMax:3,lines:LINES.sous,fat:false,skin:'#e7b08c',hair:'#2b2d38',stache:true});
   if(sp.style==='cop')Object.assign(e,{style:'cop',voice:COP_VOICE,sp:{patrol:34,search:60,chase:71},view:92,half:.62,lostMax:2.6,lines:LINES.cop,fat:Math.random()<.4,skin:pick(['#e7b08c','#c07e5c','#8a5440'])});
   if(sp.style==='k9')Object.assign(e,{style:'k9',voice:K9_VOICE,coat:'#2b2d38',sp:{patrol:40,search:74,chase:98},view:76,half:.6,lostMax:1.3,lines:LINES.k9});
   return e;
 }
 function loadScene(sc){
   S=sc;clearBubbles();
-  player={x:S.start.x,y:S.start.y,vx:0,vy:0,dir:S.kind==='kitchen'?'up':'down',anim:0,carry:pieTaken,voice:COON_VOICE,cd:0,bub:null};
+  player={x:S.start.x,y:S.start.y,vx:0,vy:0,dir:S.kind==='kitchen'?'up':'down',anim:0,carry:pieTaken,voice:COON_VOICE,cd:0,bub:null,energy:S.kind==='kitchen'?70:Math.max(45,energyCarry),rush:0,hungrySaid:0,emptySaid:0};
   enemies=S.spawns.map(makeEnemy);cars=S.cars;parts=[];grace=1;sceneT=0;chatT=2.5;
   S.lights=[];if(S.kind==='kitchen')for(let r=4,k=0;r<S.rows-1;r+=6,k++)S.lights.push({x:(k%2?4.5:11.5)*TS,y:r*TS,r:78,i:.85,w:'rgba(255,214,150,.07)'});
   buildBg();updateCam(0,true);setObj();
 }
-function newRun(){time=0;pieTaken=false;loadScene(genKitchen())}
+let energyCarry=70;
+function newRun(){time=0;pieTaken=false;energyCarry=70;loadScene(genKitchen())}
 function setObj(){
   const o=$('obj');let t;
   if(S.kind==='kitchen')t=pieTaken?'Find the back door':'Find the pie';else t='Get home to your trash can';
@@ -502,6 +542,7 @@ function setObj(){
 // ---------- input ----------
 const keys={},MOVE_KEYS=['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'];
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();
+  if(e.repeat&&(k===' '||k==='enter')){e.preventDefault();return}
   if(MOVE_KEYS.includes(k)||k===' ')e.preventDefault();
   keys[k]=true;
   if(k===' '&&state==='play')tryJump();
@@ -515,7 +556,9 @@ addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;joy=null});
 function toCanvas(e){const b=cv.getBoundingClientRect();return{x:(e.clientX-b.left)*VW/b.width,y:(e.clientY-b.top)*VH/b.height}}
 const stage=$('stage');
+const grabFocus=()=>{try{window.focus();stage.focus({preventScroll:true})}catch(_){}};
 stage.addEventListener('pointerdown',e=>{
+  grabFocus();
   if(e.target.closest('#mute')||e.target.closest('#music')||e.target.closest('#title'))return;
   e.preventDefault();
   if(state!=='play'){onAction();return}
@@ -529,7 +572,7 @@ const endJoy=e=>{if(joy&&e.pointerId===joy.id){const tap=!joy.moved&&performance
 stage.addEventListener('pointerup',endJoy);stage.addEventListener('pointercancel',endJoy);
 $('mute').addEventListener('click',e=>{e.stopPropagation();audio();setVoice(!voiceOn)});
 $('music').addEventListener('click',e=>{e.stopPropagation();audio();setMusic(!musicOn)});
-$('title').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();onAction()});
+$('title').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();grabFocus();onAction()});
 
 // ---------- jumping: vault one tile of counter / fence / hedge / bin ----------
 const JUMPABLE={kitchen:'C',street:'NHB'};
@@ -546,11 +589,22 @@ function noiseAt(x,y,r){
   enemies.forEach(e=>{if(e.state==='chase'||e.state==='alert')return;if(Math.hypot(e.x-x,e.y-y)<r){toSearch(e,{x,y},e.lines.hear)}});
 }
 const hasItem=(c,r)=>S.kind==='kitchen'&&tileCh(c,r)==='C'&&hsh(c,r,7)<.48&&!S.knocked.has(c+','+r);
+const SNACK={candy:15,cookie:20,choc:26,donut:45,fries:22,burger:32};
+function eatSnack(sn){
+  sn.eaten=true;player.energy=Math.min(100,player.energy+SNACK[sn.type]);
+  SFX.nom();noiseAt(sn.x,sn.y,70);   // munching is loud: nearby cooks come to look
+  for(let i=0;i<6;i++)parts.push({x:sn.x-4+Math.random()*8,y:sn.y-4,t:0,life:.4});
+  if(sn.type==='donut'){player.rush=6;toast('SUGAR RUSH!');setTimeout(()=>{if(state==='play')say(player,pickCoon(Math.random()<.5?'donut':'rush'),true)},100)}
+  else if(Math.random()<.75)say(player,pickCoon(Math.random()<.7?(COON[sn.type]?sn.type:'nom'):'nom'),true);
+}
 function tryJump(){
+  if(player.energy<=0&&!player.rush){SFX.bump();say(player,pickCoon('empty'));return}
   const t=jumpTarget();
   if(!t||!t.x){if(t&&t.block==='O')say(player,'Too hot!');else if(t&&(t.block==='R'||t.block==='S'))say(player,'Too tall!');
     // nothing to vault: a little hop on the spot so the button always responds
     if(player.jump||player.jcd>0)return;player.jump={sx:player.x,sy:player.y,tx:player.x,ty:player.y,t:0,dur:.3,small:1};SFX.jump();return}
+  if(player.energy<12&&!player.rush){if(!player.jump&&player.jcd<=0){player.jump={sx:player.x,sy:player.y,tx:player.x,ty:player.y,t:0,dur:.3,small:1};SFX.jump();say(player,pickCoon('empty'))}return}
+  if(!player.rush)player.energy=Math.max(0,player.energy-10);
   player.jump={sx:player.x,sy:player.y,tx:t.x,ty:t.y,t:0,dur:.42};player.vx=player.vy=0;
   const d=STEP[player.dir],tt=tileOf(player.x,player.y),c1=tt.c+d[0],r1=tt.r+d[1],ch=tileCh(c1,r1);
   if(hasItem(c1,r1)){S.knocked.add(c1+','+r1);const bx=c1*TS+8+d[0]*9,by=r1*TS+12+d[1]*10;
@@ -595,7 +649,7 @@ function toAlert(e,t=.45){e.state='alert';e.t=t;e.path=[];
   if(e.kind==='dog')SFX.bark();else SFX.alert();if(e.style==='k9')toast('Police dog! RUN!');
   say(e,pick(pieTaken&&S.kind==='kitchen'?e.lines.pie:e.lines.spot),t>.3);
   if(Math.random()<.5)setTimeout(()=>{if(state==='play')say(player,pickCoon('spotted'))},350)}
-function toSearch(e,pt,talk){e.state='search';e.path=bfsTo(e,pt);if(talk)say(e,pick(talk))}
+function toSearch(e,pt,talk){e.state='search';e.path=bfsTo(e,pt);if(talk)say(e,pickE(e,talk))}
 function newPatrol(e){
   const pool=e.region?S.walk.filter(t=>t.r>=e.region.r0&&t.r<=e.region.r1):S.walk;
   let t;for(let i=0;i<20;i++){t=pick(pool);if(Math.abs(t.c*TS-e.x)+Math.abs(t.r*TS-e.y)>64)break}
@@ -625,7 +679,7 @@ function updateEnemies(dt,detect){
         else{e.repath-=dt;if(e.repath<=0||!e.path.length){e.path=bfsTo(e,e.last);e.repath=.25}follow(e,e.sp.chase,dt)}
         break}
       case'search':if(see){toAlert(e,.2);break}
-        if(follow(e,e.sp.search,dt)){e.state='look';e.t=2.2;e.base=e.fa;if(Math.random()<.6)say(e,pick(e.lines.giveup))}break;
+        if(follow(e,e.sp.search,dt)){e.state='look';e.t=2.2;e.base=e.fa;if(Math.random()<.6)say(e,pickE(e,e.lines.giveup))}break;
     }
     if(detect&&state==='play'&&!player.jump&&Math.hypot(player.x-e.x,player.y-e.y)<CATCH)caught(e);
   });
@@ -634,12 +688,12 @@ function chatter(dt){
   chatT-=dt;if(chatT>0)return;chatT=3.5+Math.random()*4;
   const calm=enemies.filter(e=>(e.state==='look'||e.state==='patrol')&&!e.bub&&e.cd<=0&&Math.abs(e.y-player.y)<VH*.7);
   if(state==='play'&&!player.bub&&player.cd<=0&&Math.random()<.3&&!enemies.some(e=>e.state==='chase'||e.state==='alert')){say(player,pickCoon(pieTaken&&Math.random()<.5?'tired':'idle'));return}
-  if(calm.length){const e=pick(calm);say(e,pick(e.lines.idle))}
+  if(calm.length){const e=pick(calm);say(e,pickE(e,e.lines.idle))}
 }
 function caught(e,bonk){
   state='caught';shake=.35;SFX.caught();
   if(bonk){say(player,pickCoon('bonk'),true);setTimeout(()=>say(e,pick(LINES.car),true),200)}
-  else{say(player,pickCoon('busted'),true);setTimeout(()=>say(e,pick(e.lines.caught),true),300)}
+  else{say(player,pickCoon('busted'),true);setTimeout(()=>say(e,pickE(e,e.lines.caught),true),300)}
   const who=bonk?'A car':e.kind==='dog'?'A dog':'A cook';
   setTimeout(()=>{if(state==='caught')showMsg(S.kind==='kitchen'?'Part 1 · The Kitchen':'Part 2 · The Street',bonk?'Bonk!':'Busted!','bad',
     bonk?'You got clipped crossing the road. Wait for a gap between cars.':
@@ -654,6 +708,7 @@ function win(){
 
 // ---------- scene flow ----------
 function exitKitchen(){
+  energyCarry=player.energy;
   state='transition';clearBubbles();SFX.door();
   showMsg('Part 2','The Street','',`Out the back door with the pie. Cross the roads, dodge the dogs, and get home to your trash can. A cook might follow you out.`,'Tap to continue');
   sceneT=0;
@@ -673,7 +728,19 @@ function updatePlayer(dt){
   if(joy){const jx=joy.x-joy.ox,jy=joy.y-joy.oy,l=Math.hypot(jx,jy);if(l>3){const m=Math.min(1,l/22);ix=jx/l*m;iy=jy/l*m}}
   const l=Math.hypot(ix,iy);if(l>1){ix/=l;iy/=l}
   // inertia: slow to get going, slides when you let go, heavier with the pie
-  const max=player.carry?P_CARRY:P_MAX,k=l>0?(player.carry?4.2:5.5):(player.carry?2.6:3.2);
+  // energy: moving costs a little, running with the pie costs more; standing still you catch your breath (up to 40)
+  const E=player.energy,rush=player.rush>0;
+  if(rush)player.rush-=dt;
+  const moving=Math.hypot(player.vx,player.vy)>20;
+  if(!rush){if(moving)player.energy=Math.max(0,E-dt*(player.carry?1.9:1.4));else if(E<40)player.energy=Math.min(40,E+dt*2.2)}
+  const tired=player.energy<18,flat=player.energy<=0;
+  if(tired&&!player.hungrySaid&&!flat){player.hungrySaid=1;say(player,pickCoon('hungry'),true)}
+  if(player.energy>30)player.hungrySaid=0;
+  if(flat&&now-player.emptySaid>9){player.emptySaid=now;say(player,pickCoon('empty'),true)}
+  const eMul=rush?1.3:flat?.5:tired?.7:1;
+  // snacks
+  for(const sn of (S.snacks||[])){if(sn.eaten||Math.hypot(player.x-sn.x,player.y-sn.y)>11)continue;eatSnack(sn)}
+  const max=(player.carry?P_CARRY:P_MAX)*eMul,k=l>0?(player.carry?4.2:5.5):(player.carry?2.6:3.2);
   const sp0=Math.hypot(player.vx,player.vy);
   if(l>0.3&&sp0>45&&(ix*player.vx+iy*player.vy)/(l*sp0)<-.3){player.skid=(player.skid||0)+dt;   // hard turn: skid and kick up dust
     if(Math.random()<dt*30)parts.push({x:player.x+(Math.random()*6-3),y:player.y,t:0,life:.35});
@@ -690,7 +757,7 @@ function updatePlayer(dt){
         toast('Got the pie!\nThe back door is open');setObj();SFX.pie();
         say(player,pickCoon('pie'),true);
         const near=enemies.slice().sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y))[0];
-        setTimeout(()=>{if(state==='play')say(near,pick(near.lines.pie),true)},700)}}
+        setTimeout(()=>{if(state==='play')say(near,pickE(near,near.lines.pie),true)},700)}}
     if(pieTaken&&((S.door.side==='L'&&player.x<12)||(S.door.side==='R'&&player.x>S.cols*TS-12)))exitKitchen();
   }else{
     const hx=S.home.c*TS+8,hy=S.home.r*TS+10;if(Math.hypot(player.x-hx,player.y-hy)<18)win();
@@ -1036,6 +1103,19 @@ function drawK9(e){
     R(x-5,y-11,10,8,B);R(x-4,y-11,8,6,V);R(x-5,y-4-(f?1:0),2,4,T);R(x+3,y-4-(f?0:1),2,4,T);R(x-4,y-17,8,6,B);R(x-5,y-19,2,4,B);R(x+3,y-19,2,4,B);R(x-1,y-5,2,4,B);
   }
 }
+function drawSnack(sn){
+  const x=Math.round(sn.x),y=Math.round(sn.y)+Math.round(Math.sin(now*3+sn.x)*1)-2;shadow(x,Math.round(sn.y),4);
+  const K='#161a2b';
+  switch(sn.type){
+    case'candy':R(x-6,y-3,2,4,'#e2525a');R(x+4,y-3,2,4,'#e2525a');R(x-4,y-4,8,6,K);R(x-3,y-3,6,4,'#e2525a');R(x-2,y-3,1,4,'#fff0c2');R(x+1,y-3,1,4,'#fff0c2');break;
+    case'cookie':R(x-4,y-5,8,8,K);R(x-3,y-4,6,6,'#c07e5c');R(x-3,y-4,6,1,'#e7b08c');R(x-2,y-2,1,1,'#5a2e2a');R(x+1,y-3,1,1,'#5a2e2a');R(x,y,1,1,'#5a2e2a');break;
+    case'choc':R(x-5,y-4,10,7,K);R(x-4,y-3,8,5,'#5a2e2a');R(x-4,y-3,8,1,'#8a5440');R(x,y-3,4,5,'#c8ccd6');R(x-2,y-1,1,1,'#8a5440');break;
+    case'donut':R(x-5,y-5,10,9,K);R(x-4,y-4,8,7,'#f4a24a');R(x-4,y-4,8,4,'#ffd27a');R(x-1,y-2,2,2,K);R(x-3,y-3,1,1,'#e2525a');R(x+2,y-4,1,1,'#77a6cf');
+      if(Math.sin(now*6)>.3){R(x+5,y-8,1,3,'#fff0c2');R(x+4,y-7,3,1,'#fff0c2')}break;
+    case'fries':R(x-4,y-7,8,10,K);R(x-3,y-2,6,4,'#e2525a');for(let k=0;k<4;k++)R(x-3+k*2-(k>1?1:0),y-6+(k%2),1,4,'#ffd27a');break;
+    case'burger':R(x-5,y-5,10,8,K);R(x-4,y-4,8,2,'#e07b39');R(x-4,y-2,8,1,'#4a7a55');R(x-4,y-1,8,2,'#5a2e2a');R(x-4,y+1,8,1,'#e07b39');R(x+1,y-4,3,6,K);break;
+  }
+}
 const GLYPH={'!':[[0,0],[0,1],[0,2],[0,4]],'?':[[0,0],[1,0],[2,0],[2,1],[1,2],[1,4]]};
 function bubble(x,y,ch,col){const w=ch==='!'?5:7;R(x-(w>>1)-1,y-1,w+2,9,'#15141c');R(x-(w>>1),y,w,7,'#fff');
   const ox=ch==='!'?x:x-1;for(const[a,b]of GLYPH[ch])R(ox+a-1+(ch==='!'?1:0),y+1+b,1,1,col)}
@@ -1103,10 +1183,12 @@ function render(){
     if(S.kind==='kitchen'){if(r>0&&r<S.rows-1&&c>0&&c<S.cols-1&&'COTRSP'.includes(t)){list.push({y:r*TS+16,t,c,r});if(t==='O'&&!isWallK(c,r+1))extra.push({x:c*TS+8,y:r*TS+16,r:26,i:.7,w:'rgba(255,120,40,.16)'})}}
     else if('BZHXN'.includes(t))list.push({y:r*TS+(t==='X'?15:14),t,c,r})}
   if(S.kind==='kitchen')list.push({y:S.door.r*TS+16,t:'D'});else for(const l of S.lamps)if(Math.abs(l.y-cam.y-VH/2)<VH/2+50)list.push({y:l.y,lamp:l});
+  for(const sn of (S.snacks||[]))if(!sn.eaten&&Math.abs(sn.y-cam.y-VH/2)<VH/2+30)list.push({y:sn.y-1,snack:sn});
   list.push({y:player.jump?player.y+26:player.y,p:1});enemies.forEach(e=>list.push({y:e.y,k:e}));cars.forEach(c=>list.push({y:c.y,car:c}));
   list.sort((a,b)=>a.y-b.y);
   for(const o of list){
-    if(o.p)drawRaccoon(player);
+    if(o.snack)drawSnack(o.snack);
+    else if(o.p)drawRaccoon(player);
     else if(o.k){shadow(Math.round(o.k.x),Math.round(o.k.y),6);outlined(o.k.kind==='dog'?drawDog:drawCook,o.k,o.k.x,o.k.y)}
     else if(o.car){ctx.fillStyle='rgba(20,15,25,.3)';ctx.fillRect(Math.round(o.car.x)-15,Math.round(o.car.y)-2,30,3);outlined(drawCar,o.car,o.car.x,o.car.y,'#141018')}
     else if(o.lamp)drawLamp(o.lamp);
@@ -1185,6 +1267,7 @@ function frame(ts){
   if(shake>0)shake-=dt;
   if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').hidden=true}
   $('keys').hidden=state!=='play';
+  {const el=$('energy');el.hidden=state!=='play';if(state==='play'){$('efill').style.width=Math.round(player.energy)+'%';el.classList.toggle('low',player.energy<18&&!player.rush);el.classList.toggle('rush',player.rush>0)}}
   const cl=fmt(time);if(cl!==lastClock){$('clock').textContent=cl;lastClock=cl}
   render();requestAnimationFrame(frame);
 }
@@ -1205,6 +1288,7 @@ addEventListener('resize',fit);
 (function(){const c=$('titleArt'),g=c.getContext('2d'),m=ctx;ctx=g;g.imageSmoothingEnabled=false;
   g.drawImage(COON_SPR.cd[0],10,22);ctx.save();ctx.translate(20,20);drawPie(0,0);ctx.restore();
   for(let k=0;k<3;k++){R(17+k*3,10-k*2,1,3,'rgba(246,247,251,.6)')}ctx=m})();
+setTimeout(()=>{try{window.focus();$('stage').focus({preventScroll:true})}catch(_){}},100);
 fit();newRun();setVoice(voiceOn);setMusic(musicOn);requestAnimationFrame(frame);
 })();
 </script>
