@@ -487,7 +487,13 @@ function pickE(e,arr){if(!e.vo)return pick(arr);const rec=arr.filter(t=>clipFor(
 // prefer recorded lines when they're available
 function pickCoon(cat){const a=COON[cat]||[];const rec=a.filter(t=>clipFor(t,player));return rec.length&&Math.random()<.75?pick(rec):pick(a)}
 const CLIP_RATE=1; // <1 = lower, chubbier voice
-function playClip(name){try{const src=ac.createBufferSource(),g=ac.createGain();src.buffer=clipBuf[name];src.playbackRate.value=CLIP_RATE;g.gain.value=1.1*(clipGain[name]||1);src.connect(g).connect(vocBus);src.start()}catch(e){}}
+// One voice at a time: a single channel with priorities (2 = key moments, 1 = reactions, 0 = chatter/babble)
+let voiceSrc=null,voiceEnd=0,voicePrio=-1;
+function voiceFree(prio){return !ac||ac.currentTime>voiceEnd||prio>voicePrio}
+function playClip(name,prio){try{
+  if(voiceSrc&&ac.currentTime<voiceEnd){try{voiceSrc.stop()}catch(_){}}
+  const src=ac.createBufferSource(),g=ac.createGain();src.buffer=clipBuf[name];src.playbackRate.value=CLIP_RATE;g.gain.value=1.1*(clipGain[name]||1);
+  src.connect(g).connect(vocBus);src.start();voiceSrc=src;voiceEnd=ac.currentTime+src.buffer.duration/CLIP_RATE+.12;voicePrio=prio}catch(e){}}
 function say(who,text,force){
   if(!who||(!force&&who.cd>0))return;
   if(who.bub)who.bub.el.remove();
@@ -495,7 +501,13 @@ function say(who,text,force){
   el.className='say'+(who===player?' coon':who.kind==='dog'?' dog':who.voice===CAR_VOICE?' car':'')+(/!/.test(text)&&who!==player?' yell':'');
   el.textContent=text;$('stage').appendChild(el);
   who.bub={el,t:0,life:Math.max(1.5,text.length*.075)};who.cd=who.bub.life+1.2;
-  const clip=voiceOn&&ac?clipFor(text,who):null;if(clip)playClip(clip);else babble(text,who.voice);placeBubble(who);
+  const prio=force?2:(who===player?1:(/!/.test(text)?1:0)),clip=voiceOn&&ac?clipFor(text,who):null;
+  if(voiceFree(prio)){
+    if(clip)playClip(clip,prio);
+    else{if(voiceSrc&&ac&&ac.currentTime<voiceEnd){try{voiceSrc.stop()}catch(_){}}
+      babble(text,who.voice);if(ac){voiceEnd=ac.currentTime+Math.min(1.2,.08*text.length);voicePrio=prio;voiceSrc=null}}
+  }
+  placeBubble(who);
 }
 function bubbleOff(w){return w===player?(w.carry?30:22):w.kind==='dog'?30:w.kind==='cook'?46:w.off||24}
 function placeBubble(w){
