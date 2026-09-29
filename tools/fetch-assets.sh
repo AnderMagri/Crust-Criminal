@@ -30,3 +30,4 @@ get assets/voices/raccoon-landing.mp3   "https://app-uploads.krea.ai/audio/18307
 get assets/voices/raccoon-cat.mp3       "https://app-uploads.krea.ai/audio/9f245a73-cf9f-4bd6-baf5-cd0567971f52.mp3"
 get assets/voices/raccoon-hum.mp3       "https://app-uploads.krea.ai/audio/38f162a5-8ace-4cd1-83a2-a849d08bbabb.mp3"
 get assets/voices/raccoon-tired.mp3     "https://app-uploads.krea.ai/audio/1cbc6108-262a-4870-a0c6-98244eaef156.mp3"
+get assets/art/logo.png            "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/b428e301-b90b-4437-b975-94e24fb4e7ff-image.png"
