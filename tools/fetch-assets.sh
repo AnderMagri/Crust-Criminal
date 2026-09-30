@@ -67,3 +67,8 @@ get assets/voices/raccoon-starving.mp3   "https://app-uploads.krea.ai/audio/63ed
 get assets/voices/raccoon-sugarrush.mp3  "https://app-uploads.krea.ai/audio/ab3e24ce-4e3c-4a23-a306-286c311b2235.mp3"
 get assets/voices/raccoon-rumble.mp3     "https://app-uploads.krea.ai/audio/80c8661c-87ed-48d3-ae44-c5e5f2e51776.mp3"
 get assets/voices/raccoon-fart.mp3       "https://app-uploads.krea.ai/audio/543b86c6-4773-41c0-b933-1137e39888e0.mp3"
+# Rubber-hose pastel art direction
+curl -sSfo assets/art/style-explorations/splash-rubberhose-v3.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/a87924bf-4627-46a1-a441-11c9ee6888bb-image.png"
+curl -sSfo assets/art/style-explorations/splash-rubberhose-v4.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/aa892299-8e24-42d3-b1e8-3453a216f4e6-image.png"
+curl -sSfo assets/art/logo-explorations/logo-retro-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/4dffe17d-b936-4b15-91e9-676f4d5a9cfc-image.png"
+curl -sSfo assets/art/logo-explorations/logo-retro-v2.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/7dafb856-7a49-4381-8114-c62726c34d6a-image.png"
