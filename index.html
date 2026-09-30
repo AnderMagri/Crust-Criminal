@@ -589,7 +589,7 @@ const COON_VO={'Pie time!':'pietime','Ta-daaa! Let the adventure begin!':'tada',
   'A golden donut?! I can see colors!':'donut','Fries from the garbage? Five stars.':'fries','Half a burger?! Today is my lucky day!':'burger',
   'Nom nom nom... mmm!':'nom','Heh-heh-heh... excuse me!':'fart','SUGAR RUSH! Wheeeee!':'sugarrush','Uh oh... tummy\u2019s rumbling...':'rumble',
   'I\u2019m starving! I haven\u2019t eaten in... four whole minutes!':'starving','I... can\u2019t... go on... without... a snack...':'cantgoon',
-  'My legs are made of jelly!':'jelly','I don’t steal pies. I RESCUE them.':'rescue','Some raccoons steal trash. I steal... dessert.':'dessert','Sniff sniff... is that... CHERRY?!':'cherry','I am one with the shadows... and the crumbs.':'shadows','Cardio! My old enemy!':'cardio',
+  'My legs are made of jelly!':'jelly','♪ I’m a crust criminaaal! ♪ Tchu tchu!':'sing1','♪ Crust criminal, that’s meee! ♪':'sing2','♪ Pie pie pie, I’m a crust criminaaal ♪':'sing3','Some raccoons steal trash. I steal... dessert.':'dessert','Sniff sniff... is that... CHERRY?!':'cherry','I am one with the shadows... and the crumbs.':'shadows','Cardio! My old enemy!':'cardio',
   'Wheee! Can’t catch me, I’m the pie guy!':'pieguy','Who leaves a pie unattended? Amateurs.':'amateurs','Look both ways... then run like a maniac!':'lookboth',
   'Yeah yeah, honk at me one more time, buddy!':'honkback','Beep beep! Raccoon coming through!':'beepbeep','Easy, puppy! I have treats! ...No I don’t.':'puppy',
   'The cops! Act natural... act natural...':'actnatural','Nobody saw that. Nobody.':'nobodysaw','Five-star heist. Would steal again.':'fivestar','Everything is going dark... is that the light? ...No, it\u2019s the fridge.':'fridge','♪ Pie, pie, beautiful pie... ♪':'song','Dun dun dun... dun-dun...':'hum','Huff... should’ve skipped... second breakfast...':'tired'};
@@ -751,7 +751,7 @@ $('menu').addEventListener('pointerdown',e=>e.stopPropagation());
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='play')pauseGame()});
 
 // ---------- title screen: animated splash + the raccoon's opening line ----------
-const TITLE_QUOTES=['I don’t steal pies. I RESCUE them.','Some raccoons steal trash. I steal... dessert.'];
+const TITLE_QUOTES=['♪ I’m a crust criminaaal! ♪ Tchu tchu!','♪ Crust criminal, that’s meee! ♪','♪ Pie pie pie, I’m a crust criminaaal ♪'];
 let tqI=0,tqNext=1.2,tqHide=0;
 function titleTick(dt){
   if(state!=='title'){if(!$('tq').hidden)$('tq').hidden=true;tqNext=Math.min(tqNext,1.2);const v=$('titleVid');if(v&&!v.paused)v.pause();return}
@@ -761,7 +761,9 @@ function titleTick(dt){
   const q=TITLE_QUOTES[tqI++%TITLE_QUOTES.length],el=$('tq');el.textContent=q;el.hidden=false;el.style.animation='none';void el.offsetWidth;el.style.animation='';
   const c=voiceOn&&clipFor(q,player);if(c)playClip(c,2);tqHide=c?clipBuf[c].duration+.4:3.8;tqNext=tqHide+12;
 }
-(function(){const v=$('titleVid');if(!v)return;v.src='assets/art/splash-loop.mp4';
+(function(){const v=$('titleVid');if(!v)return;
+  // H.264 for iPhone/Safari, VP9 WebM for browsers without H.264; the still splash stays underneath as fallback
+  v.src=v.canPlayType('video/mp4; codecs="avc1.4d401e"')?'assets/art/splash-loop.mp4':'assets/art/splash-loop.webm';
   v.addEventListener('canplay',()=>{v.hidden=false;v.play().catch(()=>{})},{once:true});
   v.addEventListener('error',()=>{v.hidden=true});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state==='title')v.play().catch(()=>{})})})();

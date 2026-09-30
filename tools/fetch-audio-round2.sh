@@ -63,3 +63,6 @@ curl -sSfo music/title-theme.mp3 https://app-uploads.krea.ai/audio/462f4e1e-e866
 curl -sSfo music/pause-theme.mp3 https://app-uploads.krea.ai/audio/a1dcecb9-0b2b-41cd-b4a1-b743957cdec6.mp3
 curl -sSfo voices/raccoon-rescue.mp3 https://app-uploads.krea.ai/audio/07e5221b-c6e8-4f76-ad84-a2804aaf325a.mp3
 curl -sSfo voices/raccoon-dessert.mp3 https://app-uploads.krea.ai/audio/7b083d39-4f49-42fd-9684-cfb3826c0ae1.mp3
+curl -sSfo voices/raccoon-sing1.mp3 https://app-uploads.krea.ai/audio/c8530843-0622-411d-902e-af29a2af4fec.mp3
+curl -sSfo voices/raccoon-sing2.mp3 https://app-uploads.krea.ai/audio/8e2c44b9-81af-4a9b-9b36-1577365f6fb7.mp3
+curl -sSfo voices/raccoon-sing3.mp3 https://app-uploads.krea.ai/audio/ae319695-926c-453f-bdae-4958b4f8ecd1.mp3
