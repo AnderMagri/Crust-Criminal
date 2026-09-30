@@ -81,3 +81,7 @@ curl -sSfo assets/art/logo-explorations/logo-kawaii-v1.png "https://app-uploads.
 curl -sSfo assets/art/sprites-src/raccoon-sheet-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/3fd1955f-ed4d-418d-8b87-8c03355df895-image.png"
 curl -sSfo assets/art/sprites-src/raccoon-sheet-v2.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/9fad336b-0494-431e-94c6-869096fbc0c2-image.png"
 curl -sSfo assets/art/sprites-src/enemies-sheet-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/2e38707c-d138-4b3a-95d3-8834e38b2f24-image.png"
+curl -sSfo assets/art/sprites-src/raccoon-walk-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/e06ae1e0-ad7f-4ef2-ac91-ca302383207a-image.png"
+curl -sSfo assets/art/sprites-src/raccoon-walk-pie-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/98838f37-576e-4f45-9856-65238c1c419a-image.png"
+curl -sSfo assets/art/sprites-src/street-props-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/e75de695-2ad9-458e-8151-169cb9764a19-image.png"
+curl -sSfo assets/art/sprites-src/kitchen-props-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/aa0ad6f4-9f7e-4194-947a-0a02cbd58673-image.png"

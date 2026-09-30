@@ -364,7 +364,13 @@ const SFX={
   jump(){tone(220,.18,{type:'sine',slide:880,vol:.12});tone(440,.12,{type:'square',slide:990,vol:.03,when:ac&&ac.currentTime+.04})},
   land(){noise(.09,{lp:700,vol:.12});tone(130,.08,{type:'triangle',slide:60,vol:.12})},
   bump(){tone(110,.06,{vol:.05})},
-  pie(){[72,76,79,84,88].forEach((n,k)=>tone(mtof(n),.09,{vol:.05,when:ac&&ac.currentTime+k*.06}));tone(mtof(96),.3,{type:'triangle',vol:.05,when:ac&&ac.currentTime+.3})},
+  pie(){if(!ac)return;const t=ac.currentTime;
+    // power-up: whoosh up, sparkly arpeggio, then a big shimmering chord
+    tone(180,.45,{type:'triangle',slide:1400,vol:.09});noise(.45,{hp:2500,vol:.05});
+    [60,64,67,72,76,79,84,88,91,96].forEach((n,k)=>tone(mtof(n),.1,{type:'square',vol:.035,lp:5000,when:t+.08+k*.045}));
+    [72,76,79,84].forEach(n=>{tone(mtof(n),1.2,{type:'triangle',vol:.05,att:.02,when:t+.55});tone(mtof(n)*1.006,1.2,{type:'sine',vol:.035,att:.02,when:t+.55})});
+    [0,.12,.24,.36,.5].forEach(d=>tone(mtof(100+Math.floor(Math.random()*6)),.18,{type:'sine',vol:.03,when:t+.7+d}));
+    if(musBus&&musicOn){musBus.gain.cancelScheduledValues(t);musBus.gain.setTargetAtTime(.08,t,.04);musBus.gain.setTargetAtTime(.42,t+1.6,.3)}},
   alert(){tone(988,.06,{vol:.04});tone(1319,.1,{vol:.04,when:ac&&ac.currentTime+.07})},
   bark(){tone(420,.07,{slide:300,vol:.06});tone(380,.09,{slide:250,vol:.06,when:ac&&ac.currentTime+.11});noise(.05,{hp:900,lp:3000,vol:.04})},
   slam(){noise(.3,{lp:500,vol:.3});tone(80,.25,{type:'sawtooth',slide:40,vol:.12});noise(.06,{hp:3000,vol:.08,when:ac&&ac.currentTime+.02})},
@@ -531,6 +537,7 @@ function placeBubble(w){
 function clearBubbles(){document.querySelectorAll('.say').forEach(e=>e.remove())}
 
 // ---------- state ----------
+let pieFx=null,stars=[],hitStop=0;
 let state='title',player,enemies=[],cars=[],parts=[],time=0,grace=0,shake=0,pieTaken=false,joy=null,now=0,toastT=0,chatT=3,sceneT=0;
 const cam={x:0,y:0};
 let best=null;try{best=parseFloat(localStorage.getItem('pieheist2-best'))||null}catch(e){}
@@ -787,7 +794,8 @@ function updatePlayer(dt){
   if(S.kind==='kitchen'){
     if(!pieTaken){const px=S.pie.c*TS+8,py=S.pie.r*TS+10;
       if(Math.hypot(player.x-px,player.y-py)<19){pieTaken=true;player.carry=true;S.doorOpen=true;
-        toast('Got the pie!\nThe back door is open');setObj();SFX.pie();
+        toast('Got the pie!\nThe back door is open');setObj();SFX.pie();pieFx={t0:now,x:px,y:py-6};hitStop=.22;shake=.15;
+        for(let k=0;k<30;k++){const a=-Math.PI/2+(Math.random()-.5)*Math.PI*1.8,v=45+Math.random()*80;stars.push({x:px,y:py-8,vx:Math.cos(a)*v,vy:Math.sin(a)*v-20,t0:now+Math.random()*.08,life:.9+Math.random()*.5,r:2.6+Math.random()*2.8,rot:Math.random()*6,vr:(Math.random()-.5)*10,col:pick(['#ffe066','#ffd1dc','#fff','#ffb3c6','#bdf0dc'])})}
         say(player,pickCoon('pie'),true);
         const near=enemies.slice().sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y))[0];
         setTimeout(()=>{if(state==='play')say(near,pickE(near,near.lines.pie),true)},700)}}
@@ -1254,8 +1262,10 @@ function render(){
   for(const p of parts){const a=1-p.t/p.life,z=p.sz||2;R(p.x,p.y-p.t*(p.col?10:6),z,z,p.col?p.col+(a*.8)+')':`rgba(235,225,205,${a*.8})`)}
   enemies.forEach(e=>{const h=e.kind==='dog'?22:(e.style==='sous'?40:e.style==='cop'?34:37),x=Math.round(e.x),y=Math.round(e.y)-h+(Math.sin(now*10)>0?0:-1);
     if(e.state==='alert')bubble(x,y,'!','#e08a00');else if(e.state==='chase')bubble(x,y,'!','#e0352b');else if(e.state==='search')bubble(x,y,'?','#6a5acd')});
+  drawPieFx();
   ctx.restore();
   lighting(extra);
+  if(pieFx&&now-pieFx.t0<.35){ctx.fillStyle=`rgba(255,250,235,${.55*(1-(now-pieFx.t0)/.35)})`;ctx.fillRect(0,0,VW,VH)}
   // screen-space: objective + threat pointers
   if(state==='play'||state==='title'){
     if(S.kind==='kitchen'){if(!pieTaken)pointer(S.pie.c*TS+8,S.pie.r*TS+4,'#e8a64a','pie');else if(Math.sin(now*6)>-.3)pointer(S.door.c*TS+8,S.door.r*TS+8,'#3fae5a')}
@@ -1486,7 +1496,7 @@ function drawSnackBody(sn){
     case'cookie':tE(x,y,4.4,3.9,'#e0a868',1);for(const[a,b]of[[-1.6,-1],[1.4,-1.6],[.6,1.2],[-1.8,1.4]])tE(x+a,y+b,.75,.65,'#6b3d2a',0);
       ctx.beginPath();ctx.arc(x+4,y-2.6,1.4,0,TAU);ctx.fillStyle=TP.paper;ctx.fill();break;
     case'choc':tRR(x-5,y-3,10,6,1.2,'#7a4a36',1);ctx.strokeStyle='#5a3526';ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(x-1.7,y-3);ctx.lineTo(x-1.7,y+3);ctx.moveTo(x+1.7,y-3);ctx.lineTo(x+1.7,y+3);ctx.stroke();tRR(x+1.5,y-3.4,4,6.8,1,'#c9d0e0',.8);break;
-    case'donut':tE(x,y,5.4,4.2,'#e8b56a',1);tE(x,y-.6,4.4,3.1,'#f7a8c3',0);tE(x,y-.4,1.7,1.2,TP.paper,.8);
+    case'donut':if(propReady){drawPropImg('donut',x,y+3.5,false,.62);break}tE(x,y,5.4,4.2,'#e8b56a',1);tE(x,y-.6,4.4,3.1,'#f7a8c3',0);tE(x,y-.4,1.7,1.2,TP.paper,.8);
       for(const[a,b,cc]of[[-2.5,-1.2,'#8fb8e8'],[2.3,-1.6,'#fff3b8'],[1,1.4,'#8fcf88'],[-1.5,1.2,'#fff']]){ctx.fillStyle=cc;ctx.fillRect(x+a,y+b,1,.6)}
       if(Math.sin(now*6)>.3){ctx.strokeStyle=TP.gold;ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x+6,y-7);ctx.lineTo(x+6,y-3);ctx.moveTo(x+4,y-5);ctx.lineTo(x+8,y-5);ctx.stroke()}break;
     case'fries':for(let k=0;k<5;k++)tRR(x-3.4+k*1.6,y-7+(k%2),1.3,6,.5,'#f7d774',.5);ctx.beginPath();ctx.moveTo(x-4.5,y-2);ctx.lineTo(x+4.5,y-2);ctx.lineTo(x+3.4,y+4);ctx.lineTo(x-3.4,y+4);ctx.closePath();ctx.fillStyle=TP.cherry;ctx.fill();tSt(.9);ctx.stroke();break;
@@ -1752,7 +1762,7 @@ function buildBg(){
   const OUT='#4a4775',OUTL='#6e6aa0';
   if(S.kind==='kitchen'){
     for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){const x=c*TS,y=r*TS;
-      r_(x,y,16,16,((c+r)&1)?'#fff7ea':'#d7ebf8');g.strokeStyle='rgba(180,160,150,.28)';g.lineWidth=.5;g.strokeRect(x+.25,y+.25,15.5,15.5);}
+      r_(x,y,16,16,'#fff4e4');if(!((c+r)&1)){kRR(x+1.2,y+1.2,13.6,13.6,3.2,'#d3e8f7',0);kRR(x+2.4,y+2.4,6,2.2,1.1,'rgba(255,255,255,.45)',0)}else{kRR(x+1.2,y+1.2,13.6,13.6,3.2,'#fff9ef',0)}}
     for(let c=0;c<S.cols;c++){const x=c*TS;for(let k=0;k<4;k++)r_(x+k*4,0,4,13,k&1?'#fde2e8':'#dff3ea');
       r_(x,12,16,4,'#f7b3c2');g.strokeStyle=KB;g.lineWidth=.8;g.beginPath();g.moveTo(x,12);g.lineTo(x+16,12);g.moveTo(x,16);g.lineTo(x+16,16);g.stroke();
       if(c===Math.floor(S.cols/2)){kE(x+8,6,3.4,3.4,'#fff',.8);g.beginPath();g.moveTo(x+8,6);g.lineTo(x+8,3.8);g.moveTo(x+8,6);g.lineTo(x+9.6,6.6);g.stroke()}
@@ -1763,8 +1773,8 @@ function buildBg(){
   }else{
     const M=(c,r)=>(r<0||r>=S.rows||c<0||c>=S.cols)?'W':S.map[r][c],ground=ch=>ch==='r'?'r':'gHX'.includes(ch)?'g':',';
     for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){const x=c*TS,y=r*TS,u=ground(M(c,r));
-      if(u==='r'){r_(x,y,16,16,'#c3bedb');if(ground(M(c,r-1))===',')r_(x,y,16,2,'rgba(91,63,60,.14)')}
-      else if(u==='g'){r_(x,y,16,16,'#cdeec4');if(hsh(c,r,60)<.08){const fx=x+4+hsh(c,r,61)*8,fy=y+4+hsh(c,r,62)*8;for(let k=0;k<5;k++)kE(fx+Math.cos(k*1.26)*1.3,fy+Math.sin(k*1.26)*1.3,.9,.9,pick(['#f7a9b8','#fff','#ffe08a']),0);kE(fx,fy,.7,.7,'#ffd66b',0)}}
+      if(u==='r'){r_(x,y,16,16,'#c3bedb');for(let k=0;k<3;k++)if(hsh(c,r,80+k)<.5)kE(x+hsh(c,r,90+k)*16,y+hsh(c,r,95+k)*16,.5,.4,'rgba(120,110,160,.25)',0);if(ground(M(c,r-1))===',')r_(x,y,16,2,'rgba(91,63,60,.14)')}
+      else if(u==='g'){r_(x,y,16,16,(r&1)?'#cdeec4':'#c3e8b9');if(hsh(c,r,70)<.45){const tx=x+3+hsh(c,r,71)*9,ty=y+5+hsh(c,r,72)*7;g.strokeStyle='#9fd08f';g.lineWidth=.7;g.beginPath();g.moveTo(tx,ty+2);g.lineTo(tx-.8,ty);g.moveTo(tx+1,ty+2);g.lineTo(tx+1.3,ty-.6);g.moveTo(tx+2,ty+2);g.lineTo(tx+2.8,ty);g.stroke()}if(hsh(c,r,60)<.08){const fx=x+4+hsh(c,r,61)*8,fy=y+4+hsh(c,r,62)*8;for(let k=0;k<5;k++)kE(fx+Math.cos(k*1.26)*1.3,fy+Math.sin(k*1.26)*1.3,.9,.9,pick(['#f7a9b8','#fff','#ffe08a']),0);kE(fx,fy,.7,.7,'#ffd66b',0)}}
       else{r_(x,y,16,16,'#fff4e4');g.strokeStyle='rgba(190,165,150,.35)';g.lineWidth=.5;g.strokeRect(x+.25,y+.25,15.5,15.5);
         if(ground(M(c,r+1))==='r'){r_(x,y+12,16,4,'#fde2e8');g.strokeStyle=KB;g.lineWidth=.8;g.beginPath();g.moveTo(x,y+12);g.lineTo(x+16,y+12);g.moveTo(x,y+16);g.lineTo(x+16,y+16);g.stroke()}
         if(ground(M(c,r-1))==='r'){r_(x,y,16,3,'#fde2e8');g.strokeStyle=KB;g.lineWidth=.8;g.beginPath();g.moveTo(x,y+3);g.lineTo(x+16,y+3);g.stroke()}}}
@@ -1772,7 +1782,8 @@ function buildBg(){
       const zx=(2+((L.r*5)%10))*TS;for(let k=0;k<5;k++)r_(zx+k*6,L.r*TS+3,4,58,'rgba(255,255,255,.6)')});
     for(let c=0;c<S.cols;c++){const x=c*TS;r_(x,0,16,16,OUT);r_(x,TS,16,16,'#f9c9d3');g.strokeStyle='rgba(200,120,140,.35)';g.lineWidth=.5;
       for(let xx=x+4;xx<x+16;xx+=4){g.beginPath();g.moveTo(xx,TS);g.lineTo(xx,2*TS);g.stroke()}
-      if(c%4===1&&Math.abs(c-S.doorCol)>1){kRR(x+2.5,TS+2,11,9,3,'#fff6c8',.8);g.beginPath();g.moveTo(x+8,TS+2);g.lineTo(x+8,TS+11);g.stroke()}}
+      if(c%4===1&&Math.abs(c-S.doorCol)>1){kRR(x+2.5,TS+1.5,11,10,4,'#fff6c8',.8);g.beginPath();g.moveTo(x+8,TS+2);g.lineTo(x+8,TS+11.5);g.stroke();for(let k=0;k<4;k++){g.fillStyle=k&1?'#fff':'#f7a9b8';g.beginPath();g.arc(x+3.4+k*3.1,TS+1.6,1.6,0,Math.PI);g.fill()}kStroke(.5);g.strokeRect(x+1.8,TS-.2,12.4,1.8)}
+      if(c%4===3&&Math.abs(c-S.doorCol)>1&&typeof drawPropImg==='function')drawPropImg('planter',x+8,2*TS+1,false,.8)}
     g.strokeStyle=KB;g.lineWidth=.9;g.beginPath();g.moveTo(0,TS);g.lineTo(S.cols*TS,TS);g.moveTo(0,2*TS);g.lineTo(S.cols*TS,2*TS);g.stroke();
     const dx=S.doorCol*TS;kRR(dx+2,TS+2,12,14,3,'#f1c9a8',.9);kE(dx+11,TS+10,.8,.8,'#ffd66b',.5);
     for(let k=0;k<5;k++){g.fillStyle=k&1?'#fff':'#f7a9b8';g.fillRect(dx-2+k*4,TS-2,4,5)}kStroke(.8);g.strokeRect(dx-2,TS-2,20,5);
@@ -1780,24 +1791,73 @@ function buildBg(){
   ctx=m;
 }
 
+// ================= PROP SPRITES =================
+// Kawaii props from the style mockup, packed in assets/art/props.webp (same format as SPR).
+const PROP={"tree":[0,0,188,176,94,176,4],"lamp":[190,0,115,168,58,168,4],"home":[307,0,132,120,66,120,4],"car1":[441,0,144,97,72,97,4],"car2":[587,0,144,97,72,97,4],"car0":[733,0,144,96,72,96,4],"car3":[0,178,144,96,72,96,4],"fridge":[146,178,66,94,33,94,4],"bin":[214,178,72,80,36,80,4],"shelf":[288,178,68,76,34,76,4],"bush":[358,178,95,72,48,72,4],"oven":[455,178,68,65,34,65,4],"sink":[525,178,68,57,34,57,4],"hydrant":[595,178,47,52,24,52,4],"pie":[644,178,52,43,26,43,4],"planter":[698,178,60,41,30,41,4],"fence":[760,178,68,38,34,38,4],"bowl":[830,178,34,36,17,36,4],"cake":[866,178,36,32,18,32,4],"donut":[904,178,36,30,18,30,4],"board":[942,178,42,29,21,29,4],"onigiri":[986,178,30,28,15,28,4],"plates":[0,276,32,25,16,25,4],"pot":[34,276,36,24,18,24,4]};
+const PROP_IMG=new Image();let propReady=false;PROP_IMG.onload=()=>{propReady=true;if(S)buildBg()};PROP_IMG.src='assets/art/props.webp';
+function drawPropImg(n,x,y,flip,k=1){const d=PROP[n];if(!d||!propReady)return false;const u=d[6],w=d[2]/u*k,h=d[3]/u*k,ax=d[4]/u*k,ay=d[5]/u*k;
+  if(flip){ctx.save();ctx.translate(x,y);ctx.scale(-1,1);ctx.drawImage(PROP_IMG,d[0],d[1],d[2],d[3],-ax,-ay,w,h);ctx.restore()}
+  else ctx.drawImage(PROP_IMG,d[0],d[1],d[2],d[3],x-ax,y-ay,w,h);return true}
+// (function declarations are hoisted, so the vector versions can't be kept as fallbacks; props just wait for the atlas)
+function drawPie(cx,cy){if(!drawPropImg('pie',cx,cy+4,false,.82))drawPieToon(cx,cy)}
+function drawBin(c,r,home){if(!propReady)return;const x=c*TS+8,y=r*TS+14;
+  if(home){const near=Math.hypot(player.x-x,player.y-(y-4))<52,b=near?Math.abs(Math.sin(now*6))*2:0;
+    ctx.fillStyle='rgba(160,240,190,.35)';ctx.beginPath();ctx.ellipse(x,y,14+Math.sin(now*3)*1.5,5,0,0,TAU);ctx.fill();
+    kShadow(x,y,11);drawPropImg('home',x,y-b,false);
+    if(Math.sin(now*4)>0){sparkle(x-14,y-26,1.8);sparkle(x+15,y-12,1.4)}}
+  else{kShadow(x,y,7);drawPropImg('bin',x,y,hsh(c,r,5)<.5,.9)}}
+function drawHedge(c,r){if(!propReady)return;const x=c*TS+8,y=r*TS+15;kShadow(x,y-1,9);drawPropImg('bush',x,y,hsh(c,r,8)<.5,.86)}
+function drawTree(c,r){if(!propReady)return;const x=c*TS+8,y=r*TS+15;kShadow(x,y,11);drawPropImg('tree',x,y,hsh(c,r,9)<.5,.84)}
+function drawFence(c,r){if(!propReady)return;drawPropImg('fence',c*TS+8,r*TS+13,false,1.02)}
+function drawLamp(l){if(!propReady)return;ctx.fillStyle='rgba(255,236,160,.28)';ctx.beginPath();ctx.ellipse(l.x,l.y-1,15,5,0,0,TAU);ctx.fill();kShadow(l.x,l.y,4);drawPropImg('lamp',l.x,l.y+1,false,.72)}
+function drawCar(c){if(!propReady)return;const i=Math.abs(Math.round(c.x0!==undefined?c.x0:(c.id||0)))%4;
+  if(c.skin===undefined)c.skin=Math.floor(Math.random()*4);kShadow(c.x,c.y,17);drawPropImg('car'+c.skin,c.x,c.y+1,c.dir<0,.95)}
+const CITEM=['board','pot','bowl','cake','plates','onigiri'];
+function counterItem(c,r,x,y){if(!propReady)return;const h=hsh(c,r,7);if(h>=.48)return;
+  drawPropImg(CITEM[Math.floor(h/.08)],x+8,y+3.5,hsh(c,r,11)<.5);
+  if(h>=.08&&h<.16&&Math.sin(now*3+c)>.3){const ph=(now*.9+c*.3)%1;ctx.strokeStyle=`rgba(255,255,255,${.7*(1-ph)})`;ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x+8,y-3-ph*7);ctx.quadraticCurveTo(x+10,y-5-ph*7,x+8.5,y-7-ph*7);ctx.stroke()}}
+function drawOven(c,r){if(!propReady)return;const x=c*TS,y=r*TS;drawCounter(c,r,true);
+  if(!isWallK(c,r+1)){drawPropImg('oven',x+8,y+16.4,false);if(hsh(c,r,3)<.5&&Math.sin(now*3+c*2)>.2){const ph=(now*.9+c*.3)%1;ctx.strokeStyle=`rgba(255,255,255,${.7*(1-ph)})`;ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(x+5,y-1-ph*8);ctx.quadraticCurveTo(x+7,y-3-ph*8,x+5.5,y-5-ph*8);ctx.stroke()}}
+  else drawPropImg('pot',x+8,y+3.5)}
+function drawFridge(c,r){if(!propReady)return;const x=c*TS,y=r*TS;ctx.fillStyle='rgba(91,63,60,.13)';ctx.fillRect(x+2,y+16,12,3);drawPropImg('fridge',x+8,y+16.5,false,1.02)}
+function drawShelf(c,r){if(!propReady)return;const x=c*TS,y=r*TS;ctx.fillStyle='rgba(91,63,60,.13)';ctx.fillRect(x+1,y+16,14,3);drawPropImg('shelf',x+8,y+16.5,false,1.02)}
+
+
+// ---------- the pie moment: ring, glow and stars popping out of the pie ----------
+function starPath(x,y,r,rot){ctx.beginPath();for(let i=0;i<10;i++){const a=rot+i*Math.PI/5-Math.PI/2,rr=i&1?r*.45:r;ctx.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr)}ctx.closePath()}
+function drawPieFx(){
+  if(!pieFx)return;const age=now-pieFx.t0;
+  if(age<.7){const k=age/.7;ctx.strokeStyle=`rgba(255,224,102,${1-k})`;ctx.lineWidth=3*(1-k)+.5;ctx.beginPath();ctx.arc(pieFx.x,pieFx.y,6+k*46,0,TAU);ctx.stroke();
+    const g=ctx.createRadialGradient(pieFx.x,pieFx.y,0,pieFx.x,pieFx.y,30);g.addColorStop(0,`rgba(255,244,190,${.7*(1-k)})`);g.addColorStop(1,'rgba(255,244,190,0)');ctx.fillStyle=g;ctx.fillRect(pieFx.x-30,pieFx.y-30,60,60)}
+  stars=stars.filter(s=>now-s.t0<s.life);
+  for(const s of stars){const t=now-s.t0;if(t<0)continue;const a=1-t/s.life,x=s.x+s.vx*t,y=s.y+s.vy*t+70*t*t,r=s.r*(t<.1?t/.1:1)*(.6+.4*a);
+    ctx.globalAlpha=Math.min(1,a*1.6);starPath(x,y,r,s.rot+s.vr*t);ctx.fillStyle=s.col;ctx.fill();ctx.strokeStyle='rgba(91,63,60,.8)';ctx.lineWidth=.5;ctx.stroke()}
+  ctx.globalAlpha=1;if(age>2&&!stars.length)pieFx=null;
+}
 // ================= SPRITE CHARACTERS =================
 // Hand-drawn kawaii sprites (from the approved mockup) packed in assets/art/sprites.webp.
 // Each entry: [x,y,w,h,anchorX,anchorY,pixelsPerWorldUnit]; anchor = between the feet.
-const SPR={"s_s":[0,0,76,136,38,136,4],"s_a":[78,0,97,136,41,136,4],"s_f":[177,0,82,134,41,134,4],"s_b":[261,0,80,134,40,134,4],"k_a":[343,0,98,130,40,130,4],"k_s":[443,0,78,129,42,129,4],"k_b":[523,0,77,126,39,126,4],"k_f":[602,0,77,124,38,124,4],"p_s":[681,0,78,117,40,117,4],"c_pb":[761,0,85,114,38,114,4],"c_pf":[848,0,87,113,39,113,4],"p_f":[0,138,94,113,46,113,4],"c_ps":[96,138,99,112,62,112,4],"c_x":[197,138,98,102,39,102,4],"c_s":[297,138,92,99,58,99,4],"c_b":[391,138,85,97,40,97,4],"c_t":[478,138,87,97,41,97,4],"c_f":[567,138,92,96,44,96,4],"d_s":[661,138,103,95,30,95,4],"d_f":[766,138,94,94,47,94,4]};
+const SPR={"s_s":[0,0,76,136,38,136,4],"s_a":[78,0,90,136,41,136,4],"s_f":[170,0,82,134,41,134,4],"s_b":[254,0,80,134,40,134,4],"k_a":[336,0,91,130,40,130,4],"k_s":[429,0,78,129,42,129,4],"k_b":[509,0,77,126,39,126,4],"k_f":[588,0,77,124,38,124,4],"p_s":[667,0,78,117,40,117,4],"c_pb":[747,0,85,114,38,114,4],"c_pf":[834,0,87,113,39,113,4],"p_f":[923,0,94,113,46,113,4],"c_ps":[0,138,99,112,62,112,4],"cw_s3":[101,138,79,101,41,101,4],"cw_s1":[182,138,85,100,52,100,4],"cw_s2":[269,138,86,100,42,100,4],"c_s":[357,138,92,99,58,99,4],"cw_s0":[451,138,84,99,42,99,4],"c_b":[537,138,85,97,40,97,4],"c_t":[624,138,87,97,41,97,4],"c_x":[713,138,87,97,39,97,4],"c_f":[802,138,92,96,44,96,4],"cw_f0":[896,138,83,96,37,96,4],"cw_f2":[0,252,84,96,38,96,4],"cw_f3":[86,252,84,96,39,96,4],"cw_b0":[172,252,79,96,37,96,4],"cw_b2":[253,252,80,96,35,96,4],"cw_f1":[335,252,83,95,39,95,4],"cw_b1":[420,252,80,95,39,95,4],"cw_b3":[502,252,80,95,39,95,4],"d_s":[584,252,103,95,30,95,4],"d_f":[689,252,94,94,47,94,4]};
 const SPR_IMG=new Image();let sprReady=false;SPR_IMG.onload=()=>{sprReady=true};SPR_IMG.src='assets/art/sprites.webp';
 function drawSpr(n,x,y,flip,k=1,rot=0,sq=1){const d=SPR[n];if(!d)return;const u=d[6],w=d[2]/u*k,h=d[3]/u*k,ax=d[4]/u*k,ay=d[5]/u*k;
   ctx.save();ctx.translate(x,y);if(rot)ctx.rotate(rot);ctx.scale(flip?-1/sq:1/sq,sq);ctx.drawImage(SPR_IMG,d[0],d[1],d[2],d[3],-ax,-ay,w,h);ctx.restore()}
 function walkFx(mv,ph){return mv?{bob:Math.abs(Math.sin(ph))*1.4,rot:Math.sin(ph)*.07,sq:1+Math.abs(Math.cos(ph))*.04}:{bob:0,rot:0,sq:1+Math.sin(now*2.4)*.018}}
 function drawRaccoon(p){
   if(!sprReady){scaled(p,kRaccoon);return}
-  const d=p.dir,mv=Math.hypot(p.vx,p.vy)>8||!!p.jump,fx=walkFx(mv,p.anim*1.3),z=p.z||0;
+  const d=p.dir,mv=Math.hypot(p.vx,p.vy)>8||!!p.jump,z=p.z||0,ph=p.anim*1.3;
   kShadow(p.x,p.y,6.5-z*.15);
-  const tired=p.energy<18&&!p.rush&&!mv&&!p.carry,caught=state==='caught';
-  let n,flip=false;
+  const tired=p.energy<18&&!p.rush&&!mv&&!p.carry,caught=state==='caught',side=d==='left'||d==='right',flip=d==='left';
+  const fr=Math.floor(ph/(Math.PI/2))&3,key=d==='up'?'b':side?'s':'f';
+  let n;
   if(caught)n='c_x';else if(tired)n='c_t';
-  else if(d==='up')n=p.carry?'c_pb':'c_b';else if(d==='left'||d==='right'){n=p.carry?'c_ps':'c_s';flip=d==='left'}else n=p.carry?'c_pf':'c_f';
-  drawSpr(n,p.x,p.y-z-fx.bob,flip,1,fx.rot,fx.sq);
-  if(p.carry&&Math.sin(now*5)>.4)sparkle(p.x+(flip?-9:9),p.y-z-fx.bob-30,1.6);
+  else if(mv)n='cw_'+key+fr;else n=d==='up'?'c_b':side?'c_s':'c_f';
+  const bob=mv?(fr&1?1.2:0):Math.sin(now*2.4)*.25,sq=mv?1:1+Math.sin(now*2.4)*.015,y=p.y-z-bob;
+  drawSpr(n,p.x,y,flip,1,0,sq);
+  if(p.carry){
+    // the pie rides on his head and wobbles when he runs
+    const h=SPR[n][3]/SPR[n][6],hx=p.x+(side?(flip?-2.4:2.4):0),wob=mv?Math.sin(ph*2)*.16:Math.sin(now*2)*.04,lift=mv?Math.abs(Math.sin(ph))*1.2:0,pa=pieFx?now-pieFx.t0:9,pop=pa<.6?1+Math.sin(pa/.6*Math.PI)*.7:1,up=pa<.6?Math.sin(pa/.6*Math.PI)*10:0;
+    ctx.save();ctx.translate(hx,y-h+3.2-lift-up);ctx.rotate(wob);drawPropImg('pie',0,0,false,.82*pop);ctx.restore();
+    if(Math.sin(now*5)>.4)sparkle(hx+(flip?-8:8),y-h-6,1.6)}
   p._img=null;
 }
 function drawCook(c){
@@ -1821,7 +1881,7 @@ function drawDog(e){
 let lastClock='',last=0;
 function frame(ts){
   const t=ts/1000,dt=Math.min(.05,t-(last||t));last=t;now=t;
-  if(state==='play'){
+  if(hitStop>0){hitStop-=dt}else if(state==='play'){
     if(fartAt>0&&time>fartAt&&!player.jump)doFart();
     time+=dt;grace-=dt;sceneT+=dt;updatePlayer(dt);
     if(state==='play'){if(S.kind==='kitchen')updateKitchen(dt);else updateStreet(dt)}
