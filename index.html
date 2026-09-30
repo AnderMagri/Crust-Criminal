@@ -1229,14 +1229,15 @@ function render(){
   const extra=[];enemies.forEach(e=>{e.cone=null;if(Math.abs(e.x-cam.x-VW/2)<VW/2+100&&Math.abs(e.y-cam.y-VH/2)<VH/2+100)cone(e)});
   const list=[];
   for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++){const t=S.map[r][c];
-    if(S.kind==='kitchen'){if(r>0&&r<S.rows-1&&c>0&&c<S.cols-1&&'COTRSP'.includes(t)){list.push({y:r*TS-6,t,c,r});if(t==='O'&&!isWallK(c,r+1))extra.push({x:c*TS+8,y:r*TS+16,r:26,i:.7,w:'rgba(255,120,40,.16)'})}}
+    if(S.kind==='kitchen'){if(r>0&&r<S.rows-1&&c>0&&c<S.cols-1&&'COTRSP'.includes(t)){list.push({y:r*TS-6,t,c,r});if(t==='C'&&!(S.knocked&&S.knocked.has(c+','+r))&&!isSink(c,r))list.push({y:r*TS-5.5,it:1,c,r});if(t==='O'&&!isWallK(c,r+1))extra.push({x:c*TS+8,y:r*TS+16,r:26,i:.7,w:'rgba(255,120,40,.16)'})}}
     else if('BZHXN'.includes(t))list.push({y:r*TS+(t==='X'?15:14),t,c,r})}
   if(S.kind==='kitchen')list.push({y:S.door.r*TS+16,t:'D'});else for(const l of S.lamps)if(Math.abs(l.y-cam.y-VH/2)<VH/2+50)list.push({y:l.y,lamp:l});
   for(const sn of (S.snacks||[]))if(!sn.eaten&&Math.abs(sn.y-cam.y-VH/2)<VH/2+30)list.push({y:sn.y-1,snack:sn});
   list.push({y:player.jump?player.y+26:player.y,p:1});enemies.forEach(e=>list.push({y:e.y,k:e}));cars.forEach(c=>list.push({y:c.y,car:c}));
   list.sort((a,b)=>a.y-b.y);
   for(const o of list){
-    if(o.snack)drawSnack(o.snack);
+    if(o.it)counterItem(o.c,o.r,o.c*TS,o.r*TS);
+    else if(o.snack)drawSnack(o.snack);
     else if(o.p)drawRaccoon(player);
     else if(o.k){shadow(Math.round(o.k.x),Math.round(o.k.y),6);(o.k.kind==='dog'?drawDog:drawCook)(o.k)}
     else if(o.car){drawCar(o.car)}
@@ -1244,7 +1245,7 @@ function render(){
     else switch(o.t){
       case'C':drawCounter(o.c,o.r);break;case'O':drawOven(o.c,o.r);break;case'R':drawFridge(o.c,o.r);break;case'S':drawShelf(o.c,o.r);break;
       case'D':drawDoorK();break;
-      case'P':drawCounter(o.c,o.r,true);if(!pieTaken){const x=o.c*TS+8,y=o.r*TS-1;drawPie(x,y);
+      case'P':drawCounter(o.c,o.r,true);if(!pieTaken){const x=o.c*TS+8,y=o.r*TS-1;ctx.fillStyle='rgba(91,63,60,.22)';ctx.beginPath();ctx.ellipse(x,y+4.6,7,1.8,0,0,TAU);ctx.fill();drawPropImg('pie',x,y+5,false,1.05+Math.sin(now*4)*.04);
         for(let i=0;i<3;i++){const ph=(now*.8+i/3)%1;R(x-3+i*3+Math.round(Math.sin(now*3+i)),y-6-ph*9,1,2,`rgba(255,255,255,${.6*(1-ph)})`)}
         if(Math.sin(now*4)>.6){R(x+7,y-8,1,3,'#fff6c8');R(x+6,y-7,3,1,'#fff6c8')}}break;
       case'B':drawBin(o.c,o.r,false);break;case'Z':drawBin(o.c,o.r,true);break;
@@ -1710,16 +1711,17 @@ function drawCar(c){
 const KTOP='#f7b3c2',KTOPL='#fbd0da',KFRONT='#fff3e2',KFRONTD='#f1ddc5';
 function drawCounter(c,r,noItem){
   const x=c*TS,y=r*TS,below=isWallK(c,r+1),above=isWallK(c,r-1),L=isWallK(c-1,r),Rt=isWallK(c+1,r);
-  if(typeof propReady!=='undefined'&&propReady&&!noItem&&!below&&L&&Rt&&tileCh(c,r)==='C'&&hsh(c,r,21)<.14){ctx.fillStyle='rgba(91,63,60,.13)';ctx.fillRect(x,y+16,16,3);drawPropFit('sink',x,y-6,16,22);return}
+  if(!noItem&&isSink(c,r)){ctx.fillStyle='rgba(91,63,60,.13)';ctx.fillRect(x,y+16,16,3);drawPropFit('sink',x,y-6,16,22);return}
   if(!below){ctx.fillStyle='rgba(91,63,60,.13)';ctx.fillRect(x+(L?0:1),y+16,16-(L?0:1)-(Rt?0:1),3)}
   ctx.fillStyle=KTOP;ctx.fillRect(x-.01,y-6,16.02,below?22:12);
   ctx.fillStyle=KTOPL;if(!above)ctx.fillRect(x+(L?0:1.5),y-5,16-(L?0:1.5)-(Rt?0:1.5),1.6);
+  if(!L)ctx.fillRect(x+1.2,y-6,1.2,below?22:12);if(above&&!L&&!Rt){ctx.fillStyle='rgba(200,110,135,.35)';ctx.fillRect(x+2,y-6.3,12,.7)}
   kStroke(.9);ctx.beginPath();if(!above){ctx.moveTo(x,y-6);ctx.lineTo(x+16,y-6)}if(!L){ctx.moveTo(x,y-6);ctx.lineTo(x,y+(below?16:6))}if(!Rt){ctx.moveTo(x+16,y-6);ctx.lineTo(x+16,y+(below?16:6))}ctx.stroke();
   if(!below){ctx.fillStyle=KFRONT;ctx.fillRect(x-.01,y+6,16.02,10);ctx.fillStyle=KFRONTD;ctx.fillRect(x,y+14.4,16,1.6);
     kStroke(.9);ctx.beginPath();ctx.moveTo(x,y+6);ctx.lineTo(x+16,y+6);ctx.moveTo(x,y+16);ctx.lineTo(x+16,y+16);if(!L){ctx.moveTo(x,y+6);ctx.lineTo(x,y+16)}if(!Rt){ctx.moveTo(x+16,y+6);ctx.lineTo(x+16,y+16)}ctx.stroke();
     ctx.strokeStyle='rgba(91,63,60,.35)';ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(x+8,y+7.5);ctx.lineTo(x+8,y+13.5);ctx.stroke();
     kRR(x+5.4,y+9.4,1.6,.9,.45,'#d9b89a',0);kRR(x+9,y+9.4,1.6,.9,.45,'#d9b89a',0)}
-  if(!noItem&&!(S.knocked&&S.knocked.has(c+','+r)))counterItem(c,r,x,y);
+  // items are drawn in a separate pass (see render) so neighbouring counters never cut them
 }
 function drawOven(c,r){
   const x=c*TS,y=r*TS,below=isWallK(c,r+1),hot=hsh(c,r,3)<.5;
@@ -1851,26 +1853,39 @@ function drawPropImg(n,x,y,flip,k=1){const d=PROP[n];if(!d||!propReady)return fa
 function drawPropFit(n,x,y,w,h){const d=PROP[n];if(!d||!propReady)return false;ctx.drawImage(PROP_IMG,d[0],d[1],d[2],d[3],x,y,w,h);return true}
 const SNK={candy:'sn_candy',cookie:'sn_cookie',choc:'sn_choc',donut:'sn_gold',fries:'sn_fries',burger:'sn_burger'};
 function drawSnackBody(sn){const y=sn.y+Math.sin(now*3+sn.x)*.8+3.5;drawPropImg(SNK[sn.type]||'sn_donut',sn.x,y,false,.72)}
+
+function drawSnack(sn){
+  const x=sn.x,y=sn.y,t=now*3+sn.x*.1,b=Math.abs(Math.sin(t))*4,sq=1+(b<.6?.12:0),gold=sn.type==='donut';
+  const gl=ctx.createRadialGradient(x,y-8,1,x,y-8,gold?24:18);gl.addColorStop(0,gold?'rgba(255,230,120,.55)':'rgba(255,240,200,.45)');gl.addColorStop(1,'rgba(255,240,200,0)');
+  ctx.fillStyle=gl;ctx.fillRect(x-22,y-28,44,44);
+  const ph=(now*.8+sn.x*.01)%1;ctx.strokeStyle=gold?`rgba(255,200,60,${.8*(1-ph)})`:`rgba(255,143,171,${.75*(1-ph)})`;ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(x,y+1,4+ph*12,(4+ph*12)*.42,0,0,TAU);ctx.stroke();
+  ctx.fillStyle='rgba(91,63,60,.2)';ctx.beginPath();ctx.ellipse(x,y+1,5.5-b*.5,1.8-b*.12,0,0,TAU);ctx.fill();
+  ctx.save();ctx.translate(x,y+1-b);ctx.scale(sq,1/sq);ctx.rotate(Math.sin(t*.7)*.08);drawPropImg(SNK[sn.type]||'sn_donut',0,0,false,gold?1.45:1.22);ctx.restore();
+  for(let k=0;k<(gold?3:2);k++){const a=now*2+k*TAU/(gold?3:2)+sn.x,rr=12;const sx=x+Math.cos(a)*rr,sy=y-9+Math.sin(a)*rr*.45;if(Math.sin(now*6+k*2)>-.2)sparkle(sx,sy,gold?1.8:1.4,gold?'#ffe066':'#fff6c8')}
+}
 // (function declarations are hoisted, so the vector versions can't be kept as fallbacks; props just wait for the atlas)
 function drawPie(cx,cy){if(!drawPropImg('pie',cx,cy+4,false,.82))drawPieToon(cx,cy)}
 function drawBin(c,r,home){if(!propReady)return;const x=c*TS+8,y=r*TS+14;
   if(home){const near=Math.hypot(player.x-x,player.y-(y-4))<52,b=near?Math.abs(Math.sin(now*6))*2:0;
     ctx.fillStyle='rgba(160,240,190,.35)';ctx.beginPath();ctx.ellipse(x,y,14+Math.sin(now*3)*1.5,5,0,0,TAU);ctx.fill();
-    kShadow(x,y,9);drawPropImg('home',x,y-b,false,.72);
+    kShadow(x,y,11);drawPropImg('home',x,y-b,false,.88);
     if(Math.sin(now*4)>0){sparkle(x-14,y-26,1.8);sparkle(x+15,y-12,1.4)}}
-  else{kShadow(x,y,7);drawPropImg('bin',x,y,hsh(c,r,5)<.5,.8)}}
-function drawHedge(c,r){if(!propReady)return;const x=c*TS+8,y=r*TS+15;kShadow(x,y-1,9);drawPropImg('bush',x,y+.5,hsh(c,r,8)<.5,.72)}
-function drawTree(c,r){if(!propReady)return;const x=c*TS+8,y=r*TS+15;kShadow(x,y,8);drawPropImg('tree',x,y,hsh(c,r,9)<.5,.6)}
-function drawFence(c,r){if(!propReady)return;drawPropFit('fence',c*TS-.3,r*TS-2,16.6,14)}
-function drawLamp(l){if(!propReady)return;ctx.fillStyle='rgba(255,236,160,.28)';ctx.beginPath();ctx.ellipse(l.x,l.y-1,15,5,0,0,TAU);ctx.fill();kShadow(l.x,l.y,4);drawPropImg('lamp',l.x,l.y+1,false,.72)}
+  else{kShadow(x,y,8);drawPropImg('bin',x,y,hsh(c,r,5)<.5,.95)}}
+function drawHedge(c,r){if(!propReady)return;const x=c*TS+8,y=r*TS+15;kShadow(x,y-1,9);drawPropImg('bush',x,y+.5,hsh(c,r,8)<.5,.84)}
+function drawTree(c,r){if(!propReady)return;const x=c*TS+8,y=r*TS+15;kShadow(x,y,10);drawPropImg('tree',x,y,hsh(c,r,9)<.5,.74)}
+function drawFence(c,r){if(!propReady)return;drawPropFit('fence',c*TS-.3,r*TS-4,16.6,16.5)}
+function drawLamp(l){if(!propReady)return;ctx.fillStyle='rgba(255,236,160,.28)';ctx.beginPath();ctx.ellipse(l.x,l.y-1,15,5,0,0,TAU);ctx.fill();kShadow(l.x,l.y,4);drawPropImg('lamp',l.x,l.y+1,false,.84)}
 function drawCar(c){if(!propReady)return;const i=Math.abs(Math.round(c.x0!==undefined?c.x0:(c.id||0)))%4;
-  if(c.skin===undefined)c.skin=Math.floor(Math.random()*4);kShadow(c.x,c.y,17);drawPropImg('car'+c.skin,c.x,c.y+1,c.dir<0,.95)}
+  if(c.skin===undefined)c.skin=Math.floor(Math.random()*4);kShadow(c.x,c.y,17);drawPropImg('car'+c.skin,c.x,c.y+1,c.dir<0,1.05)}
 const CITEM=['board','pot','bowl','cake','plates','onigiri'];
+function isSink(c,r){return typeof propReady!=='undefined'&&propReady&&tileCh(c,r)==='C'&&!isWallK(c,r+1)&&isWallK(c-1,r)&&isWallK(c+1,r)&&hsh(c,r,21)<.14}
 function counterItem(c,r,x,y){if(!propReady)return;const h=hsh(c,r,7);if(h>=.48)return;
-  drawPropImg(CITEM[Math.floor(h/.08)],x+8,y+3.5,hsh(c,r,11)<.5);
-  if(h>=.08&&h<.16&&Math.sin(now*3+c)>.3){const ph=(now*.9+c*.3)%1;ctx.strokeStyle=`rgba(255,255,255,${.7*(1-ph)})`;ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x+8,y-3-ph*7);ctx.quadraticCurveTo(x+10,y-5-ph*7,x+8.5,y-7-ph*7);ctx.stroke()}}
+  const n=CITEM[Math.floor(h/.08)],d=PROP[n],K=1.35,w=d[2]/d[6]*K,ix=x+8+(hsh(c,r,12)-.5)*2,iy=y+4;
+  ctx.fillStyle='rgba(91,63,60,.22)';ctx.beginPath();ctx.ellipse(ix,iy-.3,w*.46,1.5,0,0,TAU);ctx.fill();
+  drawPropImg(n,ix,iy,hsh(c,r,11)<.5,K);
+  if(n==='pot'&&Math.sin(now*3+c)>.3){const ph=(now*.9+c*.3)%1;ctx.strokeStyle=`rgba(255,255,255,${.75*(1-ph)})`;ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(ix,iy-9-ph*7);ctx.quadraticCurveTo(ix+2,iy-11-ph*7,ix+.5,iy-13-ph*7);ctx.stroke()}}
 function drawOven(c,r){if(!propReady)return;const x=c*TS,y=r*TS;
-  if(isWallK(c,r+1)){drawCounter(c,r,true);drawPropImg('pot',x+8,y+3.5);return}
+  if(isWallK(c,r+1)){drawCounter(c,r,true);ctx.fillStyle='rgba(91,63,60,.22)';ctx.beginPath();ctx.ellipse(x+8,y+3.7,5.5,1.5,0,0,TAU);ctx.fill();drawPropImg('pot',x+8,y+4,false,1.35);return}
   ctx.fillStyle='rgba(91,63,60,.13)';ctx.fillRect(x+1,y+16,14,3);drawPropFit('stove',x,y-6,16,22);
   if(hsh(c,r,3)<.5&&Math.sin(now*3+c*2)>.2){const ph=(now*.9+c*.3)%1;ctx.strokeStyle=`rgba(255,255,255,${.7*(1-ph)})`;ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(x+5,y-3-ph*8);ctx.quadraticCurveTo(x+7,y-5-ph*8,x+5.5,y-7-ph*8);ctx.stroke()}}
 function drawFridge(c,r){if(!propReady)return;const x=c*TS,y=r*TS;ctx.fillStyle='rgba(91,63,60,.13)';ctx.fillRect(x+1,y+16,14,3);drawPropFit('fridge',x,y-15,16,31)}
