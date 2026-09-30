@@ -72,3 +72,8 @@ curl -sSfo assets/art/style-explorations/splash-rubberhose-v3.png "https://app-u
 curl -sSfo assets/art/style-explorations/splash-rubberhose-v4.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/aa892299-8e24-42d3-b1e8-3453a216f4e6-image.png"
 curl -sSfo assets/art/logo-explorations/logo-retro-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/4dffe17d-b936-4b15-91e9-676f4d5a9cfc-image.png"
 curl -sSfo assets/art/logo-explorations/logo-retro-v2.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/7dafb856-7a49-4381-8114-c62726c34d6a-image.png"
+# Kawaii art direction
+curl -sSfo assets/art/style-explorations/kawaii-gameplay-mockup.png "https://app-uploads.krea.ai/public/087368d6-6f7f-4c4c-b357-9c27f62c280e.png"
+curl -sSfo assets/art/style-explorations/kawaii-character-sheet.png "https://app-uploads.krea.ai/public/ab00a785-e5fb-40e3-8b05-7f166df89909.png"
+curl -sSfo assets/art/style-explorations/splash-kawaii-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/93589cc0-73e1-4281-8700-11b5c1dc012f-image.png"
+curl -sSfo assets/art/logo-explorations/logo-kawaii-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/2afc3bd3-ff94-46be-b111-b599110ea876-image.png"
