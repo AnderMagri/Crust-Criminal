@@ -90,6 +90,27 @@ canvas{display:block;touch-action:none}
 .say.yell{color:var(--alert);font-family:var(--disp);font-weight:400;letter-spacing:.03em}
 @keyframes pop{from{transform:translate(-50%,-100%) scale(.6)}}
 @media (prefers-reduced-motion:reduce){.say{animation:none}#msg .go{animation:none}}
+
+#pauseBtn{pointer-events:auto;font-family:var(--disp);font-size:12px;letter-spacing:-.1em;line-height:1.1;color:var(--ink);background:#fff;border:2.5px solid var(--pink);border-radius:999px;box-shadow:0 3px 0 rgba(242,124,154,.45);padding:5px 9px 4px 8px;cursor:pointer;min-height:28px}
+#menu{position:absolute;inset:0;z-index:7;display:grid;place-items:center;background:rgba(74,71,117,.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);padding:16px}
+#menu .mcard{position:relative;width:min(100%,290px);display:flex;flex-direction:column;gap:10px;background:var(--paper);border:4px solid var(--pink);border-radius:26px;box-shadow:0 6px 0 rgba(242,124,154,.5),0 18px 40px rgba(60,40,70,.3);padding:22px 20px 18px;text-align:left;line-height:1.2;animation:pop .22s cubic-bezier(.3,1.5,.6,1)}
+#menu .fullcoon{position:absolute;right:-26px;top:-78px;width:142px;height:auto;pointer-events:none;filter:drop-shadow(0 4px 0 rgba(91,63,60,.18));transform-origin:70% 90%;animation:snooze 2.8s ease-in-out infinite}
+@keyframes snooze{50%{transform:rotate(-2deg) scale(1.02,.98)}}
+#menu .eyebrow{font-family:var(--disp);font-size:12px;letter-spacing:.1em;color:var(--mute);text-transform:uppercase}
+#menu h2{margin:0 0 2px;font-family:var(--disp);font-weight:400;font-size:34px;line-height:1;color:var(--crust);-webkit-text-stroke:1.2px var(--ink);text-shadow:0 3px 0 var(--ink)}
+#menu .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
+#menu .stats div{background:#fff;border:2px solid #f6d3dc;border-radius:14px;padding:7px 10px}
+#menu .stats span{display:block;font-size:11px;font-weight:800;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
+#menu .stats b{font-family:var(--disp);font-weight:400;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums}
+#menu .mbtn{font-family:var(--disp);font-size:18px;color:var(--ink);background:#fff;border:3px solid var(--pink);border-radius:999px;padding:9px 14px 7px;box-shadow:0 4px 0 rgba(242,124,154,.45);cursor:pointer}
+#menu .mbtn.primary{color:#fff;background:var(--pink);border-color:#fff;box-shadow:0 4px 0 var(--pinkD)}
+#menu .mbtn.ghost{background:transparent;box-shadow:none;border-color:#f6d3dc;color:var(--mute)}
+#menu .mbtn:active{transform:translateY(2px);box-shadow:none}
+#menu .mbtn:focus-visible,#menu .tog:focus-visible{outline:3px solid var(--crust);outline-offset:2px}
+#menu .toggles{display:flex;gap:8px;justify-content:center;margin-top:2px}
+#menu .tog{font-family:var(--body);font-weight:800;font-size:12px;color:var(--ink);background:#fde2e8;border:0;border-radius:999px;padding:6px 12px;cursor:pointer}
+#menu .tog.off{background:#eee;color:var(--mute)}
+@media (prefers-reduced-motion:reduce){#menu .fullcoon,#menu .mcard{animation:none}}
 </style>
 
 <div id="app">
@@ -98,16 +119,29 @@ canvas{display:block;touch-action:none}
     <div id="hud">
       <div class="pill" id="obj">Find the pie</div>
       <div class="pill" id="clock">0:00.0</div>
+      <button id="pauseBtn" type="button" aria-label="Pause menu">❚❚</button>
       <button id="music" type="button" aria-pressed="false" aria-label="Toggle music">♫</button>
       <button id="mute" type="button" aria-pressed="false" aria-label="Toggle voices">♪</button>
     </div>
-    <div id="keys" hidden><span><b>WASD</b>/<b>←↑→↓</b> move</span><span><b>Space</b> jump</span><span><b>N</b> music</span><span><b>M</b> voices</span><span><b>R</b> restart</span></div>
+    <div id="keys" hidden><span><b>WASD</b>/<b>←↑→↓</b> move</span><span><b>Space</b> jump</span><span><b>N</b> music</span><span><b>M</b> voices</span><span><b>Esc</b> menu</span><span><b>R</b> restart</span></div>
     <div id="energy" hidden><div class="ico"></div><div class="col"><div class="lbl" id="elbl">ENERGY <i>\u00b7 eat snacks!</i></div><div class="track"><div class="fill" id="efill"></div></div></div></div>
     <div id="toast" hidden></div>
     <div id="title">
       <div class="logo"><img id="logoImg" src="assets/art/logo.webp" alt="Crust Criminal" onerror="this.hidden=true;document.getElementById('logoText').hidden=false"><h1 id="logoText" hidden>Crust<span>Criminal</span></h1></div>
       <canvas id="titleArt" width="40" height="44" aria-hidden="true"></canvas>
       <div class="bottom"><div class="start">Tap to start</div><div class="small">Phone: drag to move, tap to jump · Keyboard: WASD/arrows to move, Space to jump</div></div>
+    </div>
+    <div id="menu" hidden role="dialog" aria-modal="true" aria-labelledby="menuTitle">
+      <div class="mcard">
+        <img class="fullcoon" src="assets/art/full-raccoon.webp" alt="" aria-hidden="true">
+        <div class="eyebrow">Heist on hold</div>
+        <h2 id="menuTitle">Paused</h2>
+        <div class="stats"><div><span>This run</span><b id="mNow">0:00.0</b></div><div><span>Best heist</span><b id="mBest">—</b></div></div>
+        <button class="mbtn primary" id="mResume" type="button">Resume</button>
+        <button class="mbtn" id="mRestart" type="button">Restart heist</button>
+        <button class="mbtn ghost" id="mQuit" type="button">Quit to title</button>
+        <div class="toggles"><button class="tog" id="mMusic" type="button">Music: on</button><button class="tog" id="mVoices" type="button">Voices: on</button></div>
+      </div>
     </div>
     <div id="msg" hidden>
       <div class="card">
@@ -305,12 +339,12 @@ const CAR_VOICE={base:140,wave:'sawtooth',rate:.07,vol:.2};
 const SOUS_VOICE={base:110,wave:'square',rate:.06,vol:.22};const COP_VOICE={base:150,wave:'square',rate:.065,vol:.2};const K9_VOICE={base:220,wave:'sawtooth',rate:.09,vol:.2};
 const LINES={
   cook:{
-    idle:['Needs more butter.','Who ate my croissant?','Nobody touch the pie!','Is the oven on?','Yes, chef!','Mmm... cinnamon.','Smells like trash panda in here.','I left the fridge open again.','Where is my whisk?','Why is this kitchen a maze?','Pie cools in ten minutes!','My feet hurt.'],
-    spot:['HEY!','RACCOON!','Get OUT of my kitchen!','Trash bandit!','Not the pie!!','Grab that furball!','Shoo! SHOO!','Who let you in?!'],
-    hear:['Huh?','What was that?','Chef needs backup!','Coming!'],
-    lost:['Where’d he go?','Tiny sneaky thief...','Come out, little bandit...','He went that way! I think.'],
+    idle:['Who’s been nibbling my croutons?','My soufflé! He’s near my soufflé!','Needs more butter.','Who ate my croissant?','Nobody touch the pie!','Is the oven on?','Yes, chef!','Mmm... cinnamon.','Smells like trash panda in here.','I left the fridge open again.','Where is my whisk?','Why is this kitchen a maze?','Pie cools in ten minutes!','My feet hurt.'],
+    spot:['Get back here, you furry bandit!','Is that a raccoon in a mask? Of course it is.','HEY!','RACCOON!','Get OUT of my kitchen!','Trash bandit!','Not the pie!!','Grab that furball!','Shoo! SHOO!','Who let you in?!'],
+    hear:['Huh?','What was that?','Chef needs backup!','Coming!','Somebody get a broom!'],
+    lost:['I can smell you, trash panda!','He can’t have gone far... he’s too round!','Where’d he go?','Tiny sneaky thief...','Come out, little bandit...','He went that way! I think.'],
     giveup:['Must have been the cat.','Eh. Back to work.','I swear it had a mask.','Nobody tell the head chef.'],
-    pie:['THE PIE!!','NOOO, MY PIE!','STOP, THIEF!','That took me three hours!'],
+    pie:['THE PIE!!','NOOO, MY PIE!','STOP, THIEF!','That took me three hours!','That pie was for the food critic!'],
     caught:['Gotcha, bandit!','Back in the bin!','Nice try, stripes.','No pie for you!']},
   street:{
     idle:['Has anyone seen a raccoon?','Pie... my beautiful pie...','I’m not paid enough for this.'],
@@ -325,12 +359,12 @@ const LINES={
     giveup:['SQUIRREL!','*lies down*','Nap time.'],pie:['Is that... PIE?!'],caught:['GOT IT!','*proud wag*']},
   sous:{
     idle:['Clean as you go!','Where is my mise en place?','Who plated this?!','Faster, people!','I want that kitchen spotless.'],
-    spot:['ALL HANDS! RACCOON!','CODE STRIPES! EVERYONE!','Chefs! Kitchen breach!'],
-    hear:['Report!'],lost:['Fan out! Check the walk-in!','He’s hiding. FIND HIM.'],
-    giveup:['Unbelievable.','Back to your stations!'],pie:['THAT PIE IS FOR TABLE SIX!'],caught:['Sous chef: 1. Raccoon: 0.']},
+    spot:['ALL HANDS! RACCOON!','Code crust! I repeat, CODE CRUST!','Chefs! Kitchen breach!'],
+    hear:['Report!','Block the exits!'],lost:['Fan out! Check the walk-in!','Who taught a raccoon parkour?!','He’s hiding. FIND HIM.'],
+    giveup:['Unbelievable.','Back to your stations!'],pie:['THAT PIE IS FOR TABLE SIX!','Nobody leaves until that pie is back!'],caught:['Sous chef: 1. Raccoon: 0.']},
   cop:{
-    idle:['Quiet night.','Donut break soon?','Nothing ever happens on this street.','10-4.'],
-    spot:['FREEZE, RACCOON!','Drop the pie!','Suspect is wearing a mask!','We got a 10-pie in progress!'],
+    idle:['Quiet night... too quiet.','Donut break soon?','Nothing ever happens on this street.','10-4.'],
+    spot:['FREEZE!! Trash panda!','Suspect is FLUFFY... and armed with DESSERT!','Jaywalking?! AND pie theft?!','Dispatch! We have a ten-PIE in progress!','Drop the pie!'],
     hear:['What was that?','Dispatch, hold on...'],lost:['Suspect fled on foot. Four feet.','Where’d he go?'],
     giveup:['Lost him.','Back to patrol.'],pie:['Drop the pie!'],caught:['You have the right to remain fluffy.','Book him!']},
   k9:{
@@ -338,8 +372,8 @@ const LINES={
     hear:['*sniff*?'],lost:['*sniff sniff sniff*'],giveup:['*whine*'],pie:['*drools*'],caught:['*proud police dog noises*']},
   car:['Watch it, fuzzball!','Road hog!','HONK HONK!','Get outta the road!','Is that a raccoon with a pie?!']
 };
-const COON={start:['Pie time!','Sneaky sneaky...','Operation: Crust.','Ta-daaa! Let the adventure begin!'],
-  idle:['Shhh... I am a ninja. A very round ninja.','\u266A Pie, pie, beautiful pie... \u266A','Dun dun dun... dun-dun...'],
+const COON={start:['Pie time!','Sniff sniff... is that... CHERRY?!','Operation: Crust.','Ta-daaa! Let the adventure begin!'],
+  idle:['Shhh... I am a ninja. A very round ninja.','I am one with the shadows... and the crumbs.','\u266A Pie, pie, beautiful pie... \u266A','Dun dun dun... dun-dun...'],
   tired:['Huff... should\u2019ve skipped... second breakfast...'],
   jump:['Hup!','Wheee!','Parkour!'],
   cookie:['Ooh, a cookie! Don\u2019t mind if I do!'],choc:['Chocolate... sweet, sweet chocolate...'],candy:['Candy! Crunchity-crunch!'],
@@ -347,9 +381,10 @@ const COON={start:['Pie time!','Sneaky sneaky...','Operation: Crust.','Ta-daaa! 
   nom:['Nom nom nom... mmm!'],rush:['SUGAR RUSH! Wheeeee!'],
   hungry:['Uh oh... tummy\u2019s rumbling...','I\u2019m starving! I haven\u2019t eaten in... four whole minutes!'],
   empty:['I... can\u2019t... go on... without... a snack...','My legs are made of jelly!','Everything is going dark... is that the light? ...No, it\u2019s the fridge.'],landing:['And he sticks the landing!'],window:['Uh oh. No way back.','Who closed that?!','Well... forward it is.'],
-  spotted:['Uh-oh!','Not good...','Run, run, run!','Nothing to see here... just a regular cat. Meow?'],pie:['Ha-HA! Got it! Heh-heh-heh!','Mine! Mine! Mine!','I say! A jolly good pie, what?'],
-  door:['Fresh air!','Street time.','Home is close...'],busted:['Eep!','I was just looking!','Tell my family... I loved... trash.'],
-  bonk:['Oof!','Ow ow ow.'],oops:['Oopsie!','That wasn\u2019t me!','Shhh!'],win:['Home sweet trash! Heh-heh!','Pieeeeeee!','Easy as pie.']};
+  spotted:['Uh-oh!','Cardio! My old enemy!','Run, run, run!','Nothing to see here... just a regular cat. Meow?','Wheee! Can’t catch me, I’m the pie guy!'],pie:['Ha-HA! Got it! Heh-heh-heh!','Who leaves a pie unattended? Amateurs.','I say! A jolly good pie, what?'],
+  door:['Look both ways... then run like a maniac!','Street time.','Home is close...'],
+  honk:['Yeah yeah, honk at me one more time, buddy!','Beep beep! Raccoon coming through!'],dog:['Easy, puppy! I have treats! ...No I don’t.'],cops:['The cops! Act natural... act natural...'],busted:['Eep!','I was just looking!','Tell my family... I loved... trash.'],
+  bonk:['Oof!','Ow ow ow.'],oops:['Oopsie!','Nobody saw that. Nobody.','Shhh!'],win:['Home sweet trash! Heh-heh!','Pieeeeeee!','Five-star heist. Would steal again.']};
 
 let ac=null,voiceOn=true,musicOn=true,master,musBus,sfxBus,vocBus,noiseBuf;
 try{voiceOn=localStorage.getItem('pieheist-voices')!=='off';musicOn=localStorage.getItem('pieheist-music')!=='off'}catch(e){}
@@ -407,6 +442,38 @@ const SFX={
   fart(){if(!ac)return;if(clipBuf['raccoon-fart'])return;const t=ac.currentTime;tone(95,.45,{type:'sawtooth',slide:60,vol:.14,lp:420,q:8});for(let k=0;k<6;k++)tone(80+Math.random()*40,.07,{type:'square',vol:.05,lp:300,when:t+k*.06});noise(.4,{lp:500,vol:.08})},
   nom(){for(let k=0;k<3;k++){noise(.06,{lp:900,vol:.14,when:ac&&ac.currentTime+k*.12});tone(180-k*20,.05,{type:'triangle',vol:.06,when:ac&&ac.currentTime+k*.12})}tone(1320,.15,{type:'triangle',vol:.04,when:ac&&ac.currentTime+.4})}
 };
+
+// ---------- recorded sound effects (assets/sfx); synth versions stay as fallbacks ----------
+const SFXF=['horn-beep','horn-awooga','traffic-loop','car-pass','skid','crash','munch','whistle','yap','slam','door','lid','dog-woof','k9-bark','dog-growl','dog-sniff','dog-whine'];
+const sfxBuf={};
+function loadSfx(){for(const n of SFXF)fetch('assets/sfx/'+n+'.mp3').then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(b=>ac.decodeAudioData(b)).then(buf=>{sfxBuf[n]=buf}).catch(()=>{})}
+function clip(n,vol=1,rate=1){if(!ac||!sfxBuf[n])return false;try{const s=ac.createBufferSource(),g=ac.createGain();s.buffer=sfxBuf[n];s.playbackRate.value=rate*(.95+Math.random()*.1);g.gain.value=vol;s.connect(g).connect(sfxBus);s.start();return true}catch(e){return false}}
+(function(){const o=Object.assign({},SFX);
+  SFX.honk=()=>{clip(Math.random()<.25?'horn-awooga':'horn-beep',.75)||o.honk()};
+  SFX.crash=()=>{clip('crash',.9)||o.crash()};
+  SFX.nom=()=>{clip('munch',1)||o.nom()};
+  SFX.whistle=()=>{clip('whistle',.7)||o.whistle()};
+  SFX.siren=()=>{clip('whistle',.6);o.siren()};
+  SFX.slam=()=>{clip('slam',1)||o.slam()};
+  SFX.door=()=>{clip('door',.8);o.door()};
+  SFX.win=()=>{clip('lid',.9);o.win()};
+  SFX.bark=e=>{(e&&e.style==='k9'?clip('k9-bark',.9):clip(Math.random()<.5?'yap':'dog-woof',.8))||o.bark()};
+  SFX.skid=()=>clip('skid',.7);
+})();
+// dogs "speak" with real dog sounds instead of babble
+function dogClip(text,who){const k9=who.style==='k9';
+  if(/sniff/i.test(text))return clip('dog-sniff',.8);
+  if(/whine|lies down|Nap/i.test(text))return clip('dog-whine',.7);
+  if(/Grr|SNARL/i.test(text)&&!/WOOF/i.test(text))return clip('dog-growl',.8);
+  if(/WOOF|BARK|Woof|RAAACOON|GOT IT|drools|police dog/i.test(text))return clip(k9?'k9-bark':(Math.random()<.5?'yap':'dog-woof'),.8);
+  return false}
+// street ambience: soft traffic bed while you're outside
+let trafficSrc=null,trafficGain=null;
+function updateAmbience(){if(!ac||!sfxBuf['traffic-loop'])return;
+  const want=S&&S.kind==='street'&&(state==='play'||state==='caught'||state==='win');
+  if(want&&!trafficSrc){try{trafficSrc=ac.createBufferSource();trafficSrc.buffer=sfxBuf['traffic-loop'];trafficSrc.loop=true;trafficGain=ac.createGain();trafficGain.gain.value=0;
+    trafficGain.gain.setTargetAtTime(.55,ac.currentTime,.6);trafficSrc.connect(trafficGain).connect(sfxBus);trafficSrc.start()}catch(e){trafficSrc=null}}
+  else if(!want&&trafficSrc){const s=trafficSrc;trafficGain.gain.setTargetAtTime(0,ac.currentTime,.3);setTimeout(()=>{try{s.stop()}catch(_){}},1500);trafficSrc=null}}
 
 // ---------- music: three composed themes that switch with the action ----------
 // sneak (kitchen, title): tip-toe caper in C with a chromatic B section
@@ -503,13 +570,21 @@ const COON_VO={'Pie time!':'pietime','Ta-daaa! Let the adventure begin!':'tada',
   'A golden donut?! I can see colors!':'donut','Fries from the garbage? Five stars.':'fries','Half a burger?! Today is my lucky day!':'burger',
   'Nom nom nom... mmm!':'nom','Heh-heh-heh... excuse me!':'fart','SUGAR RUSH! Wheeeee!':'sugarrush','Uh oh... tummy\u2019s rumbling...':'rumble',
   'I\u2019m starving! I haven\u2019t eaten in... four whole minutes!':'starving','I... can\u2019t... go on... without... a snack...':'cantgoon',
-  'My legs are made of jelly!':'jelly','Everything is going dark... is that the light? ...No, it\u2019s the fridge.':'fridge','♪ Pie, pie, beautiful pie... ♪':'song','Dun dun dun... dun-dun...':'hum','Huff... should’ve skipped... second breakfast...':'tired'};
+  'My legs are made of jelly!':'jelly','Sniff sniff... is that... CHERRY?!':'cherry','I am one with the shadows... and the crumbs.':'shadows','Cardio! My old enemy!':'cardio',
+  'Wheee! Can’t catch me, I’m the pie guy!':'pieguy','Who leaves a pie unattended? Amateurs.':'amateurs','Look both ways... then run like a maniac!':'lookboth',
+  'Yeah yeah, honk at me one more time, buddy!':'honkback','Beep beep! Raccoon coming through!':'beepbeep','Easy, puppy! I have treats! ...No I don’t.':'puppy',
+  'The cops! Act natural... act natural...':'actnatural','Nobody saw that. Nobody.':'nobodysaw','Five-star heist. Would steal again.':'fivestar','Everything is going dark... is that the light? ...No, it\u2019s the fridge.':'fridge','♪ Pie, pie, beautiful pie... ♪':'song','Dun dun dun... dun-dun...':'hum','Huff... should’ve skipped... second breakfast...':'tired'};
 const ENEMY_VO={
   cookA:{'HEY!':'cook-a-hey','Get OUT of my kitchen!':'cook-a-getout','THE PIE!!':'cook-a-thepie','Where’d he go?':'cook-a-where',
-         'Must have been the cat.':'cook-a-cat','Gotcha, bandit!':'cook-a-gotcha','Who ate my croissant?':'cook-a-croissant'},
+         'Must have been the cat.':'cook-a-cat','Gotcha, bandit!':'cook-a-gotcha','Who ate my croissant?':'cook-a-croissant',
+         'Get back here, you furry bandit!':'cook-a-bandit','Who’s been nibbling my croutons?':'cook-a-croutons','I can smell you, trash panda!':'cook-a-smell','Somebody get a broom!':'cook-a-broom'},
   cookB:{'RACCOON!':'cook-b-raccoon','Not the pie!!':'cook-b-notpie','That took me three hours!':'cook-b-3hours','What was that?':'cook-b-what',
-         'Nobody touch the pie!':'cook-b-notouch','Back in the bin!':'cook-b-bin'},
-  sous:{'ALL HANDS! RACCOON!':'sous-allhands','THAT PIE IS FOR TABLE SIX!':'sous-table6','Fan out! Check the walk-in!':'sous-fanout','Faster, people!':'sous-faster'}};
+         'Nobody touch the pie!':'cook-b-notouch','Back in the bin!':'cook-b-bin',
+         'Is that a raccoon in a mask? Of course it is.':'cook-b-mask','That pie was for the food critic!':'cook-b-critic','My soufflé! He’s near my soufflé!':'cook-b-souffle','He can’t have gone far... he’s too round!':'cook-b-round'},
+  sous:{'ALL HANDS! RACCOON!':'sous-allhands','THAT PIE IS FOR TABLE SIX!':'sous-table6','Fan out! Check the walk-in!':'sous-fanout','Faster, people!':'sous-faster',
+        'Code crust! I repeat, CODE CRUST!':'sous-codecrust','Block the exits!':'sous-exits','Nobody leaves until that pie is back!':'sous-nobody','Who taught a raccoon parkour?!':'sous-parkour'},
+  cop:{'FREEZE!! Trash panda!':'cop-freeze','Suspect is FLUFFY... and armed with DESSERT!':'cop-fluffy','Jaywalking?! AND pie theft?!':'cop-jaywalk','You have the right to remain fluffy.':'cop-rights',
+       'Quiet night... too quiet.':'cop-quiet','Dispatch! We have a ten-PIE in progress!':'cop-dispatch'}};
 const clipBuf={},clipGain={};let clipsLoading=false;
 function loadClips(){if(clipsLoading||!ac)return;clipsLoading=true;
   const files=[...new Set(Object.values(COON_VO))].map(n=>'raccoon-'+n);for(const k in ENEMY_VO)files.push(...Object.values(ENEMY_VO[k]));
@@ -518,7 +593,7 @@ function loadClips(){if(clipsLoading||!ac)return;clipsLoading=true;
     const d=buf.getChannelData(0);let sum=0,n=0;for(let i=0;i<d.length;i+=4){if(Math.abs(d[i])>.02){sum+=d[i]*d[i];n++}}
     clipGain[name]=1;   // files are loudness-matched offline (tools: ffmpeg); no per-clip guessing
     clipBuf[name]=buf}).catch(()=>{});
-  loadTheme()}
+  loadSfx();loadTheme()}
 const clipName=(who,text)=>who===player?(COON_VO[text]&&'raccoon-'+COON_VO[text]):(who&&who.vo&&ENEMY_VO[who.vo][text]);
 const clipFor=(text,who=player)=>{const n=clipName(who,text);return n&&clipBuf[n]?n:null};
 function pickE(e,arr){if(!e.vo)return pick(arr);const rec=arr.filter(t=>clipFor(t,e));return rec.length&&Math.random()<.75?pick(rec):pick(arr)}
@@ -542,6 +617,7 @@ function say(who,text,force){
   const prio=force?2:(who===player?1:(/!/.test(text)?1:0)),clip=voiceOn&&ac?clipFor(text,who):null;
   if(voiceFree(prio)){
     if(clip)playClip(clip,prio);
+    else if(who.kind==='dog'&&dogClip(text,who)){}
     else{if(voiceSrc&&ac&&ac.currentTime<voiceEnd){try{voiceSrc.stop()}catch(_){}}
       babble(text,who.voice);if(ac){voiceEnd=ac.currentTime+Math.min(1.2,.08*text.length);voicePrio=prio;voiceSrc=null}}
   }
@@ -571,7 +647,7 @@ function makeEnemy(sp,i){
   if(sp.kind==='cook'&&S.kind==='kitchen')e.vo=i%2?'cookB':'cookA';
   if(sp.kind==='cook'){const f=.8+Math.random()*.22;e.sp={patrol:30*f,search:46*f,chase:62*f};e.fat=f<.9}   // every chef has his own pace
   if(sp.style==='sous')Object.assign(e,{vo:'sous',style:'sous',voice:SOUS_VOICE,sp:{patrol:36,search:58,chase:69},view:92,lostMax:3,lines:LINES.sous,fat:false,skin:'#e7b08c',hair:'#2b2d38',stache:true});
-  if(sp.style==='cop')Object.assign(e,{style:'cop',voice:COP_VOICE,sp:{patrol:34,search:60,chase:71},view:92,half:.62,lostMax:2.6,lines:LINES.cop,fat:Math.random()<.4,skin:pick(['#e7b08c','#c07e5c','#8a5440'])});
+  if(sp.style==='cop')Object.assign(e,{style:'cop',vo:'cop',voice:COP_VOICE,sp:{patrol:34,search:60,chase:71},view:92,half:.62,lostMax:2.6,lines:LINES.cop,fat:Math.random()<.4,skin:pick(['#e7b08c','#c07e5c','#8a5440'])});
   if(sp.style==='k9')Object.assign(e,{style:'k9',voice:K9_VOICE,coat:'#2b2d38',sp:{patrol:40,search:74,chase:98},view:76,half:.6,lostMax:1.3,lines:LINES.k9});
   return e;
 }
@@ -601,6 +677,8 @@ const keys={},MOVE_KEYS=['w','a','s','d','arrowup','arrowdown','arrowleft','arro
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();
   if(e.repeat&&(k===' '||k==='enter')){e.preventDefault();return}
   if(MOVE_KEYS.includes(k)||k===' ')e.preventDefault();
+  if(k==='escape'||k==='p'){e.preventDefault();if(state==='paused')resumeGame();else pauseGame();return}
+  if(state==='paused')return;
   keys[k]=true;
   if(k===' '&&state==='play')tryJump();
   else if(k===' '||k==='enter')onAction();
@@ -617,7 +695,7 @@ const stage=$('stage');
 const grabFocus=()=>{try{window.focus();stage.focus({preventScroll:true})}catch(_){}};
 stage.addEventListener('pointerdown',e=>{
   grabFocus();
-  if(e.target.closest('#mute')||e.target.closest('#music')||e.target.closest('#title'))return;
+  if(e.target.closest('#mute')||e.target.closest('#music')||e.target.closest('#title')||e.target.closest('#menu')||e.target.closest('#pauseBtn'))return;
   e.preventDefault();
   if(state!=='play'){onAction();return}
   if(joy&&joy.id!==e.pointerId){tryJump();return}   // second finger while steering = jump
@@ -631,6 +709,23 @@ stage.addEventListener('pointerup',endJoy);stage.addEventListener('pointercancel
 $('mute').addEventListener('click',e=>{e.stopPropagation();audio();setVoice(!voiceOn)});
 $('music').addEventListener('click',e=>{e.stopPropagation();audio();setMusic(!musicOn)});
 $('title').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();grabFocus();onAction()});
+
+// ---------- pause menu ----------
+let prevState='play';
+function pauseGame(){if(state!=='play'&&state!=='transition')return;prevState=state;state='paused';joy=null;for(const k in keys)keys[k]=false;
+  $('mNow').textContent=fmt(time);$('mBest').textContent=best?fmt(best):'—';syncMenuToggles();$('menu').hidden=false;
+  try{ac&&ac.suspend()}catch(_){}setTimeout(()=>$('mResume').focus(),30)}
+function closeMenu(){$('menu').hidden=true;try{ac&&ac.resume()}catch(_){}grabFocus()}
+function resumeGame(){if(state!=='paused')return;closeMenu();state=prevState}
+function syncMenuToggles(){$('mMusic').textContent='Music: '+(musicOn?'on':'off');$('mMusic').classList.toggle('off',!musicOn);$('mVoices').textContent='Voices: '+(voiceOn?'on':'off');$('mVoices').classList.toggle('off',!voiceOn)}
+$('pauseBtn').addEventListener('click',e=>{e.stopPropagation();audio();state==='paused'?resumeGame():pauseGame()});
+$('mResume').addEventListener('click',resumeGame);
+$('mRestart').addEventListener('click',()=>{closeMenu();clearBubbles();newRun();state='play';hideMsg();sayStart()});
+$('mQuit').addEventListener('click',()=>{closeMenu();clearBubbles();newRun();state='title';hideMsg();$('title').hidden=false});
+$('mMusic').addEventListener('click',()=>{setMusic(!musicOn);syncMenuToggles()});
+$('mVoices').addEventListener('click',()=>{setVoice(!voiceOn);syncMenuToggles()});
+$('menu').addEventListener('pointerdown',e=>e.stopPropagation());
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='play')pauseGame()});
 
 // ---------- jumping: vault one tile of counter / fence / hedge / bin ----------
 const JUMPABLE={kitchen:'C',street:'NHB'};
@@ -709,9 +804,10 @@ function follow(e,spd,dt){
   return false;
 }
 function toAlert(e,t=.45){e.state='alert';e.t=t;e.path=[];
-  if(e.kind==='dog')SFX.bark();else SFX.alert();if(e.style==='k9')toast('Police dog! RUN!');
+  if(e.kind==='dog')SFX.bark(e);else SFX.alert();if(e.style==='k9')toast('Police dog! RUN!');
   say(e,pick(pieTaken&&S.kind==='kitchen'?e.lines.pie:e.lines.spot),t>.3);
-  if(Math.random()<.5)setTimeout(()=>{if(state==='play')say(player,pickCoon('spotted'))},350)}
+  const react=e.kind==='dog'&&Math.random()<.6?'dog':e.style==='cop'&&Math.random()<.6?'cops':'spotted';
+  if(Math.random()<.55)setTimeout(()=>{if(state==='play')say(player,pickCoon(react))},react==='spotted'?350:900)}
 function toSearch(e,pt,talk){e.state='search';e.path=bfsTo(e,pt);if(talk)say(e,pickE(e,talk))}
 function newPatrol(e){
   const pool=e.region?S.walk.filter(t=>t.r>=e.region.r0&&t.r<=e.region.r1):S.walk;
@@ -839,7 +935,11 @@ function updateStreet(dt){
     const inLane=player.y>c.y-26&&player.y<c.y+6;
     if(inLane&&Math.abs(player.x-c.x)<16&&player.y>c.y-20&&player.y<c.y+4){caught(c,true);return}
     const ahead=(player.x-c.x)*c.dir;
-    if(inLane&&ahead>10&&ahead<70&&c.hcd<=0){c.hcd=2.5;SFX.honk();if(Math.random()<.5)say(c,pick(LINES.car))}
+    if(inLane&&ahead>10&&ahead<70&&c.hcd<=0){c.hcd=2.5;SFX.honk();if(ahead<34)SFX.skid();if(Math.random()<.5)say(c,pick(LINES.car));
+      if(Math.random()<.35)setTimeout(()=>{if(state==='play')say(player,pickCoon('honk'))},900)}
+    // whoosh when a car passes close by
+    c.pcd=(c.pcd||0)-dt;const dx=Math.abs(player.x-c.x),dy=Math.abs(player.y-(c.y-8));
+    if(dx<26&&dy<44&&c.pcd<=0){c.pcd=3;clip('car-pass',Math.max(.25,.8-dy/60))}
   }
   if(S.burstT>0){S.burstT-=dt;if(S.burstT<=0){
     const sx=S.doorCol*TS+8,sy=2*TS+10;
@@ -2039,7 +2139,7 @@ function frame(ts){
   }else if(state==='title'){updateEnemies(dt,false);chatter(dt)}
   else if(state==='caught'&&S.kind==='street')for(const c of cars){c.x+=c.dir*c.sp*dt*.3}
   intensity=state==='title'||(state==='play'&&enemies.some(e=>e.state==='chase'||e.state==='alert'))?1:0;
-  updateCam(dt,false);
+  updateCam(dt,false);updateAmbience();
   for(const w of [player,...enemies,...cars]){w.cd=(w.cd||0)-dt;if(!w.bub)continue;w.bub.t+=dt;if(w.bub.t>w.bub.life){w.bub.el.remove();w.bub=null}else placeBubble(w)}
   for(const p of parts)p.t+=dt;parts=parts.filter(p=>p.t<p.life);
   if(shake>0)shake-=dt;

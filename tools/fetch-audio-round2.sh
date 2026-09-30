@@ -1,0 +1,59 @@
+#!/bin/zsh
+# Round 2 audio: street SFX, new chef/sous/cop lines, new raccoon lines (Krea: Seed Audio + ElevenLabs)
+cd "$(dirname "$0")/.." && mkdir -p assets/_raw/sfx assets/_raw/voices && cd assets/_raw
+curl -sSfo sfx/horn-beep.mp3 https://app-uploads.krea.ai/audio/8b915a43-d1a1-4303-a041-f4ec7e9267fe.mp3
+curl -sSfo sfx/horn-awooga.mp3 https://app-uploads.krea.ai/audio/53434cb6-a60b-42de-8a34-3caf05ce15ff.mp3
+curl -sSfo sfx/traffic-loop.mp3 https://app-uploads.krea.ai/audio/c829384e-9b60-4e72-8de9-5e3c0faf3c75.mp3
+curl -sSfo sfx/car-pass.mp3 https://app-uploads.krea.ai/audio/6207e017-c710-4518-813e-9ddf6b3f8dad.mp3
+curl -sSfo sfx/skid.mp3 https://app-uploads.krea.ai/audio/6038c6cf-6ee6-490a-849d-1364905dc0e8.mp3
+curl -sSfo sfx/crash.mp3 https://app-uploads.krea.ai/audio/d45ba83b-ca64-4cf4-afdf-147407fa5977.mp3
+curl -sSfo sfx/munch.mp3 https://app-uploads.krea.ai/audio/5a622385-d788-4223-8eb1-830cde2729ea.mp3
+curl -sSfo sfx/whistle.mp3 https://app-uploads.krea.ai/audio/b404b680-1349-4a11-bbfb-e134aa26efae.mp3
+curl -sSfo sfx/yap.mp3 https://app-uploads.krea.ai/audio/8341f5fb-ca10-4d2a-b05f-01fb460ebaa6.mp3
+curl -sSfo sfx/slam.mp3 https://app-uploads.krea.ai/audio/a060bfcf-1072-4db7-9489-fdd678377f41.mp3
+curl -sSfo sfx/door.mp3 https://app-uploads.krea.ai/audio/6faffdb9-5578-446e-befe-2434f1491c16.mp3
+curl -sSfo sfx/lid.mp3 https://app-uploads.krea.ai/audio/6de4c181-a81c-4466-bf41-dfe55b78ccb0.mp3
+curl -sSfo voices/cook-a-bandit.mp3 https://app-uploads.krea.ai/audio/424ba400-401d-488c-988f-82ebf8894972.mp3
+curl -sSfo voices/cook-a-croutons.mp3 https://app-uploads.krea.ai/audio/2ab24760-d7fe-4799-9827-4d723d862ad8.mp3
+curl -sSfo voices/cook-a-smell.mp3 https://app-uploads.krea.ai/audio/8f93a235-ef25-413e-9ea7-e1f8b58f8a83.mp3
+curl -sSfo voices/cook-a-broom.mp3 https://app-uploads.krea.ai/audio/97a49b62-e4b5-4016-b978-f9291999e0de.mp3
+curl -sSfo voices/cook-b-mask.mp3 https://app-uploads.krea.ai/audio/baeff84b-0b79-4e5e-b3d2-fd9ba18a262f.mp3
+curl -sSfo voices/cook-b-critic.mp3 https://app-uploads.krea.ai/audio/80160bdd-f744-4041-9c6a-dad0170991f8.mp3
+curl -sSfo voices/cook-b-souffle.mp3 https://app-uploads.krea.ai/audio/a19c1f7e-7cda-4e1f-87a4-79d5e30b99cf.mp3
+curl -sSfo voices/cook-b-round.mp3 https://app-uploads.krea.ai/audio/2c4549ae-226c-4038-b059-356ea782cf13.mp3
+curl -sSfo voices/sous-codecrust.mp3 https://app-uploads.krea.ai/audio/257ea9f7-f4c8-4b48-b06b-4ad5fb07d169.mp3
+curl -sSfo voices/sous-exits.mp3 https://app-uploads.krea.ai/audio/6128dad0-5050-45ac-8754-658bb1639ba0.mp3
+curl -sSfo voices/sous-nobody.mp3 https://app-uploads.krea.ai/audio/5b4fd171-cb12-4f31-8575-c484023a7fd7.mp3
+curl -sSfo voices/sous-parkour.mp3 https://app-uploads.krea.ai/audio/e7956c4e-299b-4429-96ed-2d10529e9771.mp3
+curl -sSfo voices/cop-freeze.mp3 https://app-uploads.krea.ai/audio/c9724163-c56a-459d-ab02-62c1ed018c7a.mp3
+curl -sSfo voices/cop-fluffy.mp3 https://app-uploads.krea.ai/audio/04ddd5e8-fd6b-41fb-9415-5c418c781f8d.mp3
+curl -sSfo voices/cop-jaywalk.mp3 https://app-uploads.krea.ai/audio/cf968701-bc8b-4adc-bed8-3d63a9da8ab0.mp3
+curl -sSfo voices/cop-rights.mp3 https://app-uploads.krea.ai/audio/580e4f72-5058-4965-b1a5-01e6aad1ea1b.mp3
+curl -sSfo voices/cop-quiet.mp3 https://app-uploads.krea.ai/audio/3406af8e-7254-4628-8fed-c001543c2896.mp3
+curl -sSfo voices/cop-dispatch.mp3 https://app-uploads.krea.ai/audio/20f0cd7f-ef9d-4faa-a2ba-419b2bd4c371.mp3
+curl -sSfo voices/raccoon-beepbeep.mp3 https://app-uploads.krea.ai/audio/312c4132-e019-44ed-a883-a5daef9fb51f.mp3
+curl -sSfo voices/raccoon-honkback.mp3 https://app-uploads.krea.ai/audio/d46efcbe-0b22-423e-b28c-34b45dbc47a3.mp3
+curl -sSfo voices/raccoon-lookboth.mp3 https://app-uploads.krea.ai/audio/5df42327-7762-4354-8207-9ec142231f75.mp3
+curl -sSfo voices/raccoon-cherry.mp3 https://app-uploads.krea.ai/audio/5ba94a91-1e6d-41ff-80ae-45cb7ee08656.mp3
+curl -sSfo voices/raccoon-amateurs.mp3 https://app-uploads.krea.ai/audio/f2f95ab8-3b92-4616-9951-be58216d72b1.mp3
+curl -sSfo voices/raccoon-cardio.mp3 https://app-uploads.krea.ai/audio/83544c47-dbf8-4d08-b37f-88fd9dbc7dfa.mp3
+curl -sSfo voices/raccoon-nobodysaw.mp3 https://app-uploads.krea.ai/audio/920cdf0f-8144-445e-a7d7-b30bba12ddaa.mp3
+curl -sSfo voices/raccoon-puppy.mp3 https://app-uploads.krea.ai/audio/a9a32409-ba9a-4078-88c3-00abf313637e.mp3
+curl -sSfo voices/raccoon-actnatural.mp3 https://app-uploads.krea.ai/audio/90b52c62-9774-4df4-acb0-bf7b70d4a066.mp3
+curl -sSfo voices/raccoon-fivestar.mp3 https://app-uploads.krea.ai/audio/171464c0-39e8-4ef0-825c-7459d2a6ff77.mp3
+curl -sSfo voices/raccoon-shadows.mp3 https://app-uploads.krea.ai/audio/298d30bf-bc46-4394-8c6c-95c2e75d78cb.mp3
+curl -sSfo voices/raccoon-pieguy.mp3 https://app-uploads.krea.ai/audio/a13183db-1342-4c1d-8e0e-513a076cca96.mp3
+ls sfx voices | wc -l
+# more expressive cop takes (ElevenLabs v4 with emotion tags) replace the flat first pass
+curl -sSfo voices/cop-freeze.mp3 https://app-uploads.krea.ai/audio/294ccc6f-c0f6-4b44-87bc-ceee01beb76e.mp3
+curl -sSfo voices/cop-fluffy.mp3 https://app-uploads.krea.ai/audio/508421bf-4c2e-4442-8442-49b38b386f24.mp3
+curl -sSfo voices/cop-jaywalk.mp3 https://app-uploads.krea.ai/audio/19b3750c-87d8-42e5-a4fe-04104e1f9fb4.mp3
+curl -sSfo voices/cop-rights.mp3 https://app-uploads.krea.ai/audio/bca58a63-06f0-44f5-b610-f04cc5b23f7d.mp3
+curl -sSfo voices/cop-quiet.mp3 https://app-uploads.krea.ai/audio/dbe3eadd-3b77-44f8-9a45-89f6b94ae9c8.mp3
+curl -sSfo voices/cop-dispatch.mp3 https://app-uploads.krea.ai/audio/b7712417-69e2-414b-abb3-25973c9dced3.mp3
+# dog sounds
+curl -sSfo sfx/k9-bark.mp3 https://app-uploads.krea.ai/audio/8fcd398e-9f1e-4475-8601-4ddf8baf6058.mp3
+curl -sSfo sfx/dog-woof.mp3 https://app-uploads.krea.ai/audio/988b380d-9f83-4e18-8e84-838bbf7ced89.mp3
+curl -sSfo sfx/dog-growl.mp3 https://app-uploads.krea.ai/audio/77c009c9-7a24-435d-b8e3-d3106f107210.mp3
+curl -sSfo sfx/dog-sniff.mp3 https://app-uploads.krea.ai/audio/fb408561-ea3c-42ca-9355-bf804d7368c6.mp3
+curl -sSfo sfx/dog-whine.mp3 https://app-uploads.krea.ai/audio/686744d4-e32e-4072-aa7f-898fa5d40ca2.mp3
