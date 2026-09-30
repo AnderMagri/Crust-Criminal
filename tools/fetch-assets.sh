@@ -87,3 +87,5 @@ curl -sSfo assets/art/sprites-src/street-props-v1.png "https://app-uploads.krea.
 curl -sSfo assets/art/sprites-src/kitchen-props-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/aa0ad6f4-9f7e-4194-947a-0a02cbd58673-image.png"
 curl -sSfo assets/art/sprites-src/kitchen-fixtures-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/ab4521f4-d96e-4e3a-8a27-fa2c80294b59-image.png"
 curl -sSfo assets/art/sprites-src/snacks-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/4b463693-f54e-4c84-9d67-85a95a18581b-image.png"
+curl -sSfo assets/art/sprites-src/counter-items-v2.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/f0390b8c-4f71-4043-86db-fe427766e4b0-image.png"
+curl -sSfo assets/art/sprites-src/floor-tiles-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/fabcf046-65ae-43b6-9ffa-c335507001c9-image.png"

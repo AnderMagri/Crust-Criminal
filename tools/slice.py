@@ -48,8 +48,18 @@ def build(sheets,out_img,out_json):
     atlas.save(out_img,quality=90,method=6)
     json.dump({n:list(r)+[PPU] for n,r in rects.items()},open(out_json,'w'),separators=(',',':'))
     print(out_img,atlas.size,len(rects))
+def tiles(src,out):
+    # 4x2 sheet of square floor tiles -> one strip of 64px tiles (16 world units each at PPU 4)
+    im=Image.open(src).convert('RGB');W,H=im.size;cw,ch=W/4,H/2;strip=Image.new('RGB',(64*8,64))
+    for i in range(8):
+        c,r=i%4,i//4;inset=.012 if i not in (6,7) else .07   # asphalt/grass: drop the frame so they tile
+        box=(int(c*cw+cw*inset),int(r*ch+ch*inset),int((c+1)*cw-cw*inset),int((r+1)*ch-ch*inset))
+        strip.paste(im.crop(box).resize((64,64),Image.LANCZOS),(i*64,0))
+    strip.save(out,quality=88)
+
 if __name__=='__main__':
     S,OUT=sys.argv[1],sys.argv[2]
+    tiles(S+'/floor-tiles-v1.png',OUT+'/tiles.webp')
     walk=[f'{d}{i}' for d in 'sfb' for i in range(4)]
     build([(S+'/raccoon-sheet-v2.png',4,2,['c_f','c_s','c_b','c_t','c_pf','c_ps','c_pb','c_x'],('ref','c_f',24),True),
            (S+'/raccoon-walk-v1.png',4,3,['cw_'+n for n in walk],('ref','cw_f0',24),True),
@@ -58,8 +68,11 @@ if __name__=='__main__':
     build([(S+'/street-props-v1.png',4,3,['home','bin','bush','tree','fence','lamp','hydrant','planter','car0','car1','car2','car3'],
             ('each',{'home':('h',30),'bin':('h',20),'bush':('h',18),'tree':('h',44),'fence':('w',17),'lamp':('h',42),'hydrant':('h',13),'planter':('w',15),
                      'car0':('w',36),'car1':('w',36),'car2':('w',36),'car3':('w',36)}),False),
-           (S+'/kitchen-props-v1.png',4,3,['','','','','pot','plates','board','cake','bowl','pie','donut','onigiri'],
-            ('each',{'pot':('w',9),'plates':('w',8),'board':('w',10.5),'cake':('w',9),'bowl':('w',8.5),'pie':('w',13),'donut':('w',9),'onigiri':('w',7.5)}),False),
+           (S+'/kitchen-props-v1.png',4,3,['','','','','','','','','','pie','donut','onigiri'],
+            ('each',{'pie':('w',13),'donut':('w',9),'onigiri':('w',7.5)}),False),
+           # counter items drawn straight-on so they sit flat on the counter tops
+           (S+'/counter-items-v2.png',4,2,['board','pot','bowl','cake','plates','jar','plant','teapot'],
+            ('each',{'board':('w',11),'pot':('w',9.5),'bowl':('w',9),'cake':('w',9),'plates':('w',8.5),'jar':('w',7),'plant':('w',7.5),'teapot':('w',9.5)}),False),
            # front-facing fixtures: drawn stretched into their exact tile rectangles in game
            (S+'/kitchen-fixtures-v1.png',4,2,['stove','fridge','shelf','sink','winOpen','winClosed','doorC','doorO'],
             ('each',{n:('w',18) for n in ['stove','fridge','shelf','sink','winOpen','winClosed','doorC','doorO']}),False),

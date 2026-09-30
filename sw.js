@@ -1,0 +1,16 @@
+// Crust Criminal service worker: caches the whole game so it runs offline after the first visit.
+// Bump VERSION whenever assets change so phones pick up the new build.
+const VERSION='cc-v29';
+const ASSETS=["./", "index.html", "manifest.webmanifest", "assets/icons/icon-192.png", "assets/icons/icon-512.png", "assets/icons/icon-maskable-512.png", "assets/icons/apple-touch-icon.png", "assets/icons/favicon.png", "assets/art/splash.jpg", "assets/art/logo.webp", "assets/art/sprites.webp", "assets/art/props.webp", "assets/art/tiles.webp", "assets/music/main-theme.mp3", "assets/voices/cook-a-cat.mp3", "assets/voices/cook-a-croissant.mp3", "assets/voices/cook-a-getout.mp3", "assets/voices/cook-a-gotcha.mp3", "assets/voices/cook-a-hey.mp3", "assets/voices/cook-a-thepie.mp3", "assets/voices/cook-a-where.mp3", "assets/voices/cook-b-3hours.mp3", "assets/voices/cook-b-bin.mp3", "assets/voices/cook-b-notouch.mp3", "assets/voices/cook-b-notpie.mp3", "assets/voices/cook-b-raccoon.mp3", "assets/voices/cook-b-what.mp3", "assets/voices/raccoon-burger.mp3", "assets/voices/raccoon-candy.mp3", "assets/voices/raccoon-cantgoon.mp3", "assets/voices/raccoon-cat.mp3", "assets/voices/raccoon-chocolate.mp3", "assets/voices/raccoon-cookie.mp3", "assets/voices/raccoon-donut.mp3", "assets/voices/raccoon-eep.mp3", "assets/voices/raccoon-faint.mp3", "assets/voices/raccoon-fart.mp3", "assets/voices/raccoon-fridge.mp3", "assets/voices/raccoon-fries.mp3", "assets/voices/raccoon-gotit.mp3", "assets/voices/raccoon-hometrash.mp3", "assets/voices/raccoon-hum.mp3", "assets/voices/raccoon-hup.mp3", "assets/voices/raccoon-jelly.mp3", "assets/voices/raccoon-landing.mp3", "assets/voices/raccoon-ninja.mp3", "assets/voices/raccoon-nom.mp3", "assets/voices/raccoon-oof.mp3", "assets/voices/raccoon-oopsie.mp3", "assets/voices/raccoon-opera.mp3", "assets/voices/raccoon-pietime.mp3", "assets/voices/raccoon-posh.mp3", "assets/voices/raccoon-rumble.mp3", "assets/voices/raccoon-song.mp3", "assets/voices/raccoon-starving.mp3", "assets/voices/raccoon-sugarrush.mp3", "assets/voices/raccoon-tada.mp3", "assets/voices/raccoon-tired.mp3", "assets/voices/raccoon-uhoh.mp3", "assets/voices/raccoon-yoink.mp3", "assets/voices/sous-allhands.mp3", "assets/voices/sous-fanout.mp3", "assets/voices/sous-faster.mp3", "assets/voices/sous-table6.mp3"];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
+self.addEventListener('fetch',e=>{
+  const u=new URL(e.request.url);if(e.request.method!=='GET')return;
+  if(u.origin===location.origin){
+    // game files: cache first, fall back to network (and remember it)
+    e.respondWith(caches.match(e.request,{ignoreSearch:true}).then(r=>r||fetch(e.request).then(res=>{const cp=res.clone();caches.open(VERSION).then(c=>c.put(e.request,cp));return res})));
+  }else if(/fonts\.(googleapis|gstatic)\.com$/.test(u.hostname)){
+    // fonts: serve cached copy, refresh in the background
+    e.respondWith(caches.open(VERSION+'-fonts').then(c=>c.match(e.request).then(r=>{const f=fetch(e.request).then(res=>{c.put(e.request,res.clone());return res}).catch(()=>r);return r||f})));
+  }
+});
