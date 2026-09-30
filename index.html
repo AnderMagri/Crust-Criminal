@@ -797,17 +797,22 @@ function eatSnack(sn){
   else if(Math.random()<.75)say(player,pickCoon(Math.random()<.7?(COON[sn.type]?sn.type:'nom'):'nom'),true);
 }
 function tryJump(){
-  if(player.energy<=0&&!player.rush){SFX.bump();say(player,pickCoon('empty'));return}
   const t=jumpTarget();
   if(!t||!t.x){if(t&&t.block==='O')say(player,'Too hot!');else if(t&&(t.block==='R'||t.block==='S'))say(player,'Too tall!');
     // nothing to vault: a little hop on the spot so the button always responds
     if(player.jump||player.jcd>0)return;player.jump={sx:player.x,sy:player.y,tx:player.x,ty:player.y,t:0,dur:.3,small:1};SFX.jump();return}
-  if(player.energy<12&&!player.rush){if(!player.jump&&player.jcd<=0){player.jump={sx:player.x,sy:player.y,tx:player.x,ty:player.y,t:0,dur:.3,small:1};SFX.jump();say(player,pickCoon('empty'))}return}
+  const weak=player.energy<12&&!player.rush;   // out of energy: still jumps (never stuck), just a slow, heavy hop
   if(!player.rush)player.energy=Math.max(0,player.energy-10);
-  player.jump={sx:player.x,sy:player.y,tx:t.x,ty:t.y,t:0,dur:.42};player.vx=player.vy=0;
+  player.jump={sx:player.x,sy:player.y,tx:t.x,ty:t.y,t:0,dur:weak?.6:.42};player.vx=player.vy=0;if(weak&&Math.random()<.5)say(player,pickCoon('empty'),true);
   const d=STEP[player.dir],tt=tileOf(player.x,player.y),c1=tt.c+d[0],r1=tt.r+d[1],ch=tileCh(c1,r1);
-  if(hasItem(c1,r1)){S.knocked.add(c1+','+r1);const bx=c1*TS+8+d[0]*9,by=r1*TS+12+d[1]*10;
-    setTimeout(()=>{if(state!=='play')return;SFX.crash();shake=.12;S.debris.push({x:bx,y:by,k:hsh(c1,r1,7)});noiseAt(bx,by,130);toast('CRASH!');say(player,pickCoon('oops'),true)},220)}
+  if(hasItem(c1,r1)){S.knocked.add(c1+','+r1);const bx=c1*TS+8+d[0]*9,by=r1*TS+12+d[1]*10,item=CITEM[Math.floor(hsh(c1,r1,13)*CITEM.length)];
+    const spill=item==='jar'?['cookie','cookie']:item==='cake'?['choc','candy']:null;
+    setTimeout(()=>{if(state!=='play')return;SFX.crash();shake=.12;S.debris.push({x:bx,y:by,k:hsh(c1,r1,7)});noiseAt(bx,by,130);
+      if(spill){toast(item==='jar'?'COOKIES!':'CAKE!');const px=d[1]?1:0,py=d[0]?1:0;   // spill sideways along the landing row
+        spill.forEach((ty,i)=>{const s=i?1:-1,x=t.x+px*s*13,y=t.y+py*s*13;if(!solidAt(Math.floor(x/TS),Math.floor((y-2)/TS)))S.snacks.push({x,y,type:ty})});
+        for(let i=0;i<10;i++)parts.push({x:t.x-8+Math.random()*16,y:t.y-4,t:0,life:.5,col:'rgba(240,190,120,',sz:2})}
+      else toast('CRASH!');
+      say(player,pickCoon('oops'),true)},220)}
   else if(ch==='B'){setTimeout(()=>{if(state!=='play')return;SFX.clang();noiseAt(c1*TS+8,r1*TS+8,110)},200)}
   else if(ch==='N'){setTimeout(()=>{if(state!=='play')return;noiseAt(c1*TS+8,r1*TS+8,50)},200)}
   SFX.jump();if(Math.random()<.35)say(player,pickCoon('jump'),true);
@@ -940,13 +945,20 @@ function updatePlayer(dt){
   const eMul=rush?1.3:flat?.5:tired?.7:1;
   // snacks
   for(const sn of (S.snacks||[])){if(sn.eaten||Math.hypot(player.x-sn.x,player.y-sn.y)>11)continue;eatSnack(sn)}
-  const max=(player.carry?P_CARRY:P_MAX)*eMul,k=l>0?(player.carry?4.2:5.5):(player.carry?2.6:3.2);
+  const max=(player.carry?P_CARRY:P_MAX)*eMul,k=l>0?(player.carry?11:13):16;   // snappy: quick to start, quick to stop
   const sp0=Math.hypot(player.vx,player.vy);
   if(l>0.3&&sp0>45&&(ix*player.vx+iy*player.vy)/(l*sp0)<-.3){player.skid=(player.skid||0)+dt;   // hard turn: skid and kick up dust
     if(Math.random()<dt*30)parts.push({x:player.x+(Math.random()*6-3),y:player.y,t:0,life:.35});
     if(!player.skidSnd){player.skidSnd=1;noise(.18,{hp:2500,lp:6000,vol:.06})}}else player.skidSnd=0;
   player.vx+=(ix*max-player.vx)*Math.min(1,k*dt);player.vy+=(iy*max-player.vy)*Math.min(1,k*dt);
   moveEnt(player,player.vx*dt,player.vy*dt);
+  // grid assist: glide into the lane you're moving along, and settle on the tile centre when you stop
+  {const tc=tileOf(player.x,player.y),cc=center(tc.c,tc.r),ax=Math.abs(ix),ay=Math.abs(iy),pull=Math.min(1,14*dt);
+    let sx=0,sy=0;
+    if(l<.2){sx=(cc.x-player.x)*pull;sy=(cc.y-player.y)*pull}
+    else if(ax>ay*1.2)sy=(cc.y-player.y)*pull;
+    else if(ay>ax*1.2)sx=(cc.x-player.x)*pull;
+    if(sx||sy)moveEnt(player,sx,sy)}
   const sp=Math.hypot(player.vx,player.vy);
   if(l>.2)player.dir=dirOf(Math.atan2(iy,ix));
   if(sp>8){const a0=Math.floor(player.anim);player.anim+=dt*sp*.13;if(Math.floor(player.anim)!==a0&&sp>40)SFX.step()}
