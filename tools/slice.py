@@ -8,16 +8,22 @@ import scipy.ndimage as ndi
 from PIL import Image
 PPU=4
 def cells(path,cols,rows,names):
-    im=Image.open(path).convert('RGBA');W,H=im.size;cw,ch=W/cols,H/rows;out={}
+    # Blobs are found on the whole sheet (so art that crosses a grid line is never cut) and each blob
+    # goes to the grid cell its centre falls in; small specks (sparkles) join whichever cell they sit in.
+    im=Image.open(path).convert('RGBA');W,H=im.size;cw,ch=W/cols,H/rows
+    A=np.array(im.getchannel('A'))>24;lab,k=ndi.label(ndi.binary_dilation(A,iterations=4))
+    objs=ndi.find_objects(lab);cms=ndi.center_of_mass(A,lab,range(1,k+1));areas=ndi.sum(A,lab,range(1,k+1))
+    groups={}
+    for i in range(k):
+        if areas[i]<40:continue
+        cy,cx=cms[i];cell=int(cy//ch)*cols+int(cx//cw);groups.setdefault(cell,[]).append(i+1)
+    arr=np.array(im);out={}
     for i,n in enumerate(names):
-        if not n:continue
-        c,r=i%cols,i//cols;cell=im.crop((int(c*cw)+4,int(r*ch)+4,int((c+1)*cw)-4,int((r+1)*ch)-4))
-        # keep only the biggest blob in the cell (plus anything touching it), so bits of neighbours are dropped
-        A=np.array(cell.getchannel('A'))>24;lab,k=ndi.label(ndi.binary_dilation(A,iterations=5))
-        if k>1:
-            big=1+int(np.argmax(ndi.sum(A,lab,range(1,k+1))));mask=(lab==big)&A
-            cell=cell.copy();arr=np.array(cell);arr[...,3]=np.where(mask,arr[...,3],0);cell=Image.fromarray(arr)
-        a=cell.getchannel('A').point(lambda v:255 if v>24 else 0);out[n]=cell.crop(a.getbbox())
+        if not n or i not in groups:continue
+        ids=groups[i];mask=np.isin(lab,ids)&A
+        ys,xs=np.where(mask);y0,y1,x0,x1=ys.min(),ys.max()+1,xs.min(),xs.max()+1
+        sub=arr[y0:y1,x0:x1].copy();sub[...,3]=np.where(mask[y0:y1,x0:x1],sub[...,3],0)
+        out[n]=Image.fromarray(sub)
     return out
 def feet_x(sp):
     a=sp.getchannel('A');w,h=sp.size;xs=[x for y in range(int(h*.9),h) for x in range(w) if a.getpixel((x,y))>100]

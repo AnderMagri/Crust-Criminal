@@ -1711,7 +1711,7 @@ function drawCar(c){
 const KTOP='#f7b3c2',KTOPL='#fbd0da',KFRONT='#fff3e2',KFRONTD='#f1ddc5';
 function drawCounter(c,r,noItem){
   const x=c*TS,y=r*TS,below=isWallK(c,r+1),above=isWallK(c,r-1),L=isWallK(c-1,r),Rt=isWallK(c+1,r);
-  if(!noItem&&isSink(c,r)){ctx.fillStyle='rgba(91,63,60,.13)';ctx.fillRect(x,y+16,16,3);drawPropFit('sink',x,y-6,16,22);return}
+  const sink=!noItem&&isSink(c,r);
   if(!below){ctx.fillStyle='rgba(91,63,60,.13)';ctx.fillRect(x+(L?0:1),y+16,16-(L?0:1)-(Rt?0:1),3)}
   ctx.fillStyle=KTOP;ctx.fillRect(x-.01,y-6,16.02,below?22:12);
   ctx.fillStyle=KTOPL;if(!above)ctx.fillRect(x+(L?0:1.5),y-5,16-(L?0:1.5)-(Rt?0:1.5),1.6);
@@ -1722,6 +1722,9 @@ function drawCounter(c,r,noItem){
     ctx.strokeStyle='rgba(91,63,60,.35)';ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(x+8,y+7.5);ctx.lineTo(x+8,y+13.5);ctx.stroke();
     kRR(x+5.4,y+9.4,1.6,.9,.45,'#d9b89a',0);kRR(x+9,y+9.4,1.6,.9,.45,'#d9b89a',0)}
   // items are drawn in a separate pass (see render) so neighbouring counters never cut them
+  if(sink){kRR(x+2.5,y-4.8,11,8,2.5,'#dfe6f2',.8);kRR(x+4,y-3.2,8,5,2,'#b8c4da',.6);kE(x+9.5,y-.8,.7,.5,'#8e9ab3',0);
+    kStroke(1.8);ctx.beginPath();ctx.moveTo(x+8,y-5);ctx.lineTo(x+8,y-8.5);ctx.quadraticCurveTo(x+8,y-10,x+9.6,y-10);ctx.lineTo(x+10,y-8.6);ctx.stroke();
+    ctx.strokeStyle='#c6cedd';ctx.lineWidth=1;ctx.stroke();kE(x+8,y-5,1.3,.8,'#c6cedd',.6)}
 }
 function drawOven(c,r){
   const x=c*TS,y=r*TS,below=isWallK(c,r+1),hot=hsh(c,r,3)<.5;
@@ -1845,7 +1848,7 @@ function drawWindowK(){for(let c=0;c<S.cols;c++){if(S.map[S.rows-1][c]!=='Q')con
 
 // ================= PROP SPRITES =================
 // Kawaii props from the style mockup, packed in assets/art/props.webp (same format as SPR).
-const PROP={"tree":[0,0,188,176,94,176,4],"lamp":[190,0,115,168,58,168,4],"home":[307,0,132,120,66,120,4],"fridge":[441,0,72,105,36,105,4],"car1":[515,0,144,97,72,97,4],"car2":[661,0,144,97,72,97,4],"car0":[807,0,144,96,72,96,4],"car3":[0,178,144,96,72,96,4],"doorO":[146,178,72,95,36,95,4],"shelf":[220,178,72,88,36,88,4],"doorC":[294,178,72,82,36,82,4],"bin":[368,178,72,80,36,80,4],"stove":[442,178,72,79,36,79,4],"sink":[516,178,72,79,36,79,4],"bush":[590,178,95,72,48,72,4],"winClosed":[687,178,72,70,36,70,4],"winOpen":[761,178,72,66,36,66,4],"sn_choc":[835,178,48,63,24,63,4],"sn_fries":[885,178,48,59,24,59,4],"hydrant":[935,178,47,52,24,52,4],"sn_burger":[0,276,48,48,24,48,4],"sn_cookie":[50,276,48,47,24,47,4],"sn_gold":[100,276,48,46,24,46,4],"sn_donut":[150,276,48,44,24,44,4],"pie":[200,276,52,43,26,43,4],"sn_onigiri":[254,276,48,43,24,43,4],"planter":[304,276,60,41,30,41,4],"fence":[366,276,68,38,34,38,4],"bowl":[436,276,34,36,17,36,4],"cake":[472,276,36,32,18,32,4],"donut":[510,276,36,30,18,30,4],"board":[548,276,42,29,21,29,4],"sn_candy":[592,276,48,29,24,29,4],"onigiri":[642,276,30,28,15,28,4],"plates":[674,276,32,25,16,25,4],"pot":[708,276,36,24,18,24,4]};
+const PROP={"tree":[0,0,157,176,78,176,4],"doorO":[159,0,72,170,36,170,4],"lamp":[233,0,98,168,49,168,4],"home":[333,0,113,120,56,120,4],"fridge":[448,0,72,105,36,105,4],"car1":[522,0,144,97,72,97,4],"car2":[668,0,144,97,72,97,4],"car0":[814,0,144,96,72,96,4],"car3":[0,178,144,96,72,96,4],"shelf":[146,178,72,90,36,90,4],"doorC":[220,178,72,82,36,82,4],"bin":[294,178,62,80,31,80,4],"stove":[358,178,72,79,36,79,4],"bush":[432,178,78,72,39,72,4],"winClosed":[512,178,72,70,36,70,4],"winOpen":[586,178,72,66,36,66,4],"sn_choc":[660,178,48,63,24,63,4],"sn_fries":[710,178,48,59,24,59,4],"planter":[760,178,60,54,30,54,4],"hydrant":[822,178,38,52,19,52,4],"sn_burger":[862,178,48,48,24,48,4],"sn_cookie":[912,178,48,47,24,47,4],"sn_gold":[962,178,48,46,24,46,4],"sn_donut":[0,276,48,44,24,44,4],"pie":[50,276,52,43,26,43,4],"sn_onigiri":[104,276,48,43,24,43,4],"fence":[154,276,68,39,34,39,4],"pot":[224,276,36,39,18,39,4],"cake":[262,276,36,37,18,37,4],"bowl":[300,276,34,36,17,36,4],"board":[336,276,42,35,21,35,4],"donut":[380,276,36,30,18,30,4],"plates":[418,276,32,29,16,29,4],"sn_candy":[452,276,48,29,24,29,4],"onigiri":[502,276,30,28,15,28,4]};
 const PROP_IMG=new Image();let propReady=false;PROP_IMG.onload=()=>{propReady=true;if(S)buildBg()};PROP_IMG.src='assets/art/props.webp';
 function drawPropImg(n,x,y,flip,k=1){const d=PROP[n];if(!d||!propReady)return false;const u=d[6],w=d[2]/u*k,h=d[3]/u*k,ax=d[4]/u*k,ay=d[5]/u*k;
   if(flip){ctx.save();ctx.translate(x,y);ctx.scale(-1,1);ctx.drawImage(PROP_IMG,d[0],d[1],d[2],d[3],-ax,-ay,w,h);ctx.restore()}
@@ -1884,10 +1887,14 @@ function counterItem(c,r,x,y){if(!propReady)return;const h=hsh(c,r,7);if(h>=.48)
   ctx.fillStyle='rgba(91,63,60,.22)';ctx.beginPath();ctx.ellipse(ix,iy-.3,w*.46,1.5,0,0,TAU);ctx.fill();
   drawPropImg(n,ix,iy,hsh(c,r,11)<.5,K);
   if(n==='pot'&&Math.sin(now*3+c)>.3){const ph=(now*.9+c*.3)%1;ctx.strokeStyle=`rgba(255,255,255,${.75*(1-ph)})`;ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(ix,iy-9-ph*7);ctx.quadraticCurveTo(ix+2,iy-11-ph*7,ix+.5,iy-13-ph*7);ctx.stroke()}}
-function drawOven(c,r){if(!propReady)return;const x=c*TS,y=r*TS;
-  if(isWallK(c,r+1)){drawCounter(c,r,true);ctx.fillStyle='rgba(91,63,60,.22)';ctx.beginPath();ctx.ellipse(x+8,y+3.7,5.5,1.5,0,0,TAU);ctx.fill();drawPropImg('pot',x+8,y+4,false,1.35);return}
-  ctx.fillStyle='rgba(91,63,60,.13)';ctx.fillRect(x+1,y+16,14,3);drawPropFit('stove',x,y-6,16,22);
-  if(hsh(c,r,3)<.5&&Math.sin(now*3+c*2)>.2){const ph=(now*.9+c*.3)%1;ctx.strokeStyle=`rgba(255,255,255,${.7*(1-ph)})`;ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(x+5,y-3-ph*8);ctx.quadraticCurveTo(x+7,y-5-ph*8,x+5.5,y-7-ph*8);ctx.stroke()}}
+function drawOven(c,r){const x=c*TS,y=r*TS,below=isWallK(c,r+1);drawCounter(c,r,true);
+  kRR(x+1.2,y-5.2,13.6,10.2,2,'#d9cdf2',.8);
+  for(const[bx,by]of[[4.8,-2.6],[11.2,-2.6],[4.8,2],[11.2,2]]){kE(x+bx,y+by,2.4,1.5,'#6f6a86',.6);kE(x+bx,y+by,1.3,.8,'#8f89a8',0)}
+  if(hsh(c,r,3)<.5){ctx.strokeStyle=Math.sin(now*14+c)>0?'#ff9aa8':'#ffb86b';ctx.lineWidth=.7;ctx.beginPath();ctx.ellipse(x+4.8,y-2.6,1.8,1.1,0,0,TAU);ctx.stroke();
+    if(Math.sin(now*3+c*2)>.2){const ph=(now*.9+c*.3)%1;ctx.strokeStyle=`rgba(255,255,255,${.7*(1-ph)})`;ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(x+4.8,y-4-ph*8);ctx.quadraticCurveTo(x+6.8,y-6-ph*8,x+5.3,y-8-ph*8);ctx.stroke()}}
+  if(!below){ctx.fillStyle='#d9cdf2';ctx.fillRect(x+.5,y+6.5,15,9);kE(x+4,y+7.9,.9,.9,'#f7a9b8',.4);kE(x+12,y+7.9,.9,.9,'#f7a9b8',.4);
+    kRR(x+2.6,y+9.4,10.8,5.2,1.5,Math.sin(now*9+c)>0?'#ffc58f':'#ffd3a3',.7);ctx.fillStyle='rgba(255,255,255,.55)';ctx.fillRect(x+3.8,y+10.3,8,.9);
+    kStroke(.9);ctx.beginPath();ctx.moveTo(x,y+6);ctx.lineTo(x+16,y+6);ctx.stroke()}}
 function drawFridge(c,r){if(!propReady)return;const x=c*TS,y=r*TS;ctx.fillStyle='rgba(91,63,60,.13)';ctx.fillRect(x+1,y+16,14,3);drawPropFit('fridge',x,y-15,16,31)}
 function drawShelf(c,r){if(!propReady)return;const x=c*TS,y=r*TS;ctx.fillStyle='rgba(91,63,60,.13)';ctx.fillRect(x+1,y+16,14,3);drawPropFit('shelf',x,y-12,16,28)}
 
@@ -1906,7 +1913,7 @@ function drawPieFx(){
 // ================= SPRITE CHARACTERS =================
 // Hand-drawn kawaii sprites (from the approved mockup) packed in assets/art/sprites.webp.
 // Each entry: [x,y,w,h,anchorX,anchorY,pixelsPerWorldUnit]; anchor = between the feet.
-const SPR={"s_s":[0,0,76,136,38,136,4],"s_a":[78,0,90,136,41,136,4],"s_f":[170,0,82,134,41,134,4],"s_b":[254,0,80,134,40,134,4],"k_a":[336,0,91,130,40,130,4],"k_s":[429,0,78,129,42,129,4],"k_b":[509,0,77,126,39,126,4],"k_f":[588,0,77,124,38,124,4],"p_s":[667,0,78,117,40,117,4],"c_pb":[747,0,85,114,38,114,4],"c_pf":[834,0,87,113,39,113,4],"p_f":[923,0,94,113,46,113,4],"c_ps":[0,138,99,112,62,112,4],"cw_s3":[101,138,79,101,41,101,4],"cw_s1":[182,138,85,100,52,100,4],"cw_s2":[269,138,86,100,42,100,4],"c_s":[357,138,92,99,58,99,4],"cw_s0":[451,138,84,99,42,99,4],"c_b":[537,138,85,97,40,97,4],"c_t":[624,138,87,97,41,97,4],"c_x":[713,138,87,97,39,97,4],"c_f":[802,138,92,96,44,96,4],"cw_f0":[896,138,83,96,37,96,4],"cw_f2":[0,252,84,96,38,96,4],"cw_f3":[86,252,84,96,39,96,4],"cw_b0":[172,252,79,96,37,96,4],"cw_b2":[253,252,80,96,35,96,4],"cw_f1":[335,252,83,95,39,95,4],"cw_b1":[420,252,80,95,39,95,4],"cw_b3":[502,252,80,95,39,95,4],"d_s":[584,252,103,95,30,95,4],"d_f":[689,252,94,94,47,94,4]};
+const SPR={"s_s":[0,0,76,136,38,136,4],"s_a":[78,0,97,136,41,136,4],"s_f":[177,0,82,134,41,134,4],"s_b":[261,0,80,134,40,134,4],"k_a":[343,0,98,130,40,130,4],"k_s":[443,0,78,129,42,129,4],"k_b":[523,0,77,126,39,126,4],"k_f":[602,0,77,124,38,124,4],"p_s":[681,0,78,117,40,117,4],"c_pb":[761,0,85,114,38,114,4],"c_pf":[848,0,87,113,39,113,4],"p_f":[0,138,94,113,46,113,4],"c_ps":[96,138,99,112,62,112,4],"c_x":[197,138,98,102,39,102,4],"cw_s3":[297,138,79,101,41,101,4],"cw_s1":[378,138,85,100,52,100,4],"cw_s2":[465,138,86,100,42,100,4],"c_s":[553,138,92,99,58,99,4],"cw_s0":[647,138,84,99,42,99,4],"c_b":[733,138,85,97,40,97,4],"c_t":[820,138,87,97,41,97,4],"c_f":[909,138,92,96,44,96,4],"cw_f0":[0,253,83,96,37,96,4],"cw_f2":[85,253,84,96,38,96,4],"cw_f3":[171,253,84,96,39,96,4],"cw_b0":[257,253,79,96,37,96,4],"cw_b2":[338,253,80,96,35,96,4],"cw_f1":[420,253,83,95,39,95,4],"cw_b1":[505,253,80,95,40,95,4],"cw_b3":[587,253,80,95,39,95,4],"d_s":[669,253,103,95,30,95,4],"d_f":[774,253,94,94,47,94,4]};
 const SPR_IMG=new Image();let sprReady=false;SPR_IMG.onload=()=>{sprReady=true};SPR_IMG.src='assets/art/sprites.webp';
 function drawSpr(n,x,y,flip,k=1,rot=0,sq=1){const d=SPR[n];if(!d)return;const u=d[6],w=d[2]/u*k,h=d[3]/u*k,ax=d[4]/u*k,ay=d[5]/u*k;
   ctx.save();ctx.translate(x,y);if(rot)ctx.rotate(rot);ctx.scale(flip?-1/sq:1/sq,sq);ctx.drawImage(SPR_IMG,d[0],d[1],d[2],d[3],-ax,-ay,w,h);ctx.restore()}
