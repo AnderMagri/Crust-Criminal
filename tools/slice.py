@@ -5,7 +5,7 @@
 import json,sys
 import numpy as np
 import scipy.ndimage as ndi
-from PIL import Image
+from PIL import Image,ImageFilter
 PPU=4
 def cells(path,cols,rows,names):
     # Blobs are found on the whole sheet (so art that crosses a grid line is never cut) and each blob
@@ -25,18 +25,28 @@ def cells(path,cols,rows,names):
         sub=arr[y0:y1,x0:x1].copy();sub[...,3]=np.where(mask[y0:y1,x0:x1],sub[...,3],0)
         out[n]=Image.fromarray(sub)
     return out
+def outline(img,px,color=(91,63,60)):
+    # thick ink outline so small props match the line weight of the counters and characters
+    w,h=img.size;big=Image.new('RGBA',(w+2*px,h+2*px));big.paste(img,(px,px))
+    m=np.array(big.getchannel('A'))>60;lab,k=ndi.label(m)
+    if k>1:  # only outline the main shape, not detached sparkles/steam
+        ar=ndi.sum(m,lab,range(1,k+1));keep=[i+1 for i in range(k) if ar[i]>=.08*ar.max()];m=np.isin(lab,keep)
+    a=Image.fromarray((m*255).astype('uint8')).filter(ImageFilter.MaxFilter(2*px+1)).filter(ImageFilter.GaussianBlur(.6))
+    ink=Image.new('RGBA',big.size,color+(0,));ink.putalpha(a);ink.alpha_composite(big);return ink
 def feet_x(sp):
     a=sp.getchannel('A');w,h=sp.size;xs=[x for y in range(int(h*.9),h) for x in range(w) if a.getpixel((x,y))>100]
     xs.sort();return xs[len(xs)//2] if xs else w/2
 def build(sheets,out_img,out_json):
     sprites={}
-    for path,cols,rows,names,sizing,chars in sheets:
+    for sh in sheets:
+        path,cols,rows,names,sizing,chars=sh[:6];ol=sh[6] if len(sh)>6 else 0
         sp=cells(path,cols,rows,names)
         for n,s in sp.items():
             if sizing[0]=='ref':k=sizing[2]*PPU/sp[sizing[1]].size[1]
             else:
                 ax,v=sizing[1][n];k=v*PPU/(s.size[1] if ax=='h' else s.size[0])
             s2=s.resize((max(1,round(s.size[0]*k)),max(1,round(s.size[1]*k))),Image.LANCZOS)
+            if ol:s2=outline(s2,ol)
             sprites[n]=(s2,feet_x(s2) if chars else s2.size[0]/2)
     W=1024;x=y=sh=0;rects={}
     for n,(s,ax) in sorted(sprites.items(),key=lambda t:-t[1][0].size[1]):
@@ -69,10 +79,10 @@ if __name__=='__main__':
             ('each',{'home':('h',30),'bin':('h',20),'bush':('h',18),'tree':('h',44),'fence':('w',17),'lamp':('h',42),'hydrant':('h',13),'planter':('w',15),
                      'car0':('w',36),'car1':('w',36),'car2':('w',36),'car3':('w',36)}),False),
            (S+'/kitchen-props-v1.png',4,3,['','','','','','','','','','pie','donut','onigiri'],
-            ('each',{'pie':('w',13),'donut':('w',9),'onigiri':('w',7.5)}),False),
+            ('each',{'pie':('w',13),'donut':('w',9),'onigiri':('w',7.5)}),False,2),
            # counter items drawn straight-on so they sit flat on the counter tops
            (S+'/counter-items-v2.png',4,2,['board','pot','bowl','cake','plates','jar','plant','teapot'],
-            ('each',{'board':('w',11),'pot':('w',9.5),'bowl':('w',9),'cake':('w',9),'plates':('w',8.5),'jar':('w',7),'plant':('w',7.5),'teapot':('w',9.5)}),False),
+            ('each',{'board':('w',11),'pot':('w',9.5),'bowl':('w',9),'cake':('w',9),'plates':('w',8.5),'jar':('w',7),'plant':('w',7.5),'teapot':('w',9.5)}),False,2),
            # front-facing fixtures: drawn stretched into their exact tile rectangles in game
            (S+'/kitchen-fixtures-v1.png',4,2,['stove','fridge','shelf','sink','winOpen','winClosed','doorC','doorO'],
             ('each',{n:('w',18) for n in ['stove','fridge','shelf','sink','winOpen','winClosed','doorC','doorO']}),False),

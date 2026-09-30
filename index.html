@@ -646,7 +646,10 @@ function jumpTarget(){
 function noiseAt(x,y,r){
   enemies.forEach(e=>{if(e.state==='chase'||e.state==='alert')return;if(Math.hypot(e.x-x,e.y-y)<r){toSearch(e,{x,y},e.lines.hear)}});
 }
-const hasItem=(c,r)=>S.kind==='kitchen'&&tileCh(c,r)==='C'&&hsh(c,r,7)<.48&&!S.knocked.has(c+','+r);
+// fewer, bigger items: roughly one counter in four, never two side by side
+const itemBase=(c,r)=>tileCh(c,r)==='C'&&hsh(c,r,7)<.3;
+const itemAt=(c,r)=>itemBase(c,r)&&!itemBase(c-1,r)&&!itemBase(c,r-1)&&!(typeof isSink==='function'&&isSink(c,r));
+const hasItem=(c,r)=>S.kind==='kitchen'&&itemAt(c,r)&&!S.knocked.has(c+','+r);
 const SNACK={candy:15,cookie:20,choc:26,donut:45,fries:22,burger:32};
 function popText(x,y,txt,col){const el=document.createElement('div');el.className='pop';el.textContent=txt;if(col)el.style.color=col;
   el.style.left=((x-cam.x)*SCALE)+'px';el.style.top=((y-cam.y)*SCALE)+'px';$('stage').appendChild(el);setTimeout(()=>el.remove(),950)}
@@ -1742,9 +1745,9 @@ function drawCounter(c,r,noItem){
     kRR(x+5.4,y+9.4,1.6,.9,.45,'#d9b89a',0);kRR(x+9,y+9.4,1.6,.9,.45,'#d9b89a',0)}
   ctx.drawImage(SHADE_TOP,x,y-6,16,below?22:12);if(!below)ctx.drawImage(SHADE_FRONT,x,y+6,16,10);
   // items are drawn in a separate pass (see render) so neighbouring counters never cut them
-  if(sink){kRR(x+2.5,y-4.8,11,8,2.5,'#dfe6f2',.8);kRR(x+4,y-3.2,8,5,2,'#b8c4da',.6);kE(x+9.5,y-.8,.7,.5,'#8e9ab3',0);
+  if(sink){kRR(x+2.5,y-4.8,11,8,2.5,'#dfe6f2',1);kRR(x+4,y-3.2,8,5,2,'#b8c4da',.8);kE(x+9.5,y-.8,.7,.5,'#8e9ab3',0);
     kStroke(1.8);ctx.beginPath();ctx.moveTo(x+8,y-5);ctx.lineTo(x+8,y-8.5);ctx.quadraticCurveTo(x+8,y-10,x+9.6,y-10);ctx.lineTo(x+10,y-8.6);ctx.stroke();
-    ctx.strokeStyle='#c6cedd';ctx.lineWidth=1;ctx.stroke();kE(x+8,y-5,1.3,.8,'#c6cedd',.6)}
+    ctx.strokeStyle='#c6cedd';ctx.lineWidth=1;ctx.stroke();kE(x+8,y-5,1.3,.8,'#c6cedd',.9)}
 }
 function drawOven(c,r){
   const x=c*TS,y=r*TS,below=isWallK(c,r+1),hot=hsh(c,r,3)<.5;
@@ -1868,7 +1871,7 @@ function drawWindowK(){for(let c=0;c<S.cols;c++){if(S.map[S.rows-1][c]!=='Q')con
 
 // ================= PROP SPRITES =================
 // Kawaii props from the style mockup, packed in assets/art/props.webp (same format as SPR).
-const PROP={"tree":[0,0,157,176,78,176,4],"doorO":[159,0,72,170,36,170,4],"lamp":[233,0,98,168,49,168,4],"home":[333,0,113,120,56,120,4],"fridge":[448,0,72,105,36,105,4],"car1":[522,0,144,97,72,97,4],"car2":[668,0,144,97,72,97,4],"car0":[814,0,144,96,72,96,4],"car3":[0,178,144,96,72,96,4],"shelf":[146,178,72,90,36,90,4],"doorC":[220,178,72,82,36,82,4],"bin":[294,178,62,80,31,80,4],"stove":[358,178,72,79,36,79,4],"bush":[432,178,78,72,39,72,4],"winClosed":[512,178,72,70,36,70,4],"winOpen":[586,178,72,66,36,66,4],"sn_choc":[660,178,48,63,24,63,4],"sn_fries":[710,178,48,59,24,59,4],"planter":[760,178,60,54,30,54,4],"hydrant":[822,178,38,52,19,52,4],"sn_burger":[862,178,48,48,24,48,4],"sn_cookie":[912,178,48,47,24,47,4],"sn_gold":[962,178,48,46,24,46,4],"sn_donut":[0,276,48,44,24,44,4],"pie":[50,276,52,43,26,43,4],"sn_onigiri":[104,276,48,43,24,43,4],"bowl":[154,276,36,40,18,40,4],"plant":[192,276,30,40,15,40,4],"fence":[224,276,68,39,34,39,4],"pot":[294,276,38,38,19,38,4],"cake":[334,276,36,38,18,38,4],"jar":[372,276,28,36,14,36,4],"donut":[402,276,36,30,18,30,4],"plates":[440,276,34,29,17,29,4],"teapot":[476,276,38,29,19,29,4],"sn_candy":[516,276,48,29,24,29,4],"onigiri":[566,276,30,28,15,28,4],"board":[598,276,44,25,22,25,4]};
+const PROP={"tree":[0,0,157,176,78,176,4],"doorO":[159,0,72,170,36,170,4],"lamp":[233,0,98,168,49,168,4],"home":[333,0,113,120,56,120,4],"fridge":[448,0,72,105,36,105,4],"car1":[522,0,144,97,72,97,4],"car2":[668,0,144,97,72,97,4],"car0":[814,0,144,96,72,96,4],"car3":[0,178,144,96,72,96,4],"shelf":[146,178,72,90,36,90,4],"doorC":[220,178,72,82,36,82,4],"bin":[294,178,62,80,31,80,4],"stove":[358,178,72,79,36,79,4],"bush":[432,178,78,72,39,72,4],"winClosed":[512,178,72,70,36,70,4],"winOpen":[586,178,72,66,36,66,4],"sn_choc":[660,178,48,63,24,63,4],"sn_fries":[710,178,48,59,24,59,4],"planter":[760,178,60,54,30,54,4],"hydrant":[822,178,38,52,19,52,4],"sn_burger":[862,178,48,48,24,48,4],"pie":[912,178,56,47,28,47,4],"sn_cookie":[970,178,48,47,24,47,4],"sn_gold":[0,276,48,46,24,46,4],"bowl":[50,276,40,44,20,44,4],"plant":[92,276,34,44,17,44,4],"sn_donut":[128,276,48,44,24,44,4],"sn_onigiri":[178,276,48,43,24,43,4],"pot":[228,276,42,42,21,42,4],"cake":[272,276,40,42,20,42,4],"jar":[314,276,32,40,16,40,4],"fence":[348,276,68,39,34,39,4],"donut":[418,276,40,34,20,34,4],"plates":[460,276,38,33,19,33,4],"teapot":[500,276,42,33,21,33,4],"onigiri":[544,276,34,32,17,32,4],"board":[580,276,48,29,24,29,4],"sn_candy":[630,276,48,29,24,29,4]};
 const PROP_IMG=new Image();let propReady=false;PROP_IMG.onload=()=>{propReady=true;if(S)buildBg()};PROP_IMG.src='assets/art/props.webp';
 function drawPropImg(n,x,y,flip,k=1){const d=PROP[n];if(!d||!propReady)return false;const u=d[6],w=d[2]/u*k,h=d[3]/u*k,ax=d[4]/u*k,ay=d[5]/u*k;
   if(flip){ctx.save();ctx.translate(x,y);ctx.scale(-1,1);ctx.drawImage(PROP_IMG,d[0],d[1],d[2],d[3],-ax,-ay,w,h);ctx.restore()}
@@ -1901,19 +1904,20 @@ function drawLamp(l){if(!propReady)return;ctx.fillStyle='rgba(255,236,160,.28)';
 function drawCar(c){if(!propReady)return;const i=Math.abs(Math.round(c.x0!==undefined?c.x0:(c.id||0)))%4;
   if(c.skin===undefined)c.skin=Math.floor(Math.random()*4);kShadow(c.x,c.y,17);drawPropImg('car'+c.skin,c.x,c.y+1,c.dir<0,1.05)}
 const CITEM=['board','pot','bowl','cake','plates','jar','plant','teapot'];
-function isSink(c,r){return typeof propReady!=='undefined'&&propReady&&tileCh(c,r)==='C'&&!isWallK(c,r+1)&&isWallK(c-1,r)&&isWallK(c+1,r)&&hsh(c,r,21)<.14}
-function counterItem(c,r,x,y){if(!propReady)return;const h=hsh(c,r,7);if(h>=.48)return;
-  const n=CITEM[Math.floor(h/.06)],d=PROP[n],K=1.3,w=d[2]/d[6]*K,ix=x+8+(hsh(c,r,12)-.5)*2,iy=y+4;
-  ctx.fillStyle='rgba(91,63,60,.22)';ctx.beginPath();ctx.ellipse(ix,iy-.3,w*.46,1.5,0,0,TAU);ctx.fill();
+function sinkBase(c,r){return tileCh(c,r)==='C'&&!isWallK(c,r+1)&&isWallK(c-1,r)&&isWallK(c+1,r)&&hsh(c,r,21)<.14}
+function isSink(c,r){return typeof propReady!=='undefined'&&propReady&&sinkBase(c,r)&&!sinkBase(c-1,r)&&!sinkBase(c-2,r)}
+function counterItem(c,r,x,y){if(!propReady||!itemAt(c,r))return;
+  const n=CITEM[Math.floor(hsh(c,r,13)*CITEM.length)],d=PROP[n],K=1.75,w=d[2]/d[6]*K,ix=x+8+(hsh(c,r,12)-.5)*2,iy=y+4;
+  ctx.fillStyle='rgba(91,63,60,.22)';ctx.beginPath();ctx.ellipse(ix,iy-.3,w*.46,1.9,0,0,TAU);ctx.fill();
   drawPropImg(n,ix,iy,hsh(c,r,11)<.5,K);
   if(n==='pot'&&Math.sin(now*3+c)>.3){const ph=(now*.9+c*.3)%1;ctx.strokeStyle=`rgba(255,255,255,${.75*(1-ph)})`;ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(ix,iy-9-ph*7);ctx.quadraticCurveTo(ix+2,iy-11-ph*7,ix+.5,iy-13-ph*7);ctx.stroke()}}
 function drawOven(c,r){const x=c*TS,y=r*TS,below=isWallK(c,r+1);drawCounter(c,r,true);
-  kRR(x+1.2,y-5.2,13.6,10.2,2,'#d9cdf2',.8);
-  for(const[bx,by]of[[4.8,-2.6],[11.2,-2.6],[4.8,2],[11.2,2]]){kE(x+bx,y+by,2.4,1.5,'#6f6a86',.6);kE(x+bx,y+by,1.3,.8,'#8f89a8',0)}
+  kRR(x+1.2,y-5.2,13.6,10.2,2,'#d9cdf2',.9);
+  for(const[bx,by]of[[4.8,-2.6],[11.2,-2.6],[4.8,2],[11.2,2]]){kE(x+bx,y+by,2.4,1.5,'#6f6a86',.9);kE(x+bx,y+by,1.3,.8,'#8f89a8',0)}
   if(hsh(c,r,3)<.5){ctx.strokeStyle=Math.sin(now*14+c)>0?'#ff9aa8':'#ffb86b';ctx.lineWidth=.7;ctx.beginPath();ctx.ellipse(x+4.8,y-2.6,1.8,1.1,0,0,TAU);ctx.stroke();
     if(Math.sin(now*3+c*2)>.2){const ph=(now*.9+c*.3)%1;ctx.strokeStyle=`rgba(255,255,255,${.7*(1-ph)})`;ctx.lineWidth=.9;ctx.beginPath();ctx.moveTo(x+4.8,y-4-ph*8);ctx.quadraticCurveTo(x+6.8,y-6-ph*8,x+5.3,y-8-ph*8);ctx.stroke()}}
   if(!below){ctx.fillStyle='#d9cdf2';ctx.fillRect(x+.5,y+6.5,15,9);kE(x+4,y+7.9,.9,.9,'#f7a9b8',.4);kE(x+12,y+7.9,.9,.9,'#f7a9b8',.4);
-    kRR(x+2.6,y+9.4,10.8,5.2,1.5,Math.sin(now*9+c)>0?'#ffc58f':'#ffd3a3',.7);ctx.fillStyle='rgba(255,255,255,.55)';ctx.fillRect(x+3.8,y+10.3,8,.9);
+    kRR(x+2.6,y+9.4,10.8,5.2,1.5,Math.sin(now*9+c)>0?'#ffc58f':'#ffd3a3',.9);ctx.fillStyle='rgba(255,255,255,.55)';ctx.fillRect(x+3.8,y+10.3,8,.9);
     kStroke(.9);ctx.beginPath();ctx.moveTo(x,y+6);ctx.lineTo(x+16,y+6);ctx.stroke()}}
 function drawFridge(c,r){if(!propReady)return;const x=c*TS,y=r*TS;ctx.fillStyle='rgba(91,63,60,.13)';ctx.fillRect(x+1,y+16,14,3);drawPropFit('fridge',x,y-15,16,31)}
 function drawShelf(c,r){if(!propReady)return;const x=c*TS,y=r*TS;ctx.fillStyle='rgba(91,63,60,.13)';ctx.fillRect(x+1,y+16,14,3);drawPropFit('shelf',x,y-12,16,28)}
@@ -1952,8 +1956,8 @@ function drawRaccoon(p){
   if(p.carry){
     // the pie rides on his head and wobbles when he runs
     const h=SPR[n][3]/SPR[n][6],hx=p.x+(side?(flip?-2.4:2.4):0),wob=mv?Math.sin(ph*2)*.16:Math.sin(now*2)*.04,lift=mv?Math.abs(Math.sin(ph))*1.2:0,pa=pieFx?now-pieFx.t0:9,pop=pa<.6?1+Math.sin(pa/.6*Math.PI)*.7:1,up=pa<.6?Math.sin(pa/.6*Math.PI)*10:0;
-    ctx.save();ctx.translate(hx,y-h+3.2-lift-up);ctx.rotate(wob);drawPropImg('pie',0,0,false,.82*pop);ctx.restore();
-    if(Math.sin(now*5)>.4)sparkle(hx+(flip?-8:8),y-h-6,1.6)}
+    ctx.save();ctx.translate(hx,y-h+3.2-lift-up);ctx.rotate(wob);drawPropImg('pie',0,0,false,1.2*pop);ctx.restore();
+    if(Math.sin(now*5)>.4)sparkle(hx+(flip?-10:10),y-h-8,1.8)}
   p._img=null;
 }
 function drawCook(c){
