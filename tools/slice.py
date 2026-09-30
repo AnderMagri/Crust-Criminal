@@ -52,7 +52,11 @@ if __name__=='__main__':
     build([(S+'/street-props-v1.png',4,3,['home','bin','bush','tree','fence','lamp','hydrant','planter','car0','car1','car2','car3'],
             ('each',{'home':('h',30),'bin':('h',20),'bush':('h',18),'tree':('h',44),'fence':('w',17),'lamp':('h',42),'hydrant':('h',13),'planter':('w',15),
                      'car0':('w',36),'car1':('w',36),'car2':('w',36),'car3':('w',36)}),False),
-           (S+'/kitchen-props-v1.png',4,3,['oven','fridge','shelf','sink','pot','plates','board','cake','bowl','pie','donut','onigiri'],
-            ('each',{'oven':('w',17),'fridge':('w',16.5),'shelf':('w',17),'sink':('w',17),'pot':('w',9),'plates':('w',8),'board':('w',10.5),'cake':('w',9),
-                     'bowl':('w',8.5),'pie':('w',13),'donut':('w',9),'onigiri':('w',7.5)}),False)],
+           (S+'/kitchen-props-v1.png',4,3,['','','','','pot','plates','board','cake','bowl','pie','donut','onigiri'],
+            ('each',{'pot':('w',9),'plates':('w',8),'board':('w',10.5),'cake':('w',9),'bowl':('w',8.5),'pie':('w',13),'donut':('w',9),'onigiri':('w',7.5)}),False),
+           # front-facing fixtures: drawn stretched into their exact tile rectangles in game
+           (S+'/kitchen-fixtures-v1.png',4,2,['stove','fridge','shelf','sink','winOpen','winClosed','doorC','doorO'],
+            ('each',{n:('w',18) for n in ['stove','fridge','shelf','sink','winOpen','winClosed','doorC','doorO']}),False),
+           (S+'/snacks-v1.png',4,2,['sn_candy','sn_cookie','sn_choc','sn_donut','sn_fries','sn_burger','sn_gold','sn_onigiri'],
+            ('each',{n:('w',12) for n in ['sn_candy','sn_cookie','sn_choc','sn_donut','sn_fries','sn_burger','sn_gold','sn_onigiri']}),False)],
           OUT+'/props.webp',OUT+'/props.json')

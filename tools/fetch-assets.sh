@@ -85,3 +85,5 @@ curl -sSfo assets/art/sprites-src/raccoon-walk-v1.png "https://app-uploads.krea.
 curl -sSfo assets/art/sprites-src/raccoon-walk-pie-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/98838f37-576e-4f45-9856-65238c1c419a-image.png"
 curl -sSfo assets/art/sprites-src/street-props-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/e75de695-2ad9-458e-8151-169cb9764a19-image.png"
 curl -sSfo assets/art/sprites-src/kitchen-props-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/aa0ad6f4-9f7e-4194-947a-0a02cbd58673-image.png"
+curl -sSfo assets/art/sprites-src/kitchen-fixtures-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/ab4521f4-d96e-4e3a-8a27-fa2c80294b59-image.png"
+curl -sSfo assets/art/sprites-src/snacks-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/4b463693-f54e-4c84-9d67-85a95a18581b-image.png"
