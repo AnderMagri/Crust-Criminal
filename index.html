@@ -111,6 +111,12 @@ canvas{display:block;touch-action:none}
 #menu .tog{font-family:var(--body);font-weight:800;font-size:12px;color:var(--ink);background:#fde2e8;border:0;border-radius:999px;padding:6px 12px;cursor:pointer}
 #menu .tog.off{background:#eee;color:var(--mute)}
 @media (prefers-reduced-motion:reduce){#menu .fullcoon,#menu .mcard{animation:none}}
+
+#titleVid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;z-index:0;pointer-events:none}
+#title>*:not(#titleVid){position:relative;z-index:1}
+#title .tq{position:absolute!important;left:50%;top:31%;transform:translateX(-50%);z-index:2;max-width:78%;width:max-content;background:#fff;color:var(--ink);font-family:var(--body);font-weight:800;font-size:15px;line-height:1.2;text-align:center;padding:8px 14px;border:3px solid var(--ink);border-radius:18px;box-shadow:0 3px 0 var(--ink);animation:tqpop .35s cubic-bezier(.3,1.6,.6,1)}
+#title .tq::after{content:"";position:absolute;left:52%;bottom:-11px;width:14px;height:10px;background:var(--ink);clip-path:polygon(0 0,100% 0,30% 100%)}
+@keyframes tqpop{from{transform:translateX(-50%) scale(.5);opacity:0}}
 </style>
 
 <div id="app">
@@ -128,6 +134,8 @@ canvas{display:block;touch-action:none}
     <div id="toast" hidden></div>
     <div id="title">
       <div class="logo"><img id="logoImg" src="assets/art/logo.webp" alt="Crust Criminal" onerror="this.hidden=true;document.getElementById('logoText').hidden=false"><h1 id="logoText" hidden>Crust<span>Criminal</span></h1></div>
+      <video id="titleVid" muted playsinline loop preload="auto" aria-hidden="true" hidden></video>
+      <div id="tq" class="tq" hidden></div>
       <canvas id="titleArt" width="40" height="44" aria-hidden="true"></canvas>
       <div class="bottom"><div class="start">Tap to start</div><div class="small">Phone: drag to move, tap to jump · Keyboard: WASD/arrows to move, Space to jump</div></div>
     </div>
@@ -535,10 +543,21 @@ function playStep(i,t){
   }
 }
 let themeBuf=null,themeSrc=null;
-function loadTheme(){fetch('assets/music/main-theme.mp3').then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(b=>ac.decodeAudioData(b)).then(buf=>{themeBuf=buf;startTheme()}).catch(()=>{})}
+// ---------- recorded music: title / game / pause tracks, crossfaded by game state ----------
+const TRACKS={title:'assets/music/title-theme.mp3',game:'assets/music/main-theme.mp3',pause:'assets/music/pause-theme.mp3'},TRACK_VOL={title:1.25,game:1.5,pause:1.1};
+const trk={};let curTrack=null;
+function loadTheme(){for(const n in TRACKS)fetch(TRACKS[n]).then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(b=>ac.decodeAudioData(b)).then(buf=>{trk[n]={buf,src:null,gain:null,off:0};if(n==='game')themeBuf=buf;if(wantTrack()===n)playTrack(n,true)}).catch(()=>{})}
+function wantTrack(){return state==='title'?'title':state==='paused'?'pause':'game'}
+function playTrack(n,force){if(!ac||(curTrack===n&&!force))return;const t=ac.currentTime;
+  for(const k in trk){const T=trk[k];if(k!==n&&T.src){const s=T.src,g=T.gain;if(k==='game')T.off=(t-T.t0)%T.buf.duration;g.gain.cancelScheduledValues(t);g.gain.setTargetAtTime(0,t,.25);T.src=null;setTimeout(()=>{try{s.stop()}catch(_){}},1600)}}
+  curTrack=n;const T=trk[n];if(!T||T.src)return;
+  const s=ac.createBufferSource(),g=ac.createGain();s.buffer=T.buf;s.loop=true;g.gain.value=0;g.gain.setTargetAtTime(TRACK_VOL[n],t,n==='pause'?.5:.3);s.connect(g).connect(musBus);
+  const off=n==='game'?T.off||0:0;s.start(t,off);T.src=s;T.gain=g;T.t0=t-off}
 function startTheme(){if(!themeBuf||themeSrc)return;themeSrc=ac.createBufferSource();themeSrc.buffer=themeBuf;themeSrc.loop=true;const g=ac.createGain();g.gain.value=1.5;themeSrc.connect(g).connect(musBus);themeSrc.start()}
 function musicTick(){
-  if(themeSrc){themeSrc.playbackRate.setTargetAtTime(intensity>0?1.06:1,ac.currentTime,.4);return}   // recorded theme playing: nudge the tempo up in chases
+  if(ac)playTrack(wantTrack());
+  const gs=trk.game&&trk.game.src;if(gs){gs.playbackRate.setTargetAtTime(intensity>0?1.06:1,ac.currentTime,.4);return}   // recorded theme playing: nudge the tempo up in chases
+  if(curTrack&&trk[curTrack]&&trk[curTrack].src)return;
   if(!ac||!musicOn||ac.state!=='running')return;
   if(nextT<ac.currentTime-.2)nextT=ac.currentTime+.05;
   while(nextT<ac.currentTime+.15){playStep(stepI,nextT);nextT+=SIXTEENTH*(stepI%2?1-SONGS[song].swing:1+SONGS[song].swing);stepI=(stepI+1)%64}
@@ -570,7 +589,7 @@ const COON_VO={'Pie time!':'pietime','Ta-daaa! Let the adventure begin!':'tada',
   'A golden donut?! I can see colors!':'donut','Fries from the garbage? Five stars.':'fries','Half a burger?! Today is my lucky day!':'burger',
   'Nom nom nom... mmm!':'nom','Heh-heh-heh... excuse me!':'fart','SUGAR RUSH! Wheeeee!':'sugarrush','Uh oh... tummy\u2019s rumbling...':'rumble',
   'I\u2019m starving! I haven\u2019t eaten in... four whole minutes!':'starving','I... can\u2019t... go on... without... a snack...':'cantgoon',
-  'My legs are made of jelly!':'jelly','Sniff sniff... is that... CHERRY?!':'cherry','I am one with the shadows... and the crumbs.':'shadows','Cardio! My old enemy!':'cardio',
+  'My legs are made of jelly!':'jelly','I don’t steal pies. I RESCUE them.':'rescue','Some raccoons steal trash. I steal... dessert.':'dessert','Sniff sniff... is that... CHERRY?!':'cherry','I am one with the shadows... and the crumbs.':'shadows','Cardio! My old enemy!':'cardio',
   'Wheee! Can’t catch me, I’m the pie guy!':'pieguy','Who leaves a pie unattended? Amateurs.':'amateurs','Look both ways... then run like a maniac!':'lookboth',
   'Yeah yeah, honk at me one more time, buddy!':'honkback','Beep beep! Raccoon coming through!':'beepbeep','Easy, puppy! I have treats! ...No I don’t.':'puppy',
   'The cops! Act natural... act natural...':'actnatural','Nobody saw that. Nobody.':'nobodysaw','Five-star heist. Would steal again.':'fivestar','Everything is going dark... is that the light? ...No, it\u2019s the fridge.':'fridge','♪ Pie, pie, beautiful pie... ♪':'song','Dun dun dun... dun-dun...':'hum','Huff... should’ve skipped... second breakfast...':'tired'};
@@ -708,24 +727,44 @@ const endJoy=e=>{if(joy&&e.pointerId===joy.id){const tap=!joy.moved&&performance
 stage.addEventListener('pointerup',endJoy);stage.addEventListener('pointercancel',endJoy);
 $('mute').addEventListener('click',e=>{e.stopPropagation();audio();setVoice(!voiceOn)});
 $('music').addEventListener('click',e=>{e.stopPropagation();audio();setMusic(!musicOn)});
-$('title').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();grabFocus();onAction()});
+$('title').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();grabFocus();const first=!ac||ac.state!=='running';audio();
+  if(e.target.closest('.start')||!first)onAction()});
 
 // ---------- pause menu ----------
+// fade voices + sound effects (not music) in/out; the final value is set directly so it can't get stuck mid-ramp
+function busTo(voc,sfx){if(!ac||!vocBus)return;const t=ac.currentTime;for(const[b,v]of[[vocBus,voc],[sfxBus,sfx]]){b.gain.cancelScheduledValues(t);b.gain.setTargetAtTime(v,t,.04);setTimeout(()=>{b.gain.cancelScheduledValues(0);b.gain.value=v},250)}}
 let prevState='play';
 function pauseGame(){if(state!=='play'&&state!=='transition')return;prevState=state;state='paused';joy=null;for(const k in keys)keys[k]=false;
   $('mNow').textContent=fmt(time);$('mBest').textContent=best?fmt(best):'—';syncMenuToggles();$('menu').hidden=false;
-  try{ac&&ac.suspend()}catch(_){}setTimeout(()=>$('mResume').focus(),30)}
-function closeMenu(){$('menu').hidden=true;try{ac&&ac.resume()}catch(_){}grabFocus()}
+  if(voiceSrc){try{voiceSrc.stop()}catch(_){}voiceSrc=null}voiceEnd=0;busTo(0,0)
+  clearBubbles();audio();playTrack('pause');setTimeout(()=>$('mResume').focus(),30)}
+function closeMenu(){$('menu').hidden=true;busTo(1,.9);grabFocus()}
 function resumeGame(){if(state!=='paused')return;closeMenu();state=prevState}
 function syncMenuToggles(){$('mMusic').textContent='Music: '+(musicOn?'on':'off');$('mMusic').classList.toggle('off',!musicOn);$('mVoices').textContent='Voices: '+(voiceOn?'on':'off');$('mVoices').classList.toggle('off',!voiceOn)}
 $('pauseBtn').addEventListener('click',e=>{e.stopPropagation();audio();state==='paused'?resumeGame():pauseGame()});
 $('mResume').addEventListener('click',resumeGame);
 $('mRestart').addEventListener('click',()=>{closeMenu();clearBubbles();newRun();state='play';hideMsg();sayStart()});
-$('mQuit').addEventListener('click',()=>{closeMenu();clearBubbles();newRun();state='title';hideMsg();$('title').hidden=false});
+$('mQuit').addEventListener('click',()=>{closeMenu();clearBubbles();newRun();state='title';hideMsg();$('title').hidden=false;tqNext=1.2;const v=$('titleVid');if(v&&!v.hidden)v.play().catch(()=>{})});
 $('mMusic').addEventListener('click',()=>{setMusic(!musicOn);syncMenuToggles()});
 $('mVoices').addEventListener('click',()=>{setVoice(!voiceOn);syncMenuToggles()});
 $('menu').addEventListener('pointerdown',e=>e.stopPropagation());
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='play')pauseGame()});
+
+// ---------- title screen: animated splash + the raccoon's opening line ----------
+const TITLE_QUOTES=['I don’t steal pies. I RESCUE them.','Some raccoons steal trash. I steal... dessert.'];
+let tqI=0,tqNext=1.2,tqHide=0;
+function titleTick(dt){
+  if(state!=='title'){if(!$('tq').hidden)$('tq').hidden=true;tqNext=Math.min(tqNext,1.2);const v=$('titleVid');if(v&&!v.paused)v.pause();return}
+  if(tqHide>0){tqHide-=dt;if(tqHide<=0)$('tq').hidden=true}
+  if(!ac||ac.state!=='running')return;
+  tqNext-=dt;if(tqNext>0)return;
+  const q=TITLE_QUOTES[tqI++%TITLE_QUOTES.length],el=$('tq');el.textContent=q;el.hidden=false;el.style.animation='none';void el.offsetWidth;el.style.animation='';
+  const c=voiceOn&&clipFor(q,player);if(c)playClip(c,2);tqHide=c?clipBuf[c].duration+.4:3.8;tqNext=tqHide+12;
+}
+(function(){const v=$('titleVid');if(!v)return;v.src='assets/art/splash-loop.mp4';
+  v.addEventListener('canplay',()=>{v.hidden=false;v.play().catch(()=>{})},{once:true});
+  v.addEventListener('error',()=>{v.hidden=true});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state==='title')v.play().catch(()=>{})})})();
 
 // ---------- jumping: vault one tile of counter / fence / hedge / bin ----------
 const JUMPABLE={kitchen:'C',street:'NHB'};
@@ -2139,7 +2178,7 @@ function frame(ts){
   }else if(state==='title'){updateEnemies(dt,false);chatter(dt)}
   else if(state==='caught'&&S.kind==='street')for(const c of cars){c.x+=c.dir*c.sp*dt*.3}
   intensity=state==='title'||(state==='play'&&enemies.some(e=>e.state==='chase'||e.state==='alert'))?1:0;
-  updateCam(dt,false);updateAmbience();
+  updateCam(dt,false);updateAmbience();titleTick(dt);
   for(const w of [player,...enemies,...cars]){w.cd=(w.cd||0)-dt;if(!w.bub)continue;w.bub.t+=dt;if(w.bub.t>w.bub.life){w.bub.el.remove();w.bub=null}else placeBubble(w)}
   for(const p of parts)p.t+=dt;parts=parts.filter(p=>p.t<p.life);
   if(shake>0)shake-=dt;
@@ -2168,6 +2207,7 @@ addEventListener('resize',fit);
   g.drawImage(COON_SPR.cd[0],10,22);ctx.save();ctx.translate(20,20);drawPie(0,0);ctx.restore();ctx=m})();
 setTimeout(()=>{try{window.focus();$('stage').focus({preventScroll:true})}catch(_){}},100);
 if('serviceWorker' in navigator&&document.querySelector('link[rel=manifest]'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+try{audio()}catch(_){}
 fit();newRun();setVoice(voiceOn);setMusic(musicOn);requestAnimationFrame(frame);
 })();
 </script>

@@ -57,3 +57,9 @@ curl -sSfo sfx/dog-woof.mp3 https://app-uploads.krea.ai/audio/988b380d-9f83-4e18
 curl -sSfo sfx/dog-growl.mp3 https://app-uploads.krea.ai/audio/77c009c9-7a24-435d-b8e3-d3106f107210.mp3
 curl -sSfo sfx/dog-sniff.mp3 https://app-uploads.krea.ai/audio/fb408561-ea3c-42ca-9355-bf804d7368c6.mp3
 curl -sSfo sfx/dog-whine.mp3 https://app-uploads.krea.ai/audio/686744d4-e32e-4072-aa7f-898fa5d40ca2.mp3
+
+# music round 2
+curl -sSfo music/title-theme.mp3 https://app-uploads.krea.ai/audio/462f4e1e-e866-4d17-b1a7-3993624a7f63.mp3
+curl -sSfo music/pause-theme.mp3 https://app-uploads.krea.ai/audio/a1dcecb9-0b2b-41cd-b4a1-b743957cdec6.mp3
+curl -sSfo voices/raccoon-rescue.mp3 https://app-uploads.krea.ai/audio/07e5221b-c6e8-4f76-ad84-a2804aaf325a.mp3
+curl -sSfo voices/raccoon-dessert.mp3 https://app-uploads.krea.ai/audio/7b083d39-4f49-42fd-9684-cfb3826c0ae1.mp3
