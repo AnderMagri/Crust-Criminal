@@ -17,11 +17,20 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;touch
 #hud{position:absolute;left:8px;right:8px;top:8px;display:flex;gap:6px;align-items:flex-start;line-height:1.2;font-family:"Silkscreen",monospace;font-size:12px;pointer-events:none;z-index:3}
 .pill{background:rgba(18,17,25,.84);border:1px solid var(--line);padding:5px 8px}
 #obj{flex:1;min-width:0}
-#energy{position:absolute;left:8px;top:40px;z-index:3;display:flex;align-items:center;gap:5px;pointer-events:none;font-family:"Silkscreen",monospace;font-size:10px;color:#e4e7ee;text-shadow:1px 1px 0 #0e0f1a}
-#energy .track{width:92px;height:9px;background:rgba(14,15,26,.85);border:1px solid #3a4468;padding:1px}
-#energy .fill{height:100%;width:70%;background:#f4a24a;transition:width .15s linear,background .2s}
-#energy.low .fill{background:#e2525a}#energy.low{animation:blink .6s steps(2) infinite}
-#energy.rush .fill{background:#ffd27a}
+#energy{position:absolute;left:8px;top:40px;z-index:3;display:flex;align-items:center;gap:6px;pointer-events:none;background:rgba(14,15,26,.84);border:1px solid #3a4468;padding:4px 7px 4px 5px}
+#energy .ico{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ffd27a 0 30%,#f4a24a 31% 60%,#c2562e 61%);box-shadow:inset 0 0 0 3px #161a2b;position:relative}
+#energy .ico:after{content:"";position:absolute;inset:6px;border-radius:50%;background:#161a2b}
+#energy .col{display:flex;flex-direction:column;gap:2px}
+#energy .lbl{font-family:"Silkscreen",monospace;font-size:10px;line-height:1;color:#f6f7fb;letter-spacing:.06em}
+#energy .lbl i{font-style:normal;color:#a9aebd}
+#energy .track{width:104px;height:8px;background:#0e0f1a;border:1px solid #555a6b;position:relative;overflow:hidden}
+#energy .fill{height:100%;width:70%;background:linear-gradient(#ffd27a,#f4a24a);transition:width .2s linear}
+#energy .track:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 19%,#0e0f1a 19% 20%)}
+#energy.low{border-color:#e2525a}#energy.low .fill{background:#e2525a}#energy.low .lbl{color:#e2525a;animation:blink .6s steps(2) infinite}
+#energy.rush .fill{background:linear-gradient(90deg,#ffd27a,#fff0c2,#ffd27a);background-size:200% 100%;animation:shine .5s linear infinite}
+@keyframes shine{to{background-position:-200% 0}}
+.pop{position:absolute;z-index:4;font-family:"Silkscreen",monospace;font-size:13px;color:#ffd27a;text-shadow:1px 1px 0 #0e0f1a,-1px -1px 0 #0e0f1a;pointer-events:none;transform:translate(-50%,-100%);animation:rise .9s ease-out forwards}
+@keyframes rise{to{transform:translate(-50%,-190%);opacity:0}}
 #obj.run{color:var(--alert)}
 #clock{font-variant-numeric:tabular-nums}
 #mute,#music{pointer-events:auto;font-family:"Silkscreen",monospace;font-size:12px;line-height:1.2;color:var(--ink);background:rgba(18,17,25,.84);border:1px solid var(--line);padding:5px 8px;cursor:pointer;min-height:28px}
@@ -72,7 +81,7 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;touch
       <button id="mute" type="button" aria-pressed="false" aria-label="Toggle voices">♪</button>
     </div>
     <div id="keys" hidden><span><b>WASD</b>/<b>←↑→↓</b> move</span><span><b>Space</b> jump</span><span><b>N</b> music</span><span><b>M</b> voices</span><span><b>R</b> restart</span></div>
-    <div id="energy" hidden><span>Snack</span><div class="track"><div class="fill" id="efill"></div></div></div>
+    <div id="energy" hidden><div class="ico"></div><div class="col"><div class="lbl" id="elbl">ENERGY <i>\u00b7 eat snacks!</i></div><div class="track"><div class="fill" id="efill"></div></div></div></div>
     <div id="toast" hidden></div>
     <div id="title">
       <div class="logo"><img id="logoImg" src="assets/art/logo.webp" alt="Crust Criminal" onerror="this.hidden=true;document.getElementById('logoText').hidden=false"><h1 id="logoText" hidden>Crust<span>Criminal</span></h1></div>
@@ -368,6 +377,7 @@ const SFX={
   honk(){tone(330,.22,{vol:.05});tone(415,.22,{vol:.04})},
   start(){[64,67,71,76].forEach((n,k)=>tone(mtof(n),.08,{vol:.05,when:ac&&ac.currentTime+k*.05}))},
   click(){tone(880,.03,{vol:.03})},
+  fart(){if(!ac)return;if(clipBuf['raccoon-fart'])return;const t=ac.currentTime;tone(95,.45,{type:'sawtooth',slide:60,vol:.14,lp:420,q:8});for(let k=0;k<6;k++)tone(80+Math.random()*40,.07,{type:'square',vol:.05,lp:300,when:t+k*.06});noise(.4,{lp:500,vol:.08})},
   nom(){for(let k=0;k<3;k++){noise(.06,{lp:900,vol:.14,when:ac&&ac.currentTime+k*.12});tone(180-k*20,.05,{type:'triangle',vol:.06,when:ac&&ac.currentTime+k*.12})}tone(1320,.15,{type:'triangle',vol:.04,when:ac&&ac.currentTime+.4})}
 };
 
@@ -464,7 +474,7 @@ const COON_VO={'Pie time!':'pietime','Ta-daaa! Let the adventure begin!':'tada',
   'Shhh... I am a ninja. A very round ninja.':'ninja',
   'Ooh, a cookie! Don\u2019t mind if I do!':'cookie','Chocolate... sweet, sweet chocolate...':'chocolate','Candy! Crunchity-crunch!':'candy',
   'A golden donut?! I can see colors!':'donut','Fries from the garbage? Five stars.':'fries','Half a burger?! Today is my lucky day!':'burger',
-  'Nom nom nom... mmm!':'nom','SUGAR RUSH! Wheeeee!':'sugarrush','Uh oh... tummy\u2019s rumbling...':'rumble',
+  'Nom nom nom... mmm!':'nom','Heh-heh-heh... excuse me!':'fart','SUGAR RUSH! Wheeeee!':'sugarrush','Uh oh... tummy\u2019s rumbling...':'rumble',
   'I\u2019m starving! I haven\u2019t eaten in... four whole minutes!':'starving','I... can\u2019t... go on... without... a snack...':'cantgoon',
   'My legs are made of jelly!':'jelly','Everything is going dark... is that the light? ...No, it\u2019s the fridge.':'fridge','♪ Pie, pie, beautiful pie... ♪':'song','Dun dun dun... dun-dun...':'hum','Huff... should’ve skipped... second breakfast...':'tired'};
 const ENEMY_VO={
@@ -479,7 +489,8 @@ function loadClips(){if(clipsLoading||!ac)return;clipsLoading=true;
   for(const name of files)fetch('assets/voices/'+name+'.mp3').then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(b=>ac.decodeAudioData(b)).then(buf=>{
     // loudness-match every clip so no line is much louder than another
     const d=buf.getChannelData(0);let sum=0,n=0;for(let i=0;i<d.length;i+=4){if(Math.abs(d[i])>.02){sum+=d[i]*d[i];n++}}
-    const rms=Math.sqrt(sum/Math.max(1,n))||.1;clipGain[name]=Math.min(4,Math.max(.3,.16/rms));clipBuf[name]=buf}).catch(()=>{});
+    clipGain[name]=1;   // files are loudness-matched offline (tools: ffmpeg); no per-clip guessing
+    clipBuf[name]=buf}).catch(()=>{});
   loadTheme()}
 const clipName=(who,text)=>who===player?(COON_VO[text]&&'raccoon-'+COON_VO[text]):(who&&who.vo&&ENEMY_VO[who.vo][text]);
 const clipFor=(text,who=player)=>{const n=clipName(who,text);return n&&clipBuf[n]?n:null};
@@ -544,7 +555,13 @@ function loadScene(sc){
   buildBg();updateCam(0,true);setObj();
 }
 let energyCarry=70;
-function newRun(){time=0;pieTaken=false;energyCarry=70;loadScene(genKitchen())}
+let fartAt=-1;
+function newRun(){time=0;pieTaken=false;energyCarry=70;fartAt=Math.random()<.02?8+Math.random()*40:-1;loadScene(genKitchen())}
+function doFart(){
+  fartAt=-1;SFX.fart();noiseAt(player.x,player.y,60);
+  for(let i=0;i<10;i++)parts.push({x:player.x+(Math.random()*10-5),y:player.y-4+Math.random()*4,t:0,life:.9,col:'rgba(160,200,110,',sz:3});
+  setTimeout(()=>{if(state==='play')say(player,'Heh-heh-heh... excuse me!',true)},clipFor('Heh-heh-heh... excuse me!',player)?0:350);
+}
 function setObj(){
   const o=$('obj');let t;
   if(S.kind==='kitchen')t=pieTaken?'Find the back door':'Find the pie';else t='Get home to your trash can';
@@ -562,6 +579,7 @@ addEventListener('keydown',e=>{const k=e.key.toLowerCase();
   else if(k==='r'){audio();newRun();state='play';hideMsg();sayStart()}
   else if(k==='m')setVoice(!voiceOn);
   else if(k==='n'){audio();setMusic(!musicOn)}
+  else if(k==='f'&&e.shiftKey&&state==='play')doFart();   // Shift+F: test the easter egg
   else if(state==='title'&&MOVE_KEYS.includes(k))onAction();
 });
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
@@ -602,8 +620,10 @@ function noiseAt(x,y,r){
 }
 const hasItem=(c,r)=>S.kind==='kitchen'&&tileCh(c,r)==='C'&&hsh(c,r,7)<.48&&!S.knocked.has(c+','+r);
 const SNACK={candy:15,cookie:20,choc:26,donut:45,fries:22,burger:32};
+function popText(x,y,txt,col){const el=document.createElement('div');el.className='pop';el.textContent=txt;if(col)el.style.color=col;
+  el.style.left=((x-cam.x)*SCALE)+'px';el.style.top=((y-cam.y)*SCALE)+'px';$('stage').appendChild(el);setTimeout(()=>el.remove(),950)}
 function eatSnack(sn){
-  sn.eaten=true;player.energy=Math.min(100,player.energy+SNACK[sn.type]);
+  sn.eaten=true;player.energy=Math.min(100,player.energy+SNACK[sn.type]);popText(sn.x,sn.y-10,'+'+SNACK[sn.type]+' ENERGY');
   SFX.nom();noiseAt(sn.x,sn.y,70);   // munching is loud: nearby cooks come to look
   for(let i=0;i<6;i++)parts.push({x:sn.x-4+Math.random()*8,y:sn.y-4,t:0,life:.4});
   if(sn.type==='donut'){player.rush=6;toast('SUGAR RUSH!');setTimeout(()=>{if(state==='play')say(player,pickCoon(Math.random()<.5?'donut':'rush'),true)},100)}
@@ -626,7 +646,7 @@ function tryJump(){
   SFX.jump();if(Math.random()<.35)say(player,pickCoon('jump'),true);
 }
 
-function sayStart(){setTimeout(()=>{if(state==='play')say(player,pickCoon('start'),true)},250)}
+function sayStart(){setTimeout(()=>{if(state==='play'&&S.kind==='kitchen')toast('Moving uses ENERGY\nEat glowing snacks to refill')},2600);setTimeout(()=>{if(state==='play')say(player,pickCoon('start'),true)},250)}
 function onAction(){
   audio();
   if(state==='title'){state='play';$('title').hidden=true;hideMsg();SFX.start();sayStart()}
@@ -1116,7 +1136,15 @@ function drawK9(e){
   }
 }
 function drawSnack(sn){
-  const x=Math.round(sn.x),y=Math.round(sn.y)+Math.round(Math.sin(now*3+sn.x)*1)-2;shadow(x,Math.round(sn.y),4);
+  // pulsing halo on the floor so snacks read as pickups
+  const pr=7+Math.sin(now*4+sn.x)*1.5;ctx.strokeStyle='rgba(255,210,122,.75)';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(sn.x,sn.y,pr+3,(pr+3)*.45,0,0,TAU);ctx.stroke();
+  ctx.fillStyle='rgba(255,210,122,.22)';ctx.beginPath();ctx.ellipse(sn.x,sn.y,pr+3,(pr+3)*.45,0,0,TAU);ctx.fill();
+  ctx.save();ctx.translate(Math.round(sn.x),Math.round(sn.y));ctx.scale(1.5,1.5);ctx.translate(-Math.round(sn.x),-Math.round(sn.y));
+  drawSnackBody(sn);ctx.restore();
+  if(Math.sin(now*5+sn.y)>.5){const sx=Math.round(sn.x)+7,sy=Math.round(sn.y)-16;R(sx,sy-2,1,5,'#fff0c2');R(sx-2,sy,5,1,'#fff0c2')}
+}
+function drawSnackBody(sn){
+  const x=Math.round(sn.x),y=Math.round(sn.y)+Math.round(Math.sin(now*3+sn.x)*1)-2;
   const K='#161a2b';
   switch(sn.type){
     case'candy':R(x-6,y-3,2,4,'#e2525a');R(x+4,y-3,2,4,'#e2525a');R(x-4,y-4,8,6,K);R(x-3,y-3,6,4,'#e2525a');R(x-2,y-3,1,4,'#fff0c2');R(x+1,y-3,1,4,'#fff0c2');break;
@@ -1222,7 +1250,7 @@ function render(){
     for(let k=0;k<2;k++){const ox=cx+d[0]*k*4,oy=cy+d[1]*k*4;
       if(d[1]){R(ox-2,oy-d[1],5,1,CC);R(ox-1,oy,3,1,CC);R(ox,oy+d[1],1,1,CC)}
       else{R(ox-d[0],oy-2,1,5,CC);R(ox,oy-1,1,3,CC);R(ox+d[0],oy,1,1,CC)}}}}
-  for(const p of parts){const a=1-p.t/p.life;R(p.x,p.y-p.t*6,2,2,`rgba(235,225,205,${a*.8})`)}
+  for(const p of parts){const a=1-p.t/p.life,z=p.sz||2;R(p.x,p.y-p.t*(p.col?10:6),z,z,p.col?p.col+(a*.8)+')':`rgba(235,225,205,${a*.8})`)}
   enemies.forEach(e=>{const h=e.kind==='dog'?26:38,x=Math.round(e.x),y=Math.round(e.y)-h+(Math.sin(now*10)>0?0:-1);
     if(e.state==='alert')bubble(x,y,'!','#e08a00');else if(e.state==='chase')bubble(x,y,'!','#e0352b');else if(e.state==='search')bubble(x,y,'?','#6a5acd')});
   ctx.restore();
@@ -1266,6 +1294,7 @@ let lastClock='',last=0;
 function frame(ts){
   const t=ts/1000,dt=Math.min(.05,t-(last||t));last=t;now=t;
   if(state==='play'){
+    if(fartAt>0&&time>fartAt&&!player.jump)doFart();
     time+=dt;grace-=dt;sceneT+=dt;updatePlayer(dt);
     if(state==='play'){if(S.kind==='kitchen')updateKitchen(dt);else updateStreet(dt)}
     if(state==='play')updateEnemies(dt,true);
@@ -1279,7 +1308,8 @@ function frame(ts){
   if(shake>0)shake-=dt;
   if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').hidden=true}
   $('keys').hidden=state!=='play';
-  {const el=$('energy');el.hidden=state!=='play';if(state==='play'){$('efill').style.width=Math.round(player.energy)+'%';el.classList.toggle('low',player.energy<18&&!player.rush);el.classList.toggle('rush',player.rush>0)}}
+  {const el=$('energy');el.hidden=state!=='play';if(state==='play'){$('efill').style.width=Math.round(player.energy)+'%';const low=player.energy<18&&!player.rush;el.classList.toggle('low',low);el.classList.toggle('rush',player.rush>0);
+    const t=player.rush>0?'SUGAR RUSH!':low?(player.energy<=0?'EMPTY \u00b7 EAT!':'LOW \u00b7 EAT A SNACK'):player.energy>=99?'ENERGY \u00b7 FULL':'ENERGY';if($('elbl').dataset.t!==t){$('elbl').dataset.t=t;$('elbl').innerHTML=t}}}
   const cl=fmt(time);if(cl!==lastClock){$('clock').textContent=cl;lastClock=cl}
   render();requestAnimationFrame(frame);
 }
