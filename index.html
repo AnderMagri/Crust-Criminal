@@ -20,12 +20,12 @@
 <body>
 <title>Crust Criminal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Titan+One&family=Figtree:wght@500;600;700;800;900&display=swap">
 <style>
 :root{
   --bg:#4a4775; --paper:#fffaf3; --ink:#5b3f3c; --mute:#9a7f86; --line:#5b3f3c; --pink:#ff9fb6; --pinkD:#f27c9a;
   --crust:#f6c26f; --alert:#f0566f; --ok:#6cc59a; --mint:#bfe6d4; --butter:#f7e3a1; --salmon:#f0a99e; --blue:#c9ddf2;
-  --disp:"Lilita One",Nunito,system-ui,sans-serif; --body:Nunito,system-ui,sans-serif;
+  --disp:"Titan One","Luckiest Guy",Figtree,system-ui,sans-serif; --body:Figtree,system-ui,sans-serif;
   color-scheme:light;
 }
 [hidden]{display:none!important}
@@ -1585,7 +1585,7 @@ function drawShelf(c,r){const x=c*TS,y=r*TS;tRR(x,y-12,16,28,1.5,'#e8c093',1);
   for(let k=0;k<3;k++){tRR(x+1.6+k*4.8,y-11,3.4,5.6,1,J[(c+k)%5],.6);tRR(x+1.4+k*4.8,y-3,3.8,5.6,1.2,J[(c+k+2)%5],.6);tRR(x+2+k*4.6,y+5,3,5.6,1,J[(c+r+k)%5],.6)}}
 function drawDoorK(){const d=S.door,x=d.c*TS,y=d.r*TS,L=d.side==='L';
   if(!S.doorOpen){tRR(L?x+9:x+1,y-4,6,20,1.5,'#d9a877',1);tE(L?x+13.5:x+2.5,y+7,.8,.8,TP.gold,.5)}
-  else{tRR(L?x+8:x,y-4,8,20,1.5,TP.navyD,1);if(Math.sin(now*6)>-.2){ctx.fillStyle='#9be0a8';ctx.font='900 5px Nunito,sans-serif';ctx.textAlign='center';ctx.fillText('EXIT',L?x+12:x+4,y-6)}}}
+  else{tRR(L?x+8:x,y-4,8,20,1.5,TP.navyD,1);if(Math.sin(now*6)>-.2){ctx.fillStyle='#9be0a8';ctx.font='900 5px Figtree,sans-serif';ctx.textAlign='center';ctx.fillText('EXIT',L?x+12:x+4,y-6)}}}
 function drawWindowK(){for(let c=0;c<S.cols;c++){if(S.map[S.rows-1][c]!=='Q')continue;const x=c*TS,y=(S.rows-1)*TS;
   if(!S.windowClosed){tRR(x+1,y+1,14,13,2,'#4b5a92',1);tE(x+10,y+5,2,2,'#fff3c4',0);tE(x+10.8,y+4.4,1.6,1.6,'#4b5a92',0);tE(x+4,y+9,.5,.5,'#fff',0)}
   else{tRR(x+1,y+1,14,13,2,TP.salmon,1);ctx.beginPath();ctx.moveTo(x+8,y+1);ctx.lineTo(x+8,y+14);for(let k=0;k<3;k++){ctx.moveTo(x+1,y+4+k*3.5);ctx.lineTo(x+15,y+4+k*3.5)}tSt(.7);ctx.stroke()}}}
@@ -1597,7 +1597,7 @@ function drawBin(c,r,home){const x=c*TS+8,y=r*TS;const body=home?'#9fd3a2':'#c3c
   for(const o of[-2,0,2]){ctx.beginPath();ctx.moveTo(x+o,y);ctx.lineTo(x+o*.9,y+11);tSt(.6);ctx.stroke()}
   tE(x,y-4+bob,6.6,2,home?'#b8e6bb':'#dadde6',1);tE(x,y-5.6+bob,1.8,.9,INK,0);
   if(home){ctx.beginPath();ctx.moveTo(x+5,y-4+bob);ctx.lineTo(x+5,y-17+bob);tSt(.9);ctx.stroke();ctx.beginPath();ctx.moveTo(x+5,y-17+bob);ctx.lineTo(x+11,y-15+bob);ctx.lineTo(x+5,y-13+bob);ctx.closePath();ctx.fillStyle='#f3b660';ctx.fill();tSt(.8);ctx.stroke();
-    ctx.fillStyle=INK;ctx.font='900 4px Nunito,sans-serif';ctx.textAlign='center';ctx.fillText('HOME',x,y+6)}}
+    ctx.fillStyle=INK;ctx.font='900 4px Figtree,sans-serif';ctx.textAlign='center';ctx.fillText('HOME',x,y+6)}}
 function drawHedge(c,r){const x=c*TS,y=r*TS,below=tileCh(c,r+1)==='H';
   for(const[a,b,rr]of[[4,-2,5],[12,-2,5],[8,-5,5.5],[3,5,5],[13,5,5],[8,3,5.5]])if(!(below&&b>3))tE(x+a,y+b,rr,rr*.9,'#9fd3a2',1);
   tE(x+6,y-5,1.6,1.1,'#c8ecc6',0);tE(x+11,y+2,1.4,1,'#c8ecc6',0)}
@@ -1877,7 +1877,7 @@ function cone(e){
   e.cone={ox,oy,range,pts};
   ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(ox,oy);for(const p of pts)ctx.lineTo(p[0],p[1]);ctx.closePath();ctx.fill();
 }
-function bubble(x,y,ch,col){kE(x,y+2,5,5,'#fff',1);ctx.fillStyle=col;ctx.font='900 8px Nunito,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(ch,x,y+2.6)}
+function bubble(x,y,ch,col){kE(x,y+2,5,5,'#fff',1);ctx.fillStyle=col;ctx.font='900 8px Figtree,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(ch,x,y+2.6)}
 
 // ---------- overlay: just a soft warm vignette, no grain ----------
 function lighting(){
@@ -1959,7 +1959,7 @@ function drawDoorK(){
     kRR(L?x+11:x-5,y+2,10,12,2.5,'#9ee0bd',.8);
     const b=Math.sin(now*6)*1.6,ax=(L?x+17:x-1)+(L?-b:b),s=L?-1:1;
     ctx.fillStyle='#3fae6a';ctx.beginPath();ctx.moveTo(ax+s*4,y+8);ctx.lineTo(ax-s*1,y+4);ctx.lineTo(ax-s*1,y+6.4);ctx.lineTo(ax-s*4,y+6.4);ctx.lineTo(ax-s*4,y+9.6);ctx.lineTo(ax-s*1,y+9.6);ctx.lineTo(ax-s*1,y+12);ctx.closePath();ctx.fill();kStroke(.6);ctx.stroke();
-    const px=L?x+16:x;kRR(px-8,y-9,16,6.4,3.2,'#6cc59a',.8);ctx.fillStyle='#fff';ctx.font='900 5px Nunito,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('EXIT',px,y-5.6);
+    const px=L?x+16:x;kRR(px-8,y-9,16,6.4,3.2,'#6cc59a',.8);ctx.fillStyle='#fff';ctx.font='900 5px Figtree,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('EXIT',px,y-5.6);
   }
 }
 function drawWindowK(){for(let c=0;c<S.cols;c++){if(S.map[S.rows-1][c]!=='Q')continue;const x=c*TS,y=(S.rows-1)*TS;
