@@ -82,3 +82,8 @@ curl -sSfo music/title-swagger1.mp3 https://app-uploads.krea.ai/audio/639c77cc-8
 curl -sSfo music/title-swagger2.mp3 https://app-uploads.krea.ai/audio/d22a9bde-bf62-4c34-8b93-5fdb8b14be9a.mp3
 curl -sSfo music/title-lazy1.mp3 https://app-uploads.krea.ai/audio/b169d78d-ecab-4aac-9cd0-433203fc6a09.mp3
 curl -sSfo music/title-lazy2.mp3 https://app-uploads.krea.ai/audio/15ed6ebc-146d-4d61-9996-5528c9923e4d.mp3
+curl -sSfo sfx/purr1.mp3 https://app-uploads.krea.ai/audio/6a7de1ac-37e0-45af-a6c0-160247f6fc36.mp3
+curl -sSfo sfx/purr2.mp3 https://app-uploads.krea.ai/audio/03b73ae2-4577-45d1-b662-f6c9346a6ae3.mp3
+curl -sSfo sfx/purr3.mp3 https://app-uploads.krea.ai/audio/7a4e449e-4a4d-46a8-ad1a-928d6578efd5.mp3
+curl -sSfo voices/raccoon-cc-lazy.mp3 https://app-uploads.krea.ai/audio/e6f7c77e-50bf-4b3c-80a3-e375196ed013.mp3
+curl -sSfo voices/raccoon-cc-proud.mp3 https://app-uploads.krea.ai/audio/e722a8fd-68af-490b-a3b0-85b439e953a3.mp3
