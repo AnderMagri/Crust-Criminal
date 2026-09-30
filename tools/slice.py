@@ -25,18 +25,20 @@ def cells(path,cols,rows,names):
         sub=arr[y0:y1,x0:x1].copy();sub[...,3]=np.where(mask[y0:y1,x0:x1],sub[...,3],0)
         out[n]=Image.fromarray(sub)
     return out
-def outline(img,px,color=(91,63,60)):
-    # thick ink outline so small props match the line weight of the counters and characters
-    w,h=img.size;big=Image.new('RGBA',(w+2*px,h+2*px));big.paste(img,(px,px))
-    m=np.array(big.getchannel('A'))>60;lab,k=ndi.label(m)
+def outline(img,px,color=(78,52,48)):
+    # Crisp, anti-aliased ink ring hugging the art (distance field, no blur), in the same dark brown as the
+    # hand-drawn lines, so small props end up with the same line weight as counters and characters.
+    w,h=img.size;big=Image.new('RGBA',(w+2*px+2,h+2*px+2));big.paste(img,(px+1,px+1))
+    m=np.array(big.getchannel('A'))>128;lab,k=ndi.label(m)
     if k>1:  # only outline the main shape, not detached sparkles/steam
         ar=ndi.sum(m,lab,range(1,k+1));keep=[i+1 for i in range(k) if ar[i]>=.08*ar.max()];m=np.isin(lab,keep)
-    a=Image.fromarray((m*255).astype('uint8')).filter(ImageFilter.MaxFilter(2*px+1)).filter(ImageFilter.GaussianBlur(.6))
-    ink=Image.new('RGBA',big.size,color+(0,));ink.putalpha(a);ink.alpha_composite(big);return ink
+    m=ndi.binary_fill_holes(m);d=ndi.distance_transform_edt(~m)
+    a=np.clip(px+.5-d,0,1)*255
+    ink=Image.new('RGBA',big.size,color+(0,));ink.putalpha(Image.fromarray(a.astype('uint8')));ink.alpha_composite(big);return ink
 def feet_x(sp):
     a=sp.getchannel('A');w,h=sp.size;xs=[x for y in range(int(h*.9),h) for x in range(w) if a.getpixel((x,y))>100]
     xs.sort();return xs[len(xs)//2] if xs else w/2
-def build(sheets,out_img,out_json):
+def build(sheets,out_img,out_json,PPU=4):
     sprites={}
     for sh in sheets:
         path,cols,rows,names,sizing,chars=sh[:6];ol=sh[6] if len(sh)>6 else 0
@@ -48,7 +50,7 @@ def build(sheets,out_img,out_json):
             s2=s.resize((max(1,round(s.size[0]*k)),max(1,round(s.size[1]*k))),Image.LANCZOS)
             if ol:s2=outline(s2,ol)
             sprites[n]=(s2,feet_x(s2) if chars else s2.size[0]/2)
-    W=1024;x=y=sh=0;rects={}
+    W=1024 if PPU<8 else 2048;x=y=sh=0;rects={}
     for n,(s,ax) in sorted(sprites.items(),key=lambda t:-t[1][0].size[1]):
         w,h=s.size
         if x+w+2>W:x=0;y+=sh+2;sh=0
@@ -85,7 +87,7 @@ if __name__=='__main__':
             ('each',{'board':('w',11),'pot':('w',9.5),'bowl':('w',9),'cake':('w',9),'plates':('w',8.5),'jar':('w',7),'plant':('w',7.5),'teapot':('w',9.5)}),False,2),
            # front-facing fixtures: drawn stretched into their exact tile rectangles in game
            (S+'/kitchen-fixtures-v1.png',4,2,['stove','fridge','shelf','sink','winOpen','winClosed','doorC','doorO'],
-            ('each',{n:('w',18) for n in ['stove','fridge','shelf','sink','winOpen','winClosed','doorC','doorO']}),False),
+            ('each',{n:('w',18) for n in ['stove','fridge','shelf','sink','winOpen','winClosed','doorC','doorO']}),False,3),
            (S+'/snacks-v1.png',4,2,['sn_candy','sn_cookie','sn_choc','sn_donut','sn_fries','sn_burger','sn_gold','sn_onigiri'],
             ('each',{n:('w',12) for n in ['sn_candy','sn_cookie','sn_choc','sn_donut','sn_fries','sn_burger','sn_gold','sn_onigiri']}),False)],
-          OUT+'/props.webp',OUT+'/props.json')
+          OUT+'/props.webp',OUT+'/props.json',PPU=8)
