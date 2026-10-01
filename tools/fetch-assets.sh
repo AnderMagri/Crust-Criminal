@@ -93,3 +93,13 @@ curl -sSfo assets/art/sprites-src/floor-tiles-v1.png "https://app-uploads.krea.a
 # Forest world
 curl -sSfo assets/art/sprites-src/forest-chars-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/127b8031-0e82-418e-a56f-3c2aa6631e39-image.png"
 curl -sSfo assets/art/sprites-src/forest-props-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/5a488007-6489-4ab0-a4e3-264f09724425-image.png"
+# round 3 (Oct 1): hiding spots, new poses, forest props 2, moon world
+get assets/art/sprites-src/forest-props-v2.png   "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/f661b7fd-6623-40e0-af1d-1a659727ee5a-image.png"
+get assets/art/sprites-src/hiding-spots-v1.png   "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/22e85488-3c44-4c42-b7da-1b8c39b29df8-image.png"
+get assets/art/sprites-src/raccoon-actions-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/82f0a045-da72-44c4-acc8-89f4688cca0f-image.png"
+get assets/art/sprites-src/scared-enemies-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/33b974a7-e9e2-496a-85dc-a28121cb7641-image.png"
+get assets/art/sprites-src/moon-raccoon-v1.png   "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/995ef2f3-bf14-4c13-9139-61dcc48e7e67-image.png"
+get assets/art/sprites-src/moon-aliens-v1.png    "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/95a22ad6-895f-4616-9c1f-3998c510b230-image.png"
+get assets/art/sprites-src/moon-props-v1.png     "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/f5ff4f0f-af32-4c11-9d17-a13a5cbc3546-image.png"
+get assets/art/sprites-src/moon-rocket-home-v1.png  "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/337dc203-f123-4eee-9424-8a8cd7688868-image.png"
+get assets/art/sprites-src/moon-raccoon-walk-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/0daa0860-bc07-4f17-ac06-2ec780f2a7c2-image.png"
