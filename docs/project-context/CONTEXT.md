@@ -69,3 +69,7 @@ One solid bar at the **bottom** of the screen (the game canvas sits above it): c
 
 ## Who / where
 Ander — freelance product designer, studio Lighthouse Creative Lab. Mac repo path: `~/Documents/GitHub/Crust-Criminal`. Work happens in Claude (Cowork): assets are generated through the Krea MCP, files committed to the Mac with the device bridge; push is done by Ander in GitHub Desktop.
+
+## Placement rules (no overlapping objects)
+- Hiding spots (`placeHides` in extras.js): a hide sprite is ~20 px tall and reaches into the tile above, so the tile above it (and the one above that, and the two upper diagonals) must be open floor — no counter/jar, table, tree, boulder, building, door, window, pie, water, lamp or another hide. Falls back to looser levels only if fewer than 3 spots fit. Verified on 10 city, 10 forest, 5 moon levels (0 violations).
+- When adding any new placed object, give it the same kind of rule and test it by generating many levels.

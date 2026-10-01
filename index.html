@@ -2729,8 +2729,13 @@ function placeHides(s){
     const n=DIRS.filter(([a,b])=>open(c+a,r+b)).length;if(n<3)continue;   // never plug a corridor
     if(!K&&(g[r-1][c]==='r'||g[r+1][c]==='r'||g[r-1][c]==='w'||g[r+1][c]==='w'))continue;
     cand.push({c,r})}
-  shuffle(cand);const out=[];
-  for(const t of cand){if(out.length>=4)break;if(out.every(o=>Math.abs(o.c-t.c)+Math.abs(o.r-t.r)>=6))out.push(t)}
+  // no-overlap rule: a hiding sprite stands ~20 px tall and reaches into the tile above it, so nothing tall
+  // (counter + its jar/pot, table, tree, boulder, building, lamp, door, another hide) may sit there.
+  const tall=(c,r)=>{const ch=g[r]&&g[r][c];return ch===undefined||SOLID.has(ch)||'KDQPw'.includes(ch)};
+  const lampNear=t=>(s.lamps||[]).some(l=>Math.abs(l.x-(t.c*TS+8))<14&&Math.abs(l.y-(t.r*TS+8))<26);
+  const clear=(t,lvl)=>{if(tall(t.c,t.r-1)||lampNear(t))return false;if(lvl<2)return true;if(tall(t.c,t.r-2))return false;if(lvl<3)return true;return!tall(t.c-1,t.r-1)&&!tall(t.c+1,t.r-1)};
+  shuffle(cand);let out=[];
+  for(const lvl of[3,2,1]){out=[];for(const t of cand){if(out.length>=4)break;if(clear(t,lvl)&&out.every(o=>Math.abs(o.c-t.c)+Math.abs(o.r-t.r)>=6))out.push(t)}if(out.length>=3)break}
   out.forEach((t,k)=>{g[t.r][t.c]='K';s.hideType[t.c+','+t.r]=types[k%types.length]});
   s.map=g.map(r=>r.join(''));
 }

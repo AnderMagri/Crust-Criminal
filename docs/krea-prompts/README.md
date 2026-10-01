@@ -4,6 +4,7 @@ How every image and sound in the game was made, so a future session (or a future
 
 Files here:
 - `images.md` — sprite-sheet recipe, the sheet inventory (what each PNG in `assets/art/sprites-src/` contains and how it is sliced) and the exact prompts for the most recent sheets.
+- `templates.md` — copy-paste prompt templates (style sentence, grid sentence, props / hiding pairs / poses / head portraits / enemy reactions) for new sheets in the same style.
 - `audio.md` — voice actors (ElevenLabs voice IDs), raccoon voice prompts, music prompts, SFX/ambience prompts, processing settings.
 
 ## Tools and settings
