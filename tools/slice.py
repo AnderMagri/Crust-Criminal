@@ -121,5 +121,7 @@ def extras(S,OUT,rocket='moon-rocket-home-v2.png'):
            (S+'/moon-props-v1.png',4,3,['m_rock','m_crater','m_crates','m_dish','m_rover0','m_rover1','','m_crystal','m_cactus','m_console','m_dome','m_flag'],
             ('each',{'m_rock':('w',16),'m_crater':('w',18),'m_crates':('w',16),'m_dish':('h',22),'m_rover0':('w',36),'m_rover1':('w',36),'m_crystal':('w',16),
                      'm_cactus':('w',15),'m_console':('w',16),'m_dome':('w',20),'m_flag':('h',22)}),False),
-           (S+'/'+rocket,1,1,['m_rocket'],('each',{'m_rocket':('h',36)}),False)],
+           (S+'/'+rocket,1,1,['m_rocket'],('each',{'m_rocket':('h',36)}),False),
+           (S+'/moon-snacks-v1.png',4,2,['m_pie','ms_donut','ms_cheese','ms_star','ms_cookie','ms_icecream','ms_tube','ms_jelly'],
+            ('each',{'m_pie':('w',13),'ms_donut':('w',13),'ms_cheese':('w',12),'ms_star':('w',11),'ms_cookie':('w',11),'ms_icecream':('w',12),'ms_tube':('h',13),'ms_jelly':('w',11)}),False)],
           OUT+'/x-props.webp',OUT+'/x-props.json',PPU=8)
