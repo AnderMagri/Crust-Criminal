@@ -2626,7 +2626,11 @@ addEventListener('resize',fit);
 (function(){const c=$('titleArt'),g=c.getContext('2d'),m=ctx;ctx=g;
   g.drawImage(COON_SPR.cd[0],10,22);ctx.save();ctx.translate(20,20);drawPie(0,0);ctx.restore();ctx=m})();
 setTimeout(()=>{try{window.focus();$('stage').focus({preventScroll:true})}catch(_){}},100);
-if('serviceWorker' in navigator&&document.querySelector('link[rel=manifest]'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+if('serviceWorker' in navigator&&document.querySelector('link[rel=manifest]'))addEventListener('load',()=>{
+  // check for a new version on every open / return to the app, and reload once when it takes over
+  const had=!!navigator.serviceWorker.controller;let reloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&(state==='title'||state==='paused')){reloaded=true;location.reload()}});
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{reg.update();document.addEventListener('visibilitychange',()=>{if(!document.hidden)reg.update().catch(()=>{})})}).catch(()=>{})});
 try{audio()}catch(_){}
 fit();newRun();setVoice(voiceOn);setMusic(musicOn);requestAnimationFrame(frame);
 })();
