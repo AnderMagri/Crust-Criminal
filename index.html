@@ -707,8 +707,8 @@ function makeEnemy(sp,i){
   if(sp.kind==='cook'){const f=.8+Math.random()*.22;e.sp={patrol:30*f,search:46*f,chase:62*f};e.fat=f<.9}   // every chef has his own pace
   if(sp.style==='sous')Object.assign(e,{vo:'sous',style:'sous',voice:SOUS_VOICE,sp:{patrol:36,search:58,chase:69},view:92,lostMax:3,lines:LINES.sous,fat:false,skin:'#e7b08c',hair:'#2b2d38',stache:true});
   if(sp.style==='cop')Object.assign(e,{style:'cop',vo:'cop',voice:COP_VOICE,sp:{patrol:34,search:60,chase:71},view:92,half:.62,lostMax:2.6,lines:LINES.cop,fat:Math.random()<.4,skin:pick(['#e7b08c','#c07e5c','#8a5440'])});
-  if(sp.style==='ranger')Object.assign(e,{style:'ranger',vo:null,voice:COP_VOICE,lines:LINES.ranger});
-  if(sp.style==='camper')Object.assign(e,{style:'camper',vo:null,voice:SOUS_VOICE,sp:{patrol:32,search:54,chase:66},view:92,lostMax:3,lines:LINES.camper,fat:false});
+  if(sp.style==='ranger')Object.assign(e,{style:'ranger',vo:'ranger',voice:COP_VOICE,lines:LINES.ranger});
+  if(sp.style==='camper')Object.assign(e,{style:'camper',vo:'camper',voice:SOUS_VOICE,sp:{patrol:32,search:54,chase:66},view:92,lostMax:3,lines:LINES.camper,fat:false});
   if(sp.style==='k9')Object.assign(e,{style:'k9',voice:K9_VOICE,coat:'#2b2d38',sp:{patrol:40,search:74,chase:98},view:76,half:.6,lostMax:1.3,lines:LINES.k9});
   if(S.world==='moon')moonEnemy(e,sp);
   return e;
@@ -2736,7 +2736,7 @@ function tryBoo(){
   if(e.kind==='bear'){setTimeout(()=>{if(state==='play'){e.fa=Math.atan2(player.y-e.y,player.x-e.x);bearSpot(e)}},250);
     setTimeout(()=>{if(state==='play')say(player,pickCoon('booBear'),true)},800);return true}
   e.state='scared';e.t=2.6;e.st0=now;e.flee=Math.atan2(e.y-player.y,e.x-player.x);e.path=[];hitStop=.12;shake=.12;SFX.scream(e);
-  setTimeout(()=>{if(state==='play')say(e,pick(SCREAM[e.style]||SCREAM[e.kind]||SCREAM.cook),true)},60);
+  setTimeout(()=>{if(state==='play')say(e,(e.vo&&ENEMY_VO[e.vo]?pickE(e,SCREAM[e.style]||SCREAM.cook):pick(SCREAM[e.style]||SCREAM[e.kind]||SCREAM.cook)),true)},60);
   if(!e.dropped){e.dropped=1;S.snacks.push({x:e.x,y:e.y+2,type:e.style==='cop'?'donut':e.kind==='dog'?'candy':'cookie'})}
   const R=e.kind==='dog'?170:130;
   enemies.forEach(o=>{if(o!==e&&o.state!=='scared'&&Math.hypot(o.x-e.x,o.y-e.y)<R)toSearch(o,{x:e.x,y:e.y},o.lines.hear)});
@@ -2769,7 +2769,7 @@ function drawEnemyX(e){
 }
 function moonEnemy(e,sp){
   if(e.kind==='cook'){const boss=sp.style==='sous'||sp.style==='cop'||sp.style==='cmdr';
-    Object.assign(e,boss?{style:'cmdr',voice:CMDR_VOICE,lines:LINES.cmdr,view:92,lostMax:3}:{style:'alien',voice:ALIEN_VOICE,lines:LINES.alien},{vo:null,fat:false})}
+    Object.assign(e,boss?{style:'cmdr',vo:'cmdr',voice:CMDR_VOICE,lines:LINES.cmdr,view:92,lostMax:3}:{style:'alien',vo:'alien',voice:ALIEN_VOICE,lines:LINES.alien},{fat:false})}
   else if(e.kind==='dog'){const dr=sp.style==='k9';Object.assign(e,dr?{style:'drone',voice:CMDR_VOICE,lines:LINES.drone}:{style:'blob',voice:BLOB_VOICE,lines:LINES.blob})}
 }
 
@@ -2882,6 +2882,18 @@ function moonBg(g){
   }
 }
 function moonLight(){ctx.fillStyle='rgba(60,50,130,.07)';ctx.fillRect(0,0,VW,VH)}
+
+// ---------- recorded voices for the round-3 lines (assets/voices/*.mp3) ----------
+// mapped by position so the clip always matches the exact text in COON / SCREAM / LINES
+{const V={hide:['hide-nobody','hide-shadow','hide-fit','hide-box','hide-furniture'],pop:['pop-peekaboo','pop-tada','pop-miss'],boo:['boo','boo-heh','boo-surprise'],
+  booBear:['boobear-wrong','boobear-nope'],start_forest:['f-bearhands','f-unbearable'],idle_forest:['f-bearwithme','f-wildlife','f-leaf'],pie_forest:['f-berry','f-gotbear'],
+  start_moon:['m-houston','m-pieinspace'],idle_moon:['m-cheese','m-munch'],pie_moon:['m-landed'],jump_moon:['m-smallhop','m-zerog'],doorM:['m-leftbase'],winM:['m-mission'],alien:['m-leader']};
+ for(const k in V)(COON[k]||[]).forEach((t,i)=>{if(V[k][i])COON_VO[t]=V[k][i]});
+ Object.assign(ENEMY_VO,{ranger:{},camper:{},alien:{},cmdr:{}});
+ ENEMY_VO.cookA[SCREAM.cook[0]]='scream-cook';ENEMY_VO.cookB[SCREAM.cook[0]]='scream-cook';ENEMY_VO.sous[SCREAM.sous[0]]='scream-sous';ENEMY_VO.cop[SCREAM.cop[0]]='scream-cop';
+ ENEMY_VO.ranger[SCREAM.ranger[0]]='scream-ranger';ENEMY_VO.camper[SCREAM.camper[0]]='scream-camper';ENEMY_VO.alien[SCREAM.alien[0]]='scream-alien';ENEMY_VO.cmdr[SCREAM.cmdr[0]]='scream-cmdr';
+ const A=LINES.alien,C=LINES.cmdr;ENEMY_VO.alien[A.spot[0]]='alien-detected';ENEMY_VO.alien[A.spot[1]]='alien-halt';ENEMY_VO.alien[A.pie[0]]='alien-sacred';ENEMY_VO.alien[A.caught[0]]='alien-captured';
+ ENEMY_VO.cmdr[C.spot[0]]='cmdr-redalert';ENEMY_VO.cmdr[C.pie[0]]='cmdr-summit';}
 // ===== EXTRAS END =====
 // ===== FOREST END =====
 
