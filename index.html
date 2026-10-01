@@ -108,6 +108,7 @@ canvas{display:block;touch-action:none}
 #menu .stats b{font-family:var(--disp);font-weight:400;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums}
 #menu .mbtn{font-family:var(--disp);font-size:18px;color:var(--ink);background:#fff;border:3px solid var(--pink);border-radius:999px;padding:9px 14px 7px;box-shadow:0 4px 0 rgba(242,124,154,.45);cursor:pointer}
 #menu .mbtn.primary{color:#fff;background:var(--pink);border-color:#fff;box-shadow:0 4px 0 var(--pinkD)}
+#menu .mbtn.quit{color:#fff;background:#8e7fc4;border-color:#fff;box-shadow:0 4px 0 #6a5aa6}
 #menu .mbtn.ghost{background:transparent;box-shadow:none;border-color:#f6d3dc;color:var(--mute)}
 #menu .mbtn:active{transform:translateY(2px);box-shadow:none}
 #menu .mbtn:focus-visible,#menu .tog:focus-visible{outline:3px solid var(--crust);outline-offset:2px}
@@ -151,7 +152,7 @@ canvas{display:block;touch-action:none}
         <div class="stats"><div><span>This run</span><b id="mNow">0:00.0</b></div><div><span>Best heist</span><b id="mBest">—</b></div></div>
         <button class="mbtn primary" id="mResume" type="button">Resume</button>
         <button class="mbtn" id="mRestart" type="button">Restart heist</button>
-        <button class="mbtn ghost" id="mQuit" type="button">Quit to title</button>
+        <button class="mbtn quit" id="mQuit" type="button">Quit to title</button>
         <div class="toggles"><button class="tog" id="mMusic" type="button">Music: on</button><button class="tog" id="mVoices" type="button">Voices: on</button></div>
       </div>
     </div>
@@ -969,12 +970,12 @@ function updatePlayer(dt){
     if(!player.skidSnd){player.skidSnd=1;noise(.18,{hp:2500,lp:6000,vol:.06})}}else player.skidSnd=0;
   player.vx+=(ix*max-player.vx)*Math.min(1,k*dt);player.vy+=(iy*max-player.vy)*Math.min(1,k*dt);
   moveEnt(player,player.vx*dt,player.vy*dt);
-  // grid assist: glide into the lane you're moving along, and settle on the tile centre when you stop
-  {const tc=tileOf(player.x,player.y),cc=center(tc.c,tc.r),ax=Math.abs(ix),ay=Math.abs(iy),pull=Math.min(1,14*dt);
+  // corner assist: never pulls you to the tile centre; only when you push into a wall right next to an
+  // opening does it slide you sideways into that opening, so turns into aisles don't snag on corners
+  if(l>.2){const tc=tileOf(player.x,player.y),cc=center(tc.c,tc.r),ax=Math.abs(ix),ay=Math.abs(iy),pull=Math.min(1,18*dt);
     let sx=0,sy=0;
-    if(l<.2){sx=player.onLog?0:(cc.x-player.x)*pull;sy=(cc.y-player.y)*pull}
-    else if(ax>ay*1.2)sy=(cc.y-player.y)*pull;
-    else if(ay>ax*1.2&&!player.onLog)sx=(cc.x-player.x)*pull;
+    if(ax>ay*1.2){const px=player.x+Math.sign(ix)*3;if(hits(px,player.y)&&!hits(px,cc.y))sy=(cc.y-player.y)*pull}
+    else if(ay>ax*1.2){const py=player.y+Math.sign(iy)*3;if(hits(player.x,py)&&!hits(cc.x,py))sx=(cc.x-player.x)*pull}
     if(sx||sy)moveEnt(player,sx,sy)}
   const sp=Math.hypot(player.vx,player.vy);
   if(l>.2)player.dir=dirOf(Math.atan2(iy,ix));
