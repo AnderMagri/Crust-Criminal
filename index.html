@@ -873,9 +873,9 @@ function tryJump(){
   player.jump={sx:player.x,sy:player.y,tx:t.x,ty:t.y,t:0,dur:weak?.6:.42};if(S.world==='moon'){player.jump.dur*=1.8;player.jump.hi=2.2;moonJumpLine()}player.vx=player.vy=0;if(weak&&Math.random()<.5)say(player,pickCoon('empty'),true);
   const d=STEP[player.dir],tt=tileOf(player.x,player.y),c1=tt.c+d[0],r1=tt.r+d[1],ch=tileCh(c1,r1);
   if(hasItem(c1,r1)){S.knocked.add(c1+','+r1);const bx=c1*TS+8+d[0]*9,by=r1*TS+12+d[1]*10,IT=S.world==='forest'?FITEM:S.world==='moon'?MITEM:CITEM,item=IT[Math.floor(hsh(c1,r1,13)*IT.length)];
-    const spill=item==='ms_jelly'?['candy','choc']:item==='jar'?['cookie','cookie']:item==='cake'?['choc','candy']:item==='f_honey'?['candy','cookie']:null;
+    const spill=item==='ms_jelly'?['candy','choc']:(item==='m_jar1'||item==='m_jar2')?['cookie','cookie']:item==='jar'?['cookie','cookie']:item==='cake'?['choc','candy']:item==='f_honey'?['candy','cookie']:null;
     setTimeout(()=>{if(state!=='play')return;SFX.crash();shake=.12;S.debris.push({x:bx,y:by,k:hsh(c1,r1,7)});noiseAt(bx,by,130);
-      if(spill){toast(item==='ms_jelly'?'ALIEN JELLY!':item==='jar'?'COOKIES!':item==='f_honey'?'HONEY!':'CAKE!');const px=d[1]?1:0,py=d[0]?1:0;   // spill sideways along the landing row
+      if(spill){toast(item==='ms_jelly'?'ALIEN JELLY!':(item==='m_jar1'||item==='m_jar2')?'ALIEN COOKIES!':item==='jar'?'COOKIES!':item==='f_honey'?'HONEY!':'CAKE!');const px=d[1]?1:0,py=d[0]?1:0;   // spill sideways along the landing row
         spill.forEach((ty,i)=>{const s=i?1:-1,x=t.x+px*s*13,y=t.y+py*s*13;if(!solidAt(Math.floor(x/TS),Math.floor((y-2)/TS)))S.snacks.push({x,y,type:ty})});
         for(let i=0;i<10;i++)parts.push({x:t.x-8+Math.random()*16,y:t.y-4,t:0,life:.5,col:'rgba(240,190,120,',sz:2})}
       else toast('CRASH!');
@@ -2080,6 +2080,7 @@ function kitchenWalls(g){
 }
 function drawDoorK(){
   const d=S.door,x=d.c*TS,y=d.r*TS,L=d.side==='L',ox=L?x:x+9,cx=L?x+7:x;
+  if(S.world==='moon'&&!S.doorOpen){moonHatch(cx,y,L);return}
   if(!S.doorOpen){
     // closed wooden door slab sitting in the wall cap, with a padlock
     kRR(cx-.5,y-.5,10,17,2,'#e6b98c',.9);ctx.strokeStyle='rgba(150,95,60,.55)';ctx.lineWidth=.5;
@@ -2097,7 +2098,7 @@ function drawDoorK(){
     const px=L?x+16:x;kRR(px-8,y-9,16,6.4,3.2,'#6cc59a',.8);ctx.fillStyle='#fff';ctx.font='900 5px Figtree,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('EXIT',px,y-5.6);
   }
 }
-function drawWindowK(){if(S.world==='forest'){forestGate();return}for(let c=0;c<S.cols;c++){if(S.map[S.rows-1][c]!=='Q')continue;const x=c*TS,y=(S.rows-1)*TS;
+function drawWindowK(){if(S.world==='forest'){forestGate();return}if(S.world==='moon'){moonPorts();return}for(let c=0;c<S.cols;c++){if(S.map[S.rows-1][c]!=='Q')continue;const x=c*TS,y=(S.rows-1)*TS;
   if(!S.windowClosed){kRR(x+.5,y-.5,15,8,2,'#9fc3ee',.9);ctx.fillStyle='#34366a';ctx.fillRect(x+2,y+1,12,5);
     sparkle(x+5,y+3,1.1,'#fff6c8');kE(x+11,y+2.8,1.3,1.3,'#fff3c4',0);kE(x+11.7,y+2.3,1.1,1.1,'#34366a',0);
     ctx.fillStyle='#f7a9b8';ctx.fillRect(x+2,y+1,2,5);ctx.fillRect(x+12,y+1,2,5)}
@@ -2627,7 +2628,7 @@ function drawRanger(c){
 // ===== EXTRAS BEGIN =====
 // ================= ROUND 3: HIDING, BOO!, MOON WORLD, FOREST EXTRAS =================
 const XSPR={"sc_kj":[0,0,107,149,42,149,4],"sc_sj":[109,0,107,142,56,142,4],"sc_rj":[218,0,108,137,48,137,4],"mc_pf":[328,0,84,130,36,130,4],"mc_ps":[414,0,89,129,51,129,4],"mc_x":[505,0,85,125,38,125,4],"sc_kr":[592,0,99,124,60,124,4],"sc_sr":[693,0,100,124,63,124,4],"sc_pj":[795,0,125,122,68,122,4],"sc_pr":[0,151,101,120,71,120,4],"sc_mj":[103,151,114,120,50,120,4],"ra_pop":[219,151,75,118,39,118,4],"mc_s":[296,151,90,118,40,118,4],"ra_start":[388,151,84,117,40,117,4],"sc_rr":[474,151,100,117,74,117,4],"mc_f":[576,151,87,116,37,116,4],"mc_b":[665,151,83,116,47,116,4],"mc_float":[750,151,87,116,40,116,4],"mw_f0":[839,151,86,116,39,116,4],"mw_f1":[927,151,86,116,39,116,4],"mw_f2":[0,273,84,116,44,116,4],"mw_f3":[86,273,84,116,41,116,4],"al_j":[172,273,76,113,37,113,4],"sc_mr":[250,273,129,112,82,112,4],"sc_dj":[381,273,108,111,55,111,4],"al_s":[491,273,62,110,33,110,4],"al_b":[555,273,69,109,34,109,4],"mw_s1":[626,273,82,108,34,108,4],"mw_s3":[710,273,79,108,35,108,4],"al_f":[791,273,73,108,36,108,4],"al_a":[866,273,75,108,34,108,4],"ac_a":[0,391,99,108,48,108,4],"mc_t":[101,391,82,107,37,107,4],"mw_s2":[185,391,78,107,35,107,4],"ac_f":[265,391,89,107,44,107,4],"ac_s":[356,391,74,107,40,107,4],"ac_b":[432,391,86,107,43,107,4],"ra_boo":[520,391,82,100,36,100,4],"ra_wet":[604,391,78,100,37,100,4],"mw_b3":[684,391,76,100,42,100,4],"mw_b0":[762,391,77,99,42,99,4],"mw_b1":[841,391,76,99,40,99,4],"mw_b2":[919,391,76,99,40,99,4],"ra_sn0":[0,501,86,96,42,96,4],"ra_sn1":[88,501,83,96,48,96,4],"ra_laugh":[173,501,89,95,41,95,4],"ad_f":[264,501,89,93,45,93,4],"sc_dr":[355,501,115,92,50,92,4],"ap_f":[472,501,73,92,36,92,4],"ap_s":[547,501,96,90,37,90,4],"ra_duck":[645,501,87,62,43,62,4]};
-const XPROPD={"m_rocket":[0,0,204,288,102,288,8],"m_rover0":[206,0,288,279,144,279,8],"m_rover1":[496,0,288,276,144,276,8],"f_lantern":[786,0,161,272,80,272,8],"f_sign":[949,0,117,176,58,176,8],"m_dish":[1068,0,121,176,60,176,8],"m_flag":[1191,0,151,176,76,176,8],"m_crates":[1344,0,128,150,64,150,8],"m_dome":[1474,0,160,141,80,141,8],"h_bags":[1636,0,136,128,68,128,8],"m_crystal":[1774,0,128,127,64,127,8],"m_cactus":[1904,0,120,124,60,124,8],"h_bags_p":[0,290,136,122,68,122,8],"h_bush":[138,290,136,122,68,122,8],"fs_acorn":[276,290,88,122,44,122,8],"m_console":[366,290,128,121,64,121,8],"h_basket_p":[496,290,124,119,62,119,8],"h_bush_p":[622,290,136,119,68,119,8],"h_log_p":[760,290,136,118,68,118,8],"h_log":[898,290,136,117,68,117,8],"m_rock":[1036,290,128,117,64,117,8],"h_box_p":[1166,290,120,113,60,113,8],"h_basket":[1288,290,124,111,62,111,8],"h_box":[1414,290,120,109,60,109,8],"h_table":[1536,290,136,108,68,108,8],"f_bpie":[1674,290,104,106,52,106,8],"h_table_p":[1780,290,136,105,68,105,8],"fs_fish":[1918,290,45,104,22,104,8],"ms_tube":[1965,290,63,104,32,104,8],"fs_berry":[0,414,96,102,48,102,8],"fs_honey":[98,414,96,102,48,102,8],"m_crater":[196,414,144,100,72,100,8],"m_pie":[342,414,104,100,52,100,8],"ms_cheese":[448,414,96,97,48,97,8],"fs_smore":[546,414,96,95,48,95,8],"ms_icecream":[644,414,96,95,48,95,8],"ms_jelly":[742,414,88,93,44,93,8],"ms_star":[832,414,88,90,44,90,8],"ms_cookie":[922,414,88,88,44,88,8],"ms_donut":[1012,414,104,84,52,84,8]};
+const XPROPD={"m_rocket":[0,0,204,288,102,288,8],"m_rover0":[206,0,288,279,144,279,8],"m_rover1":[496,0,288,276,144,276,8],"f_lantern":[786,0,161,272,80,272,8],"f_sign":[949,0,117,176,58,176,8],"m_dish":[1068,0,121,176,60,176,8],"m_flag":[1191,0,151,176,76,176,8],"m_crates":[1344,0,128,150,64,150,8],"m_dome":[1474,0,160,141,80,141,8],"h_rocks_p":[1636,0,136,134,68,134,8],"h_bags":[1774,0,136,128,68,128,8],"m_crystal":[1912,0,128,127,64,127,8],"m_cactus":[0,290,120,124,60,124,8],"h_bags_p":[122,290,136,122,68,122,8],"h_bush":[260,290,136,122,68,122,8],"fs_acorn":[398,290,88,122,44,122,8],"m_console":[488,290,128,121,64,121,8],"h_basket_p":[618,290,124,119,62,119,8],"h_bush_p":[744,290,136,119,68,119,8],"h_log_p":[882,290,136,118,68,118,8],"h_log":[1020,290,136,117,68,117,8],"m_rock":[1158,290,128,117,64,117,8],"h_box_p":[1288,290,120,113,60,113,8],"h_rocks":[1410,290,136,113,68,113,8],"h_basket":[1548,290,124,111,62,111,8],"h_pod":[1674,290,136,111,68,111,8],"h_box":[1812,290,120,109,60,109,8],"h_pod_p":[0,416,136,109,68,109,8],"h_table":[138,416,136,108,68,108,8],"f_bpie":[276,416,104,106,52,106,8],"h_table_p":[382,416,136,105,68,105,8],"fs_fish":[520,416,45,104,22,104,8],"ms_tube":[567,416,63,104,32,104,8],"fs_berry":[632,416,96,102,48,102,8],"fs_honey":[730,416,96,102,48,102,8],"m_crater":[828,416,144,100,72,100,8],"m_pie":[974,416,104,100,52,100,8],"ms_cheese":[1080,416,96,97,48,97,8],"fs_smore":[1178,416,96,95,48,95,8],"ms_icecream":[1276,416,96,95,48,95,8],"ms_jelly":[1374,416,88,93,44,93,8],"m_jar2":[1464,416,72,93,36,93,8],"ms_star":[1538,416,88,90,44,90,8],"m_jar1":[1628,416,72,89,36,89,8],"ms_cookie":[1702,416,88,88,44,88,8],"ms_donut":[1792,416,104,84,52,84,8]};
 const XSPR_IMG=new Image();XSPR_IMG.onload=()=>{XSPR_IMG.ready=true};XSPR_IMG.src='assets/art/x-sprites.webp';
 const XPROP_IMG=new Image();XPROP_IMG.onload=()=>{XPROP_IMG.ready=true;if(S&&S.world)buildBg()};XPROP_IMG.src='assets/art/x-props.webp';
 for(const k in XSPR){SPR[k]=XSPR[k];SPR[k].img=XSPR_IMG}
@@ -2678,10 +2679,10 @@ SFX.swoop=()=>{if(!ac)return;const t=ac.currentTime;try{const src=ac.createBuffe
   f.frequency.setValueAtTime(3200,t);f.frequency.exponentialRampToValueAtTime(420,t+.26);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.22,t+.05);g.gain.exponentialRampToValueAtTime(.0001,t+.3);
   src.connect(f).connect(g).connect(sfxBus);src.start(t);src.stop(t+.32)}catch(e){}
   tone(900,.24,{type:'sine',slide:220,vol:.05});tone(120,.1,{type:'triangle',slide:70,vol:.12,when:t+.22});noise(.06,{lp:600,vol:.08,when:t+.22})};
-const HIDE_EYES={"box": [[2.21, -8.44], [-0.71, -8.44]], "basket": [[-1.11, -8.95], [2.06, -9.06]], "table": [[-1.69, -2.15], [0.71, -2.14]], "bags": [[-1.06, -7.3], [1.38, -7.38]], "log": [[1.94, -3.81], [-0.69, -3.81]], "bush": [[2.06, -6.79], [-0.69, -6.75]]};
+const HIDE_EYES={"box": [[2.21, -8.44], [-0.71, -8.44]], "basket": [[-1.11, -8.95], [2.06, -9.06]], "table": [[-1.69, -2.15], [0.71, -2.14]], "bags": [[-1.06, -7.3], [1.38, -7.38]], "log": [[1.94, -3.81], [-0.69, -3.81]], "bush": [[2.06, -6.79], [-0.69, -6.75]], "rocks": [[-1.5, -10.5], [1.4, -10.5]], "pod": [[4.0, -4.25, .6], [5.9, -4.25, .6]]};
 
 // ---------- hiding spots ----------
-function hideTypes(s){if(s.world==='forest')return['log','bush'];if(s.world==='moon')return['box'];return s.kind==='kitchen'?['box','basket','table']:['bags','box']}
+function hideTypes(s){if(s.world==='forest')return['log','bush'];if(s.world==='moon')return['rocks','pod'];return s.kind==='kitchen'?['box','basket','table']:['bags','box']}
 function placeHides(s){
   s.hidesPlaced=1;s.hideType={};const g=s.map.map(r=>r.split('')),K=s.kind==='kitchen',types=hideTypes(s),st=tileOf(s.start.x,s.start.y);
   const taken=new Set((s.spawns||[]).map(t=>t.c+','+t.r));(s.snacks||[]).forEach(sn=>taken.add(Math.floor(sn.x/TS)+','+Math.floor((sn.y-2)/TS)));
@@ -2721,8 +2722,8 @@ function drawHide(c,r){
   const peek=mine&&da>.26,sq2=peek&&da<.5?1+Math.sin((da-.26)/.24*Math.PI)*.16:sq;
   ctx.save();ctx.translate(x,y);ctx.scale(1/sq2,sq2);drawPropImg('h_'+ty+(peek?'_p':''),0,0,flip,1);
   if(peek){if(now>p.blinkAt+.13)p.blinkAt=now+2+Math.random()*2.5;
-    if(now>p.blinkAt){for(const[ex,ey]of(HIDE_EYES[ty]||[])){const X=flip?-ex:ex;ctx.fillStyle='#3e3437';ctx.beginPath();ctx.ellipse(X,ey,1.35,1.15,0,0,TAU);ctx.fill();
-      ctx.strokeStyle='#b9adb2';ctx.lineWidth=.45;ctx.beginPath();ctx.moveTo(X-.95,ey+.1);ctx.quadraticCurveTo(X,ey+.75,X+.95,ey+.1);ctx.stroke()}}}
+    if(now>p.blinkAt){for(const[ex,ey,es=1]of(HIDE_EYES[ty]||[])){const X=flip?-ex:ex;ctx.fillStyle='#3e3437';ctx.beginPath();ctx.ellipse(X,ey,1.35*es,1.15*es,0,0,TAU);ctx.fill();
+      ctx.strokeStyle='#b9adb2';ctx.lineWidth=.45;ctx.beginPath();ctx.moveTo(X-.95*es,ey+.1);ctx.quadraticCurveTo(X,ey+.75*es,X+.95*es,ey+.1);ctx.stroke()}}}
   ctx.restore();
   if(mine){const d=PROP['h_'+ty];const h=d?d[3]/d[6]:14;
     if(p.carry){ctx.save();ctx.translate(x,y-h+2+Math.sin(now*2)*.4);drawPropImg(pieName(),0,0,false,.95);ctx.restore()}
@@ -2820,7 +2821,15 @@ function drawForestLamp(l){
 }
 
 // ---------- MOON WORLD ----------
-function genMoonBase(){const s=genKitchen();s.world='moon';s.spawns=s.spawns.map((sp,k)=>k===0?{...sp,style:'cmdr'}:{...sp,style:undefined});return s}
+function genMoonBase(){const s=genKitchen();s.world='moon';s.spawns=s.spawns.map((sp,k)=>k===0?{...sp,style:'cmdr'}:{...sp,style:undefined});
+  // fewer walls than the kitchen: knock out ~a third of the rock runs so it reads as rocky corridors, not a tight maze
+  const g=s.map.map(r=>r.split('')),N=(s.cols-1)/3,M=(s.rows-1)/3,W=ch=>ch==='C'||ch==='O'||ch==='R'||ch==='S',open=[];
+  for(let r=1;r<s.rows-1;r++)for(let c=1;c<s.cols-1;c++)if(g[r][c]==='O'||g[r][c]==='R'||g[r][c]==='S')g[r][c]='C';
+  const cut=cells=>{if(cells.every(([r,c])=>W(g[r][c]))&&Math.random()<.22)for(const[r,c]of cells){g[r][c]='.';open.push({c,r})}};
+  for(let j=1;j<M;j++)for(let i=0;i<N;i++)cut([[3*j,3*i+1],[3*j,3*i+2]]);
+  for(let j=0;j<M;j++)for(let i=1;i<N;i++)cut([[3*j+1,3*i],[3*j+2,3*i]]);
+  for(let j=1;j<M;j++)for(let i=1;i<N;i++){const r=3*j,c=3*i;if(W(g[r][c])&&g[r-1][c]==='.'&&g[r+1][c]==='.'&&g[r][c-1]==='.'&&g[r][c+1]==='.'){g[r][c]='.';open.push({c,r})}}
+  s.map=g.map(r=>r.join(''));s.walk=s.walk.concat(open);return s}
 function genMoonField(){const s=genStreet();s.world='moon';return s}
 const MP={top:'#eef0fb',topL:'#ffffff',front:'#cfc8ee',frontD:'#b9b0e3',seam:'rgba(120,110,170,.3)'};
 // lunar ridge: the moon base maze is raised rock + crater rims instead of furniture
@@ -2829,38 +2838,41 @@ function moonCrater(cx,cy,cr,deep){kE(cx,cy,cr,cr*.62,deep||MR.craterD,0);kE(cx+
   ctx.strokeStyle='rgba(255,255,255,.75)';ctx.lineWidth=.5;ctx.beginPath();ctx.ellipse(cx,cy,cr,cr*.62,0,Math.PI*.12,Math.PI*.88);ctx.stroke();
   ctx.strokeStyle='rgba(91,63,60,.28)';ctx.beginPath();ctx.ellipse(cx,cy,cr,cr*.62,0,Math.PI*1.1,Math.PI*1.9);ctx.stroke()}
 function drawPanel(c,r){
-  const x=c*TS,y=r*TS,below=isWallK(c,r+1),above=isWallK(c,r-1),L=isWallK(c-1,r),Rt=isWallK(c+1,r);
-  if(!below)ctx.drawImage(SH_DOWN,x,y+16,16,7);if(!Rt)ctx.drawImage(SH_SIDE,x+16,y-4,4,20);
-  const tl=!above&&!L?5:0,tr=!above&&!Rt?5:0,bot=below?16:6;
-  ctx.beginPath();ctx.roundRect(x-.01,y-6,16.02,bot+6,[tl,tr,0,0]);ctx.fillStyle=MR.top;ctx.fill();
-  if(!above){ctx.fillStyle=MR.topL;ctx.beginPath();ctx.roundRect(x+(L?0:1.6),y-4.9,16-(L?0:1.6)-(Rt?0:1.6),1.8,[tl?1.5:0,tr?1.5:0,0,0]);ctx.fill()}
-  // dusty surface: tiny craters and pebbles
-  if(hsh(c,r,70)<.42)moonCrater(x+4.5+hsh(c,r,71)*7,y-1.5+hsh(c,r,72)*(below?13:4),1.3+hsh(c,r,73)*1.7);
-  for(let k=0;k<2;k++)if(hsh(c,r,74+k)<.5)kE(x+2+hsh(c,r,76+k)*12,y-3+hsh(c,r,78+k)*(below?17:7),.75,.5,MR.faceD,0);
-  kStroke(.9);ctx.beginPath();
-  if(!above){ctx.moveTo(x,y-6+tl);if(tl)ctx.arcTo(x,y-6,x+tl,y-6,tl);ctx.lineTo(x+16-tr,y-6);if(tr)ctx.arcTo(x+16,y-6,x+16,y-6+tr,tr)}
-  if(!L){ctx.moveTo(x,y-6+tl);ctx.lineTo(x,y+bot)}
-  if(!Rt){ctx.moveTo(x+16,y-6+tr);ctx.lineTo(x+16,y+bot)}
-  ctx.stroke();
-  if(!below){const bl=!L?4:0,br=!Rt?4:0;
-    ctx.save();ctx.beginPath();ctx.roundRect(x-.01,y+6,16.02,10,[0,0,br,bl]);ctx.fillStyle=MR.face;ctx.fill();ctx.clip();
-    ctx.fillStyle=MR.faceD;ctx.fillRect(x-1,y+12.6,18,4);
-    ctx.fillStyle='rgba(255,255,255,.28)';ctx.fillRect(x-1,y+6,18,1.4);
-    ctx.strokeStyle=MR.faceD;ctx.lineWidth=.7;ctx.beginPath();const k0=x+3+hsh(c,r,81)*10;ctx.moveTo(k0,y+6.5);ctx.lineTo(k0+1.2,y+8.8);ctx.lineTo(k0-.4,y+10.6);ctx.stroke();
-    if(hsh(c,r,82)<.5){kE(x+3+hsh(c,r,83)*10,y+15,2.2,1.4,MR.face,.7)}
-    ctx.restore();
-    kStroke(.9);ctx.beginPath();ctx.moveTo(x,y+6);ctx.lineTo(x+16,y+6);
-    if(!L){ctx.moveTo(x,y+6);ctx.lineTo(x,y+16-bl);ctx.arcTo(x,y+16,x+bl,y+16,bl)}else ctx.moveTo(x,y+16);
-    ctx.lineTo(x+16-br,y+16);if(!Rt){ctx.arcTo(x+16,y+16,x+16,y+16-br,br);ctx.lineTo(x+16,y+6)}ctx.stroke()}
-  ctx.drawImage(SHADE_TOP,x,y-6,16,below?22:12);
+  // moon base walls: lumpy grey boulders lined up into corridors (no two tiles alike)
+  const x=c*TS,y=r*TS,below=isWallK(c,r+1),L=isWallK(c-1,r),Rt=isWallK(c+1,r);
+  const rock=(cx,cy,rx,ry,k)=>{
+    ctx.fillStyle='rgba(91,63,60,.14)';ctx.beginPath();ctx.ellipse(cx+1,cy+ry*.85,rx*1.05,ry*.4,0,0,TAU);ctx.fill();
+    // lumpy outline: an ellipse with a few bumps
+    const pts=[];for(let i=0;i<10;i++){const a=i/10*TAU,w=1+(hsh(c*7+k,r,i)-.5)*.22;pts.push([cx+Math.cos(a)*rx*w,cy+Math.sin(a)*ry*w])}
+    const path=()=>{ctx.beginPath();for(let i=0;i<10;i++){const p0=pts[i],p1=pts[(i+1)%10],mx=(p0[0]+p1[0])/2,my=(p0[1]+p1[1])/2;if(!i)ctx.moveTo(mx,my);else ctx.quadraticCurveTo(p0[0],p0[1],mx,my)}
+      const p0=pts[0],p1=pts[1];ctx.quadraticCurveTo(p0[0],p0[1],(p0[0]+p1[0])/2,(p0[1]+p1[1])/2);ctx.closePath()};
+    path();ctx.fillStyle='#c6c2d4';ctx.fill();ctx.save();path();ctx.clip();
+    ctx.fillStyle='#a9a3bd';ctx.beginPath();ctx.ellipse(cx+rx*.2,cy+ry*.75,rx*1.1,ry*.75,0,0,TAU);ctx.fill();
+    ctx.fillStyle='#e6e4ee';ctx.beginPath();ctx.ellipse(cx-rx*.35,cy-ry*.5,rx*.42,ry*.2,-.35,0,TAU);ctx.fill();
+    for(let q=0;q<3;q++)if(hsh(c,r,k+q)<.6){const qx=cx+(hsh(c,r,k+5+q)-.5)*rx*1.2,qy=cy+(hsh(c,r,k+9+q)-.65)*ry,qr=(.7+hsh(c,r,k+13+q)*1.1)*rx/8;
+      kE(qx,qy,qr,qr*.62,'#9a94b0',0);kE(qx+qr*.2,qy+qr*.15,qr*.68,qr*.4,'#b5b0c7',0)}
+    ctx.restore();path();kStroke(.9);ctx.stroke()};
+  const sz=.85+hsh(c,r,32)*.35;
+  rock(x+8+(hsh(c,r,30)-.5)*3,y+6-hsh(c,r,31)*2,8.3*sz,(below?7.5:6.2)*sz,40);
+  if(below)rock(x+8+(hsh(c,r,34)-.5)*4,y+13.5,7.2*(.9+hsh(c,r,37)*.2),5.6,50);
+  if(!below&&hsh(c,r,35)<.55){const sx=x+(hsh(c,r,36)<.5?(L?5:1.5):(Rt?11:14.5));rock(sx,y+12,3.2,2.3,60)}
 }
 
 // moon base: things sitting on the ridges are crystals (decor) and wobbly alien jelly (knock it off = snacks)
-const MITEM=['ms_jelly','','','ms_jelly',''];
-function moonItem(c,r,x,y){if(!itemAt(c,r))return;const n=MITEM[Math.floor(hsh(c,r,13)*MITEM.length)]||'m_crystal',K=n==='ms_jelly'?1.25:.8,d=PROP[n];if(!d)return;
+const MITEM=['m_jar1','','m_jar2','ms_jelly',''];
+function moonItem(c,r,x,y){if(!itemAt(c,r))return;const n=MITEM[Math.floor(hsh(c,r,13)*MITEM.length)]||'m_crystal',K=n==='ms_jelly'?1.25:n.startsWith('m_jar')?1.45:.8,d=PROP[n];if(!d)return;
   const ix=x+8+(hsh(c,r,12)-.5)*2,iy=y+4,w=d[2]/d[6]*K,sq=n==='ms_jelly'?1+Math.sin(now*5+c)*.04:1;
   ctx.fillStyle='rgba(91,63,60,.22)';ctx.beginPath();ctx.ellipse(ix,iy-.3,w*.46,1.9,0,0,TAU);ctx.fill();
   ctx.save();ctx.translate(ix,iy);ctx.scale(sq,1/sq);drawPropImg(n,0,0,hsh(c,r,11)<.5,K);ctx.restore()}
+
+// moon base exits: a striped airlock hatch in the rock wall instead of a wooden door, crater tunnels instead of windows
+function moonHatch(cx,y,L){kRR(cx-.5,y-.5,10,17,3,'#c9cfe0',.9);kRR(cx+1.2,y+1.5,6.6,13,2,'#9fd9c6',.7);
+  ctx.save();ctx.beginPath();ctx.rect(cx+1.2,y+11.5,6.6,3);ctx.clip();for(let k=-2;k<8;k+=2){ctx.fillStyle=k%4?'#3a3346':'#ffd66b';ctx.beginPath();ctx.moveTo(cx+1.2+k,y+14.5);ctx.lineTo(cx+3.2+k,y+11.5);ctx.lineTo(cx+5.2+k,y+11.5);ctx.lineTo(cx+3.2+k,y+14.5);ctx.fill()}ctx.restore();
+  kE(cx+4.5,y+6,1.8,1.8,'#e9f3ff',.6);kE(cx+4.5,y-2.2,1.2,1.2,Math.sin(now*5)>0?'#ff6b8a':'#7a2a3a',.5)}
+function moonPorts(){for(let c=0;c<S.cols;c++){if(S.map[S.rows-1][c]!=='Q')continue;const x=c*TS,y=(S.rows-1)*TS;
+  kE(x+8,y+3.5,7,4.2,'#a7a2bb',.9);
+  if(!S.windowClosed){kE(x+8,y+3.8,5.2,2.8,'#211e3d',0);for(let k=0;k<3;k++)kE(x+4.5+k*3.3,y+3+hsh(c,k,3)*1.6,.35,.35,'#fff',0)}
+  else{kE(x+8,y+3.6,5.2,2.8,'#c9c6d8',.6);kE(x+6,y+3,1.4,.8,'#bab6cb',0);kE(x+10.4,y+4.2,1.1,.6,'#bab6cb',0)}}}
 function drawMoonTile(o){
   const c=o.c,r=o.r,x=c*TS,y=r*TS;
   if(S.kind==='kitchen')switch(o.t){

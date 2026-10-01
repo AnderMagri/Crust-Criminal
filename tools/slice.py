@@ -123,5 +123,7 @@ def extras(S,OUT,rocket='moon-rocket-home-v2.png'):
                      'm_cactus':('w',15),'m_console':('w',16),'m_dome':('w',20),'m_flag':('h',22)}),False),
            (S+'/'+rocket,1,1,['m_rocket'],('each',{'m_rocket':('h',36)}),False),
            (S+'/moon-snacks-v1.png',4,2,['m_pie','ms_donut','ms_cheese','ms_star','ms_cookie','ms_icecream','ms_tube','ms_jelly'],
-            ('each',{'m_pie':('w',13),'ms_donut':('w',13),'ms_cheese':('w',12),'ms_star':('w',11),'ms_cookie':('w',11),'ms_icecream':('w',12),'ms_tube':('h',13),'ms_jelly':('w',11)}),False)],
+            ('each',{'m_pie':('w',13),'ms_donut':('w',13),'ms_cheese':('w',12),'ms_star':('w',11),'ms_cookie':('w',11),'ms_icecream':('w',12),'ms_tube':('h',13),'ms_jelly':('w',11)}),False),
+           (S+'/moon-hide-v1.png',3,2,['m_jar1','m_jar2','h_rocks','h_rocks_p','h_pod','h_pod_p'],
+            ('each',{'m_jar1':('w',9),'m_jar2':('w',9),'h_rocks':('w',17),'h_rocks_p':('w',17),'h_pod':('w',17),'h_pod_p':('w',17)}),False)],
           OUT+'/x-props.webp',OUT+'/x-props.json',PPU=8)

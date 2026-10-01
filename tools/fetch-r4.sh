@@ -39,3 +39,4 @@ curl -sSfo assets/_raw/r4/amb-bleep.mp3 "https://app-uploads.krea.ai/audio/8462c
 curl -sSfo assets/_raw/r4/amb-airlock.mp3 "https://app-uploads.krea.ai/audio/d6b6a372-7273-4728-abf1-b878a5c1c935.mp3"
 curl -sSfo assets/_raw/r4/img-moon-snacks.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/bbd6342e-3c03-4ec4-b415-d1c0d12d4651-image.png"
 echo done; ls assets/_raw/r4 | wc -l
+curl -sSfo assets/_raw/r4/img-moon-hide.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/088abf71-3065-473a-b3b9-52777c553891-image.png"
