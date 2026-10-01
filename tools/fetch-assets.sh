@@ -89,3 +89,7 @@ curl -sSfo assets/art/sprites-src/kitchen-fixtures-v1.png "https://app-uploads.k
 curl -sSfo assets/art/sprites-src/snacks-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/4b463693-f54e-4c84-9d67-85a95a18581b-image.png"
 curl -sSfo assets/art/sprites-src/counter-items-v2.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/f0390b8c-4f71-4043-86db-fe427766e4b0-image.png"
 curl -sSfo assets/art/sprites-src/floor-tiles-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/fabcf046-65ae-43b6-9ffa-c335507001c9-image.png"
+
+# Forest world
+curl -sSfo assets/art/sprites-src/forest-chars-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/127b8031-0e82-418e-a56f-3c2aa6631e39-image.png"
+curl -sSfo assets/art/sprites-src/forest-props-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/5a488007-6489-4ab0-a4e3-264f09724425-image.png"

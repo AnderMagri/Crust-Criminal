@@ -91,3 +91,14 @@ if __name__=='__main__':
            (S+'/snacks-v1.png',4,2,['sn_candy','sn_cookie','sn_choc','sn_donut','sn_fries','sn_burger','sn_gold','sn_onigiri'],
             ('each',{n:('w',12) for n in ['sn_candy','sn_cookie','sn_choc','sn_donut','sn_fries','sn_burger','sn_gold','sn_onigiri']}),False)],
           OUT+'/props.webp',OUT+'/props.json',PPU=8)
+
+def forest(S,OUT):
+    # Forest world: separate atlases so the city loads nothing extra.
+    C=S+'/forest-chars-v1.png'
+    build([(C,4,3,['b_f','b_s','b_b','b_c','b_x','b_r','','','','','',''],('ref','b_f',30),True),
+           (C,4,3,['','','','','','','r_f','r_s','r_b','r_a','m_f','m_s'],('ref','r_f',31),True)],
+          OUT+'/forest-sprites.webp',OUT+'/forest-sprites.json')
+    build([(S+'/forest-props-v1.png',4,3,['f_pine','f_oak','f_bush','f_stump','f_rock','f_fire','f_tent','f_table','f_honey','f_mush','f_grass','f_den'],
+            ('each',{'f_pine':('h',44),'f_oak':('h',40),'f_bush':('w',17),'f_stump':('w',15),'f_rock':('w',17),'f_fire':('w',16),'f_tent':('w',18),
+                     'f_table':('w',18),'f_honey':('w',8),'f_mush':('w',9),'f_grass':('w',16),'f_den':('h',30)}),False)],
+          OUT+'/forest-props.webp',OUT+'/forest-props.json',PPU=8)
