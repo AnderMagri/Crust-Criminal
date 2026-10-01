@@ -57,6 +57,21 @@ canvas{display:block;touch-action:none}
 .pop{position:absolute;z-index:4;font-family:var(--disp);font-size:15px;color:#fff;-webkit-text-stroke:1px var(--pinkD);text-shadow:0 2px 0 var(--pinkD);pointer-events:none;transform:translate(-50%,-100%);animation:rise .9s ease-out forwards}
 @keyframes rise{to{transform:translate(-50%,-190%);opacity:0}}
 #obj.run{background:var(--alert)}
+#hud{align-items:center!important}
+#hud .hsp{flex:1}
+#obj{display:none!important}
+#clockPill{height:42px;min-height:0;padding:0 12px 0 8px;gap:6px;width:112px;justify-content:flex-start;box-sizing:border-box}
+#clockPill .ic{width:22px;height:22px;flex:none}
+#clock{font-family:var(--disp);font-size:17px;line-height:1;font-variant-numeric:tabular-nums;display:inline-block;min-width:66px}
+#clock .d{display:inline-block;width:.62em;text-align:center}
+.hbtn{pointer-events:auto;width:42px;height:42px;min-width:0!important;min-height:0!important;padding:0!important;display:grid;place-items:center;background:#fff;border:3px solid var(--pink);border-radius:50%;box-shadow:0 3px 0 rgba(242,124,154,.45);cursor:pointer;box-sizing:border-box}
+.hbtn svg{width:24px;height:24px;display:block}
+.hbtn .x{display:none}
+.hbtn.off{background:#f6eef0;border-color:#e7c9d1}.hbtn.off .x{display:inline}.hbtn.off svg>*:not(.x){opacity:.5}
+.hbtn:active{transform:translateY(2px);box-shadow:none}
+.hbtn:focus-visible{outline:2px solid var(--crust);outline-offset:2px}
+#energy{top:58px!important}
+
 #clock{font-variant-numeric:tabular-nums}
 #mute,#music{pointer-events:auto;font-family:var(--disp);font-size:17px;line-height:1;color:var(--ink);background:#fff;border:3px solid var(--pink);border-radius:999px;box-shadow:0 3px 0 rgba(242,124,154,.45);padding:0;cursor:pointer;min-height:40px;min-width:40px}
 #mute:focus-visible,#music:focus-visible{outline:2px solid var(--crust);outline-offset:2px}
@@ -137,11 +152,12 @@ canvas{display:block;touch-action:none}
   <div id="stage" tabindex="-1" style="outline:none">
     <canvas id="game" aria-label="Game view: a raccoon sneaking through a kitchen maze and then across the street"></canvas>
     <div id="hud">
-      <div class="pill" id="obj">Find the pie</div>
-      <div class="pill" id="clock">0:00.0</div>
-      <button id="pauseBtn" type="button" aria-label="Pause menu">❚❚</button>
-      <button id="music" type="button" aria-pressed="false" aria-label="Toggle music">♫</button>
-      <button id="mute" type="button" aria-pressed="false" aria-label="Toggle voices">♪</button>
+      <div class="pill" id="obj" hidden>Find the pie</div>
+      <div class="pill" id="clockPill"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13.5" r="7.3" fill="#fff3e2" stroke="#5b3f3c" stroke-width="1.9"/><path d="M10 3.6h4M12 3.6v2.6" stroke="#5b3f3c" stroke-width="1.9" stroke-linecap="round"/><path d="M12 13.5V9.6M12 13.5l2.6 1.6" stroke="#f27c9a" stroke-width="1.9" stroke-linecap="round"/></svg><span id="clock">0:00.0</span></div>
+      <div class="hsp"></div>
+      <button id="mute" class="hbtn" type="button" aria-pressed="false" aria-label="Toggle voices"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 5h13a2.8 2.8 0 0 1 2.8 2.8v6.4A2.8 2.8 0 0 1 18.5 17H11l-4.4 3.4.6-3.4h-1.7a2.8 2.8 0 0 1-2.8-2.8V7.8A2.8 2.8 0 0 1 5.5 5z" fill="#bfe8da" stroke="#5b3f3c" stroke-width="1.8" stroke-linejoin="round"/><circle cx="8.4" cy="11" r="1.2" fill="#5b3f3c"/><circle cx="12" cy="11" r="1.2" fill="#5b3f3c"/><circle cx="15.6" cy="11" r="1.2" fill="#5b3f3c"/><path class="x" d="M4 4l16 16" stroke="#f0566f" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+      <button id="music" class="hbtn" type="button" aria-pressed="false" aria-label="Toggle music"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 16.6V6.4l9-2.2v10.2" fill="none" stroke="#5b3f3c" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"/><path d="M9.2 8.6l9-2.2" stroke="#5b3f3c" stroke-width="1.9"/><ellipse cx="6.8" cy="16.9" rx="3" ry="2.4" fill="#ffd66b" stroke="#5b3f3c" stroke-width="1.7"/><ellipse cx="15.8" cy="14.7" rx="3" ry="2.4" fill="#ffd66b" stroke="#5b3f3c" stroke-width="1.7"/><circle cx="5.9" cy="16.2" r=".7" fill="#fff"/><circle cx="14.9" cy="14" r=".7" fill="#fff"/><path class="x" d="M4 4l16 16" stroke="#f0566f" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+      <button id="pauseBtn" class="hbtn" type="button" aria-label="Pause menu"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="5" width="4.6" height="14" rx="2.3" fill="#ff9fb6" stroke="#5b3f3c" stroke-width="1.8"/><rect x="13.9" y="5" width="4.6" height="14" rx="2.3" fill="#ff9fb6" stroke="#5b3f3c" stroke-width="1.8"/><path d="M7.2 7.6v3M15.6 7.6v3" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg></button>
     </div>
     <div id="keys" hidden><span><b>WASD</b>/<b>←↑→↓</b> move</span><span><b>Space</b> jump</span><span><b>N</b> music</span><span><b>M</b> voices</span><span><b>Esc</b> menu</span><span><b>R</b> restart</span></div>
     <div id="energy" hidden><div class="ico"></div><div class="col"><div class="lbl" id="elbl">ENERGY <i>\u00b7 eat snacks!</i></div><div class="track"><div class="fill" id="efill"></div></div></div></div>
@@ -581,7 +597,7 @@ function musicTick(){
   while(nextT<ac.currentTime+.15){playStep(stepI,nextT);nextT+=SIXTEENTH*(stepI%2?1-SONGS[song].swing:1+SONGS[song].swing);stepI=(stepI+1)%64}
 }
 setInterval(musicTick,25);
-function setMusic(on){musicOn=on;const b=$('music');b.textContent=on?'♫':'♫̸';b.setAttribute('aria-pressed',String(!on));b.style.opacity=on?1:.55;
+function setMusic(on){musicOn=on;const b=$('music');b.classList.toggle('off',!on);b.setAttribute('aria-pressed',String(!on));
   if(musBus)musBus.gain.setTargetAtTime(on?.42:0,ac.currentTime,.05);try{localStorage.setItem('pieheist-music',on?'on':'off')}catch(e){}}
 function babble(text,v){
   if(!voiceOn||!ac)return;
@@ -596,7 +612,7 @@ function babble(text,v){
       o.connect(bp).connect(g).connect(vocBus);o.start(t);o.stop(t+v.rate);
     }}catch(e){}
 }
-function setVoice(on){voiceOn=on;const b=$('mute');b.textContent=on?'♪':'♪̸';b.style.opacity=on?1:.55;b.setAttribute('aria-pressed',String(!on));
+function setVoice(on){voiceOn=on;const b=$('mute');b.classList.toggle('off',!on);b.setAttribute('aria-pressed',String(!on));
   try{localStorage.setItem('pieheist-voices',on?'on':'off')}catch(e){}}
 // Recorded raccoon voice clips (assets/voices/raccoon-*.mp3). Missing files fall back to babble.
 const COON_VO={'Pie time!':'pietime','Ta-daaa! Let the adventure begin!':'tada','Uh-oh!':'uhoh','Nothing to see here... just a regular cat. Meow?':'cat',
@@ -2606,7 +2622,7 @@ function frame(ts){
   $('keys').hidden=state!=='play';
   {const el=$('energy');el.hidden=state!=='play';if(state==='play'){$('efill').style.width=Math.round(player.energy)+'%';const low=player.energy<18&&!player.rush;el.classList.toggle('low',low);el.classList.toggle('rush',player.rush>0);
     const t=player.rush>0?'SUGAR RUSH!':low?(player.energy<=0?'EMPTY \u00b7 EAT!':'LOW \u00b7 EAT A SNACK'):player.energy>=99?'ENERGY \u00b7 FULL':'ENERGY';if($('elbl').dataset.t!==t){$('elbl').dataset.t=t;$('elbl').innerHTML=t}}}
-  const cl=fmt(time);if(cl!==lastClock){$('clock').textContent=cl;lastClock=cl}
+  const cl=fmt(time);if(cl!==lastClock){$('clock').innerHTML=cl.replace(/\d/g,'<span class="d">$&</span>');lastClock=cl}
   render();requestAnimationFrame(frame);
 }
 
