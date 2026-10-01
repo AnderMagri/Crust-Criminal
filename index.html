@@ -59,6 +59,7 @@ canvas{display:block;touch-action:none}
 #obj.run{background:var(--alert)}
 #hud{align-items:center!important}
 #hud .hsp{flex:1}
+#hideChip{position:absolute;left:8px;top:118px;z-index:3;pointer-events:none;font-family:var(--disp);font-size:13px;letter-spacing:.04em;color:#fff;background:#8e7fc4;border:3px solid #fff;border-radius:999px;padding:5px 12px 4px;box-shadow:0 3px 0 #6a5aa6;animation:bob 1.4s ease-in-out infinite}
 #obj{display:none!important}
 #clockPill{height:42px;min-height:0;padding:0 12px 0 8px;gap:6px;width:112px;justify-content:flex-start;box-sizing:border-box}
 #clockPill .ic{width:22px;height:22px;flex:none}
@@ -107,6 +108,7 @@ canvas{display:block;touch-action:none}
 #title .worlds{display:flex;gap:6px;margin-top:6px;background:rgba(255,255,255,.7);padding:4px;border-radius:999px;border:2px solid #fff}
 #title .worlds button{font:400 15px var(--disp);letter-spacing:.02em;color:#7a4f58;background:transparent;border:0;border-radius:999px;padding:7px 16px;cursor:pointer}
 #title .worlds button.on{background:#7cc38a;color:#fff;box-shadow:0 3px 0 #4f9a5f}
+#title .worlds button[data-world=moon].on{background:#8e7fc4;box-shadow:0 3px 0 #6a5aa6}
 #title .worlds button[data-world=city].on{background:var(--pink);box-shadow:0 3px 0 var(--pinkD)}
 @keyframes bob{50%{transform:translateY(-3px)}}
 @media (prefers-reduced-motion:reduce){#title .start{animation:none}}
@@ -161,9 +163,10 @@ canvas{display:block;touch-action:none}
     </div>
     <div id="keys" hidden><span><b>WASD</b>/<b>←↑→↓</b> move</span><span><b>Space</b> jump</span><span><b>N</b> music</span><span><b>M</b> voices</span><span><b>Esc</b> menu</span><span><b>R</b> restart</span></div>
     <div id="energy" hidden><div class="ico"></div><div class="col"><div class="lbl" id="elbl">ENERGY <i>\u00b7 eat snacks!</i></div><div class="track"><div class="fill" id="efill"></div></div></div></div>
+<div id="hideChip" hidden>HIDDEN · stay still</div>
     <div id="toast" hidden></div>
     <div id="title">
-      <div class="logo"><img id="logoImg" src="assets/art/logo.webp" alt="Crust Criminal" onerror="this.hidden=true;document.getElementById('logoText').hidden=false"><h1 id="logoText" hidden>Crust<span>Criminal</span></h1><div class="worlds" role="group" aria-label="World"><button type="button" data-world="city">City</button><button type="button" data-world="forest">Forest</button></div></div>
+      <div class="logo"><img id="logoImg" src="assets/art/logo.webp" alt="Crust Criminal" onerror="this.hidden=true;document.getElementById('logoText').hidden=false"><h1 id="logoText" hidden>Crust<span>Criminal</span></h1><div class="worlds" role="group" aria-label="World"><button type="button" data-world="city">City</button><button type="button" data-world="forest">Forest</button><button type="button" data-world="moon">Moon</button></div></div>
       <video id="titleVid" muted playsinline loop preload="auto" aria-hidden="true" hidden></video>
       <div id="tq" class="tq" hidden></div>
       <canvas id="titleArt" width="40" height="44" aria-hidden="true"></canvas>
@@ -216,7 +219,7 @@ const isForest=()=>WORLD==='forest';
 const SOLID=new Set('#CORSPQWHNBXZE'.split(''));
 function solidAt(c,r){
   if(r<0||r>=S.rows||c<0||c>=S.cols)return true;
-  const ch=S.map[r][c]; if(ch==='D')return !S.doorOpen; if(ch==='w')return wetSolid;
+  const ch=S.map[r][c]; if(ch==='D')return !S.doorOpen; if(ch==='w'||ch==='K')return wetSolid;
   return SOLID.has(ch);
 }
 const tileCh=(c,r)=>(r<0||r>=S.rows||c<0||c>=S.cols)?'#':S.map[r][c];
@@ -512,7 +515,7 @@ function dogClip(text,who){const k9=who.style==='k9';
 // street ambience: soft traffic bed while you're outside
 let trafficSrc=null,trafficGain=null;
 function updateAmbience(){if(!ac||!sfxBuf['traffic-loop'])return;
-  const want=S&&S.kind==='street'&&S.world!=='forest'&&(state==='play'||state==='caught'||state==='win');
+  const want=S&&S.kind==='street'&&!S.world&&(state==='play'||state==='caught'||state==='win');
   if(want&&!trafficSrc){try{trafficSrc=ac.createBufferSource();trafficSrc.buffer=sfxBuf['traffic-loop'];trafficSrc.loop=true;trafficGain=ac.createGain();trafficGain.gain.value=0;
     trafficGain.gain.setTargetAtTime(.55,ac.currentTime,.6);trafficSrc.connect(trafficGain).connect(sfxBus);trafficSrc.start()}catch(e){trafficSrc=null}}
   else if(!want&&trafficSrc){const s=trafficSrc;trafficGain.gain.setTargetAtTime(0,ac.currentTime,.3);setTimeout(()=>{try{s.stop()}catch(_){}},1500);trafficSrc=null}}
@@ -651,7 +654,7 @@ const clipName=(who,text)=>who===player?(COON_VO[text]&&'raccoon-'+COON_VO[text]
 const clipFor=(text,who=player)=>{const n=clipName(who,text);return n&&clipBuf[n]?n:null};
 function pickE(e,arr){if(!e.vo)return pick(arr);const rec=arr.filter(t=>clipFor(t,e));return rec.length&&Math.random()<.75?pick(rec):pick(arr)}
 // prefer recorded lines when they're available
-function pickCoon(cat){const a=COON[cat]||[];const rec=a.filter(t=>clipFor(t,player));return rec.length&&Math.random()<.75?pick(rec):pick(a)}
+function pickCoon(cat){const a=(COON[cat]||[]).concat(S&&S.world&&COON[cat+'_'+S.world]||[]);const rec=a.filter(t=>clipFor(t,player));return rec.length&&Math.random()<.75?pick(rec):pick(a)}
 const CLIP_RATE=1; // <1 = lower, chubbier voice
 // One voice at a time: a single channel with priorities (2 = key moments, 1 = reactions, 0 = chatter/babble)
 let voiceSrc=null,voiceEnd=0,voicePrio=-1;
@@ -670,7 +673,7 @@ function say(who,text,force){
   const prio=force?2:(who===player?1:(/!/.test(text)?1:0)),clip=voiceOn&&ac?clipFor(text,who):null;
   if(voiceFree(prio)){
     if(clip)playClip(clip,prio);
-    else if(who.kind==='dog'&&dogClip(text,who)){}
+    else if(who.kind==='dog'&&S.world!=='moon'&&dogClip(text,who)){}
     else{if(voiceSrc&&ac&&ac.currentTime<voiceEnd){try{voiceSrc.stop()}catch(_){}}
       babble(text,who.voice);if(ac){voiceEnd=ac.currentTime+Math.min(1.2,.08*text.length);voicePrio=prio;voiceSrc=null}}
   }
@@ -689,7 +692,7 @@ function clearBubbles(){document.querySelectorAll('.say').forEach(e=>e.remove())
 let pieFx=null,stars=[],hitStop=0;
 let state='title',player,enemies=[],cars=[],parts=[],time=0,grace=0,shake=0,pieTaken=false,joy=null,now=0,toastT=0,chatT=3,sceneT=0;
 const cam={x:0,y:0};
-const bestKey=()=>WORLD==='forest'?'pieheist2-best-forest':'pieheist2-best';
+const bestKey=()=>WORLD==='city'?'pieheist2-best':'pieheist2-best-'+WORLD;
 let best=null;function loadBest(){best=null;try{best=parseFloat(localStorage.getItem(bestKey()))||null}catch(e){}}loadBest();
 
 function makeEnemy(sp,i){
@@ -707,10 +710,11 @@ function makeEnemy(sp,i){
   if(sp.style==='ranger')Object.assign(e,{style:'ranger',vo:null,voice:COP_VOICE,lines:LINES.ranger});
   if(sp.style==='camper')Object.assign(e,{style:'camper',vo:null,voice:SOUS_VOICE,sp:{patrol:32,search:54,chase:66},view:92,lostMax:3,lines:LINES.camper,fat:false});
   if(sp.style==='k9')Object.assign(e,{style:'k9',voice:K9_VOICE,coat:'#2b2d38',sp:{patrol:40,search:74,chase:98},view:76,half:.6,lostMax:1.3,lines:LINES.k9});
+  if(S.world==='moon')moonEnemy(e,sp);
   return e;
 }
 function loadScene(sc){
-  S=sc;clearBubbles();
+  S=sc;clearBubbles();if(!S.hidesPlaced)placeHides(S);
   player={x:S.start.x,y:S.start.y,vx:0,vy:0,dir:S.kind==='kitchen'?'up':'down',anim:0,carry:pieTaken,voice:COON_VOICE,cd:0,bub:null,energy:S.kind==='kitchen'?70:Math.max(45,energyCarry),rush:0,hungrySaid:0,emptySaid:0};
   enemies=S.spawns.map(makeEnemy);cars=S.cars;parts=[];grace=1;sceneT=0;chatT=2.5;
   S.lights=[];if(S.kind==='kitchen')for(let r=4,k=0;r<S.rows-1;r+=6,k++)S.lights.push({x:(k%2?4.5:11.5)*TS,y:r*TS,r:78,i:.85,w:'rgba(255,214,150,.07)'});
@@ -718,7 +722,7 @@ function loadScene(sc){
 }
 let energyCarry=70;
 let fartAt=-1;
-function newRun(){time=0;pieTaken=false;energyCarry=70;fartAt=Math.random()<.02?8+Math.random()*40:-1;loadScene(WORLD==='forest'?genCamp():genKitchen())}
+function newRun(){time=0;pieTaken=false;energyCarry=70;fartAt=Math.random()<.02?8+Math.random()*40:-1;loadScene(WORLD==='forest'?genCamp():WORLD==='moon'?genMoonBase():genKitchen())}
 function doFart(){
   fartAt=-1;SFX.fart();noiseAt(player.x,player.y,60);
   for(let i=0;i<10;i++)parts.push({x:player.x+(Math.random()*10-5),y:player.y-4+Math.random()*4,t:0,life:.9,col:'rgba(160,200,110,',sz:3});
@@ -726,7 +730,7 @@ function doFart(){
 }
 function setObj(){
   const o=$('obj');let t;
-  const F=S.world==='forest';if(S.kind==='kitchen')t=pieTaken?(F?'Find the gate':'Find the back door'):'Find the pie';else t=F?'Get home to your log':'Get home to your trash can';
+  if(S.kind==='kitchen')t=pieTaken?W3('Find the back door','Find the gate','Find the airlock'):'Find the pie';else t=W3('Get home to your trash can','Get home to your log','Get to your rocket');
   o.textContent=t;o.classList.toggle('run',pieTaken);
 }
 
@@ -850,13 +854,16 @@ function eatSnack(sn){
   else if(Math.random()<.75)say(player,pickCoon(Math.random()<.7?(COON[sn.type]?sn.type:'nom'):'nom'),true);
 }
 function tryJump(){
+  if(tryBoo())return;
   const t=jumpTarget();
   if(!t||!t.x){if(t&&t.block==='O')say(player,'Too hot!');else if(t&&(t.block==='R'||t.block==='S'))say(player,'Too tall!');
     // nothing to vault: a little hop on the spot so the button always responds
-    if(player.jump||player.jcd>0)return;player.jump={sx:player.x,sy:player.y,tx:player.x,ty:player.y,t:0,dur:.3,small:1};SFX.jump();return}
+    if(player.jump||player.jcd>0)return;player.jump={sx:player.x,sy:player.y,tx:player.x,ty:player.y,t:0,dur:.3,small:1};
+    if(S.world==='moon'){const d=STEP[player.dir],t0=tileOf(player.x,player.y),nc=t0.c+d[0],nr=t0.r+d[1];if(!solidAt(nc,nr)){const cc=center(nc,nr);player.jump.tx=cc.x;player.jump.ty=cc.y}player.jump.dur=.8;player.jump.hi=2.6;moonJumpLine()}
+    SFX.jump();return}
   const weak=player.energy<12&&!player.rush;   // out of energy: still jumps (never stuck), just a slow, heavy hop
   if(!player.rush)player.energy=Math.max(0,player.energy-10);
-  player.jump={sx:player.x,sy:player.y,tx:t.x,ty:t.y,t:0,dur:weak?.6:.42};player.vx=player.vy=0;if(weak&&Math.random()<.5)say(player,pickCoon('empty'),true);
+  player.jump={sx:player.x,sy:player.y,tx:t.x,ty:t.y,t:0,dur:weak?.6:.42};if(S.world==='moon'){player.jump.dur*=1.8;player.jump.hi=2.2;moonJumpLine()}player.vx=player.vy=0;if(weak&&Math.random()<.5)say(player,pickCoon('empty'),true);
   const d=STEP[player.dir],tt=tileOf(player.x,player.y),c1=tt.c+d[0],r1=tt.r+d[1],ch=tileCh(c1,r1);
   if(hasItem(c1,r1)){S.knocked.add(c1+','+r1);const bx=c1*TS+8+d[0]*9,by=r1*TS+12+d[1]*10,IT=S.world==='forest'?FITEM:CITEM,item=IT[Math.floor(hsh(c1,r1,13)*IT.length)];
     const spill=item==='jar'?['cookie','cookie']:item==='cake'?['choc','candy']:item==='f_honey'?['candy','cookie']:null;
@@ -889,7 +896,8 @@ const fmt=t=>{const m=Math.floor(t/60),s=(t%60).toFixed(1);return m+':'+(s<10?'0
 // ---------- enemies ----------
 function sees(e){
   const dx=player.x-e.x,dy=player.y-e.y,d=Math.hypot(dx,dy);
-  if(d<16)return true;
+  if(player.hidden)return false;
+  if(d<16&&(e.state==='chase'||e.state==='search'||e.state==='alert'||Math.abs(angDiff(Math.atan2(dy,dx),e.fa))<1.9))return true;   // sneaking up right behind a calm one is allowed (BOO!)
   if(tileCh(Math.floor(player.x/TS),Math.floor((player.y-2)/TS))==='G'&&!player.jump)return false;   // hiding in tall grass
   if(d>e.view+(pieTaken?10:0))return false;
   if(Math.abs(angDiff(Math.atan2(dy,dx),e.fa))>e.half)return false;
@@ -904,9 +912,9 @@ function follow(e,spd,dt){
   return false;
 }
 function toAlert(e,t=.45){if(e.kind==='bear'){bearSpot(e);return}e.state='alert';e.t=t;e.path=[];
-  if(e.kind==='dog')SFX.bark(e);else SFX.alert();if(e.style==='k9')toast('Police dog! RUN!');
+  if(e.kind==='dog'&&S.world!=='moon')SFX.bark(e);else SFX.alert();player.startT=now;if(e.style==='k9')toast('Police dog! RUN!');
   say(e,pick(pieTaken&&S.kind==='kitchen'?e.lines.pie:e.lines.spot),t>.3);
-  const react=S.world==='forest'&&e.style!=='bear'?(Math.random()<.5?'ranger':'spotted'):e.kind==='dog'&&Math.random()<.6?'dog':e.style==='cop'&&Math.random()<.6?'cops':'spotted';
+  const react=S.world==='moon'?(Math.random()<.5?'alien':'spotted'):S.world==='forest'&&e.style!=='bear'?(Math.random()<.5?'ranger':'spotted'):e.kind==='dog'&&Math.random()<.6?'dog':e.style==='cop'&&Math.random()<.6?'cops':'spotted';
   if(Math.random()<.55)setTimeout(()=>{if(state==='play')say(player,pickCoon(react))},react==='spotted'?350:900)}
 function toSearch(e,pt,talk){if(e.kind==='bear'&&/roar|charge|stun/.test(e.state))return;e.state='search';e.path=bfsTo(e,pt);if(talk)say(e,pickE(e,talk))}
 function newPatrol(e){
@@ -917,6 +925,7 @@ function newPatrol(e){
 function updateEnemies(dt,detect){
   enemies.forEach(e=>{
     e.moving=false;
+    if(e.state==='scared'){scaredTick(e,dt);return}
     if(e.kind==='bear'&&bearTick(e,dt,detect))return;
     const see=detect&&grace<=0&&sees(e);
     switch(e.state){
@@ -926,7 +935,7 @@ function updateEnemies(dt,detect){
         if(follow(e,e.sp.patrol,dt)){e.state='look';e.t=1+Math.random()*1.8;e.base=e.fa}break;
       case'alert':e.t-=dt;e.fa=lerpAng(e.fa,Math.atan2(player.y-e.y,player.x-e.x),Math.min(1,12*dt));
         if(e.t<=0){e.state='chase';e.lost=0;e.repath=0;e.last={x:player.x,y:player.y};
-          if(e.style==='sous'||e.style==='cop'||e.style==='camper'){(e.style==='cop'?SFX.siren:SFX.whistle)();toast(e.style==='sous'?'The sous chef called everyone!':e.style==='camper'?'The camper screamed for the rangers!':'Backup is on the way!');
+          if(e.style==='sous'||e.style==='cop'||e.style==='camper'||e.style==='cmdr'){(e.style==='cop'||e.style==='cmdr'?SFX.siren:SFX.whistle)();toast(e.style==='sous'?'The sous chef called everyone!':e.style==='camper'?'The camper screamed for the rangers!':e.style==='cmdr'?'RED ALERT! The commander called the crew!':'Backup is on the way!');
             enemies.forEach(o=>{if(o!==e&&o.state!=='chase'&&o.state!=='alert')toSearch(o,{x:player.x,y:player.y},o.lines.hear)})}
           enemies.forEach(o=>{if(o!==e&&(o.state==='look'||o.state==='patrol')&&Math.hypot(o.x-e.x,o.y-e.y)<100)toSearch(o,{x:player.x,y:player.y},o.lines.hear)})}
         break;
@@ -954,34 +963,34 @@ function caught(e,bonk){
   state='caught';shake=.35;SFX.caught();
   if(bonk){say(player,pickCoon('bonk'),true);setTimeout(()=>say(e,pick(LINES.car),true),200)}
   else{say(player,pickCoon('busted'),true);setTimeout(()=>say(e,pickE(e,e.lines.caught),true),300)}
-  const F=S.world==='forest',who=bonk?'A car':e.kind==='bear'?'A bear':e.kind==='dog'?'A dog':F?(e.style==='camper'?'A camper':'A ranger'):'A cook';
-  setTimeout(()=>{if(state==='caught')showMsg(S.kind==='kitchen'?(F?'Part 1 · The Campsite':'Part 1 · The Kitchen'):(F?'Part 2 · The River':'Part 2 · The Street'),bonk?'Bonk!':'Busted!','bad',
+  const F=S.world==='forest',M=S.world==='moon',who=bonk?(M?'A rover':'A car'):e.kind==='bear'?'A bear':M?(e.style==='blob'?'A space blob':e.style==='drone'?'A drone':e.style==='cmdr'?'The commander':'An alien'):e.kind==='dog'?'A dog':F?(e.style==='camper'?'A camper':'A ranger'):'A cook';
+  setTimeout(()=>{if(state==='caught')showMsg(S.kind==='kitchen'?W3('Part 1 · The Kitchen','Part 1 · The Campsite','Part 1 · The Moon Base'):W3('Part 2 · The Street','Part 2 · The River','Part 2 · The Crater Field'),bonk?'Bonk!':'Busted!','bad',
     bonk?'You got clipped crossing the road. Wait for a gap between cars.':
     `${who} caught you${pieTaken?' and the pie is going back':''}. `+(e.kind==='bear'?'Bears charge in a straight line. Put a tree or a log between you and them.':F?'Hide in tall grass or break line of sight behind logs, then double back.':'Break line of sight behind counters and hedges, then double back.'),
     'Tap to try a new heist')},500);
 }
 function win(){
-  state='win';say(player,pickCoon(S.world==='forest'?'winF':'win'),true);SFX.win();
+  state='win';say(player,pickCoon(W3('win','winF','winM')),true);SFX.win();
   const nb=!best||time<best;if(nb){best=time;try{localStorage.setItem(bestKey(),String(time))}catch(e){}}
-  const F=S.world==='forest';
-  setTimeout(()=>showMsg('Heist complete',F?'Home sweet log':'Home sweet trash','good',`${F?'Campsite raided, river crossed':'Kitchen raided, street crossed'}, pie secured in ${fmt(time)}.${nb?' New best time.':' Best: '+fmt(best)+'.'}`,'Tap to go again'),700);
+  setTimeout(()=>showMsg('Heist complete',W3('Home sweet trash','Home sweet log','Ready for launch'),'good',`${W3('Kitchen raided, street crossed','Campsite raided, river crossed','Moon base raided, craters crossed')}, pie secured in ${fmt(time)}.${nb?' New best time.':' Best: '+fmt(best)+'.'}`,'Tap to go again'),700);
 }
 
 // ---------- scene flow ----------
 function exitKitchen(){
   energyCarry=player.energy;
   state='transition';clearBubbles();SFX.door();
-  if(S.world==='forest')showMsg('Part 2','The River','',`Out the gate with the pie. Hop across the floating logs, dodge the bears, and get home to your hollow log. Fall in and you wash back to the bank.`,'Tap to continue');
+  if(S.world==='moon')showMsg('Part 2','The Crater Field','',`Out the airlock with the pie. Dodge the moon rovers, the aliens and their space blobs, and reach your rocket trash can. Jumps float in low gravity.`,'Tap to continue');
+  else if(S.world==='forest')showMsg('Part 2','The River','',`Out the gate with the pie. Hop across the floating logs, dodge the bears, and get home to your hollow log. Fall in and you wash back to the bank.`,'Tap to continue');
   else showMsg('Part 2','The Street','',`Out the back door with the pie. Cross the roads, dodge the dogs, and get home to your trash can. A cook might follow you out.`,'Tap to continue');
   sceneT=0;
 }
-function enterStreet(){hideMsg();loadScene(WORLD==='forest'?genRiver():genStreet());state='play';setTimeout(()=>{if(state==='play')say(player,pickCoon(S.world==='forest'?'doorF':'door'),true)},200)}
+function enterStreet(){hideMsg();loadScene(WORLD==='forest'?genRiver():WORLD==='moon'?genMoonField():genStreet());state='play';setTimeout(()=>{if(state==='play')say(player,pickCoon(W3('door','doorF','doorM')),true)},200)}
 
 // ---------- player ----------
 function updatePlayer(dt){
   player.jcd=(player.jcd||0)-dt;
   if(player.jump){const j=player.jump;j.t+=dt/j.dur;const k=Math.min(1,j.t);
-    player.x=j.sx+(j.tx-j.sx)*k;player.y=j.sy+(j.ty-j.sy)*k;player.z=Math.sin(Math.PI*k)*(j.small?6:13);player.anim+=dt*8;
+    player.x=j.sx+(j.tx-j.sx)*k;player.y=j.sy+(j.ty-j.sy)*k;player.z=Math.sin(Math.PI*k)*(j.small?6:13)*(j.hi||1);player.anim+=dt*8;
     if(k>=1){player.jump=null;player.z=0;player.jcd=.25;SFX.land();if(Math.random()<.12)setTimeout(()=>{if(state==='play')say(player,pickCoon('landing'),true)},150);
       for(let i=0;i<5;i++)parts.push({x:player.x-4+Math.random()*8,y:player.y,t:0,life:.3})}
     return}
@@ -1023,7 +1032,7 @@ function updatePlayer(dt){
   if(S.kind==='kitchen'){
     if(!pieTaken){const px=S.pie.c*TS+8,py=S.pie.r*TS+10;
       if(Math.hypot(player.x-px,player.y-py)<19){pieTaken=true;player.carry=true;S.doorOpen=true;
-        toast(S.world==='forest'?'Got the pie!\nThe gate is open':'Got the pie!\nThe back door is open');setObj();SFX.pie();pieFx={t0:now,x:px,y:py-6};hitStop=.22;shake=.15;
+        toast(W3('Got the pie!\nThe back door is open','Got the pie!\nThe gate is open','Got the pie!\nThe airlock is open'));setObj();SFX.pie();pieFx={t0:now,x:px,y:py-6};hitStop=.22;shake=.15;
         for(let k=0;k<30;k++){const a=-Math.PI/2+(Math.random()-.5)*Math.PI*1.8,v=45+Math.random()*80;stars.push({x:px,y:py-8,vx:Math.cos(a)*v,vy:Math.sin(a)*v-20,t0:now+Math.random()*.08,life:.9+Math.random()*.5,r:2.6+Math.random()*2.8,rot:Math.random()*6,vr:(Math.random()-.5)*10,col:pick(['#ffe066','#ffd1dc','#fff','#ffb3c6','#bdf0dc'])})}
         say(player,pickCoon('pie'),true);
         const near=enemies.slice().sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y))[0];
@@ -1035,7 +1044,7 @@ function updatePlayer(dt){
 }
 function updateKitchen(dt){
   if(!S.windowClosed&&sceneT>.7){S.windowClosed=true;shake=.18;SFX.slam();
-    toast(S.world==='forest'?'CLACK! The trail gate shut':'SLAM! The window shut');setTimeout(()=>{if(state==='play')say(player,pickCoon('window'),true)},300)}
+    toast(W3('SLAM! The window shut','CLACK! The trail gate shut','HISSS! The airlock sealed'));setTimeout(()=>{if(state==='play')say(player,pickCoon('window'),true)},300)}
 }
 function updateStreet(dt){
   for(const c of cars){
@@ -1055,7 +1064,7 @@ function updateStreet(dt){
     const sx=S.doorCol*TS+8,sy=2*TS+10;
     if(Math.hypot(player.x-sx,player.y-sy)<40){S.burstT=1;return}
     const e=makeEnemy({kind:'cook',c:S.doorCol,r:2},rnd(6));e.state='chase';e.last={x:player.x,y:player.y};e.lostMax=3;enemies.push(e);
-    const F=S.world==='forest';SFX.slam();say(e,F?'HEY! That pie is park property!':'COME BACK WITH MY PIE!',true);toast(F?'A ranger ran out of the gate!':'A cook burst out the door!');
+    SFX.slam();say(e,W3('COME BACK WITH MY PIE!','HEY! That pie is park property!','ZORP! Return the pie, earthling!'),true);toast(W3('A cook burst out the door!','A ranger ran out of the gate!','An alien came out of the airlock!'));
   }}
 }
 
@@ -1463,6 +1472,7 @@ function render(){
   const list=[];
   for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++){const t=S.map[r][c];
     if(t==='G'){list.push({y:r*TS+15.5,grass:1,c,r});continue}
+    if(t==='K'){list.push({y:r*TS+15,hide:1,c,r});continue}
     if(S.kind==='kitchen'){if(r>0&&r<S.rows-1&&c>0&&c<S.cols-1&&'COTRSP'.includes(t)){list.push({y:r*TS-6,t,c,r});if(t==='C'&&!(S.knocked&&S.knocked.has(c+','+r))&&!isSink(c,r))list.push({y:r*TS-5.5,it:1,c,r});if(t==='P'&&!pieTaken)list.push({y:r*TS-5.4,pieIt:1,c,r});if(t==='O'&&!isWallK(c,r+1))extra.push({x:c*TS+8,y:r*TS+16,r:26,i:.7,w:'rgba(255,120,40,.16)'})}}
     else if('BZHXN'.includes(t))list.push({y:r*TS+(t==='X'?15:14),t,c,r})}
   if(S.kind==='kitchen')list.push({y:S.door.r*TS+16,t:'D'});else for(const l of S.lamps)if(Math.abs(l.y-cam.y-VH/2)<VH/2+50)list.push({y:l.y,lamp:l});
@@ -1472,7 +1482,8 @@ function render(){
   list.sort((a,b)=>a.y-b.y);
   for(const o of list){
     if(o.grass){drawGrass(o.c,o.r);continue}
-    if(S.world==='forest'&&o.t&&drawForestTile(o))continue;
+    if(o.hide){drawHide(o.c,o.r);continue}
+    if(o.t&&S.world&&(S.world==='forest'?drawForestTile(o):drawMoonTile(o)))continue;
     if(o.pieIt)drawPieOnCounter(o.c,o.r);
     else if(o.it)counterItem(o.c,o.r,o.c*TS,o.r*TS);
     else if(o.snack)drawSnack(o.snack);
@@ -1500,7 +1511,7 @@ function render(){
   for(const p of parts){const a=1-p.t/p.life,z=p.sz||2;R(p.x,p.y-p.t*(p.col?10:6),z,z,p.col?p.col+(a*.8)+')':`rgba(235,225,205,${a*.8})`)}
   enemies.forEach(e=>{const h=e.kind==='bear'?33:e.kind==='dog'?22:(e.style==='sous'?40:e.style==='cop'||e.style==='ranger'?34:e.style==='camper'?33:37),x=Math.round(e.x),y=Math.round(e.y)-h+(Math.sin(now*10)>0?0:-1);
     if(e.state==='alert')bubble(x,y,'!','#e08a00');else if(e.state==='chase')bubble(x,y,'!','#e0352b');else if(e.state==='search')bubble(x,y,'?','#6a5acd');else if(e.state==='roar')bubble(x,y,'!','#e0352b')});
-  drawPieFx();
+  extraFx();drawPieFx();
   ctx.restore();
   lighting(extra);
   if(pieFx&&now-pieFx.t0<.35){ctx.fillStyle=`rgba(255,250,235,${.55*(1-(now-pieFx.t0)/.35)})`;ctx.fillRect(0,0,VW,VH)}
@@ -2005,6 +2016,7 @@ function buildBg(){
   const m=ctx;ctx=g;const r_=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h)};
   const OUT='#4a4775',OUTL='#6e6aa0';
   if(S.world==='forest'){forestBg(g);ctx=m;return}
+  if(S.world==='moon'){moonBg(g);ctx=m;return}
   if(S.kind==='kitchen'){
     for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){const x=c*TS,y=r*TS;
       if(!tileAt(g,((c+r)&1)?(hsh(c,r,31)<.15?1:0):(hsh(c,r,32)<.5?2:3),x,y)){r_(x,y,16,16,((c+r)&1)?'#fff7ea':'#d7ebf8');g.strokeStyle='rgba(180,160,150,.28)';g.lineWidth=.5;g.strokeRect(x+.25,y+.25,15.5,15.5)}}
@@ -2094,7 +2106,7 @@ function drawPropImg(n,x,y,flip,k=1){const d=PROP[n];if(!d||!(d.img?d.img.ready:
   else ctx.drawImage(I,d[0],d[1],d[2],d[3],x-ax,y-ay,w,h);return true}
 function drawPropFit(n,x,y,w,h){const d=PROP[n];if(!d||!(d.img?d.img.ready:propReady))return false;ctx.drawImage(d.img||PROP_IMG,d[0],d[1],d[2],d[3],x,y,w,h);return true}
 const SNK={candy:'sn_candy',cookie:'sn_cookie',choc:'sn_choc',donut:'sn_gold',fries:'sn_fries',burger:'sn_burger'};
-function drawSnackBody(sn){const y=sn.y+Math.sin(now*3+sn.x)*.8+3.5;drawPropImg(SNK[sn.type]||'sn_donut',sn.x,y,false,.72)}
+function drawSnackBody(sn){const y=sn.y+Math.sin(now*3+sn.x)*.8+3.5;drawPropImg(snk(sn.type),sn.x,y,false,.72)}
 
 function drawSnack(sn){
   const x=sn.x,y=sn.y,t=now*3+sn.x*.1,b=Math.abs(Math.sin(t))*4,sq=1+(b<.6?.12:0),gold=sn.type==='donut';
@@ -2102,11 +2114,11 @@ function drawSnack(sn){
   ctx.fillStyle=gl;ctx.fillRect(x-22,y-28,44,44);
   const ph=(now*.8+sn.x*.01)%1;ctx.strokeStyle=gold?`rgba(255,200,60,${.8*(1-ph)})`:`rgba(255,143,171,${.75*(1-ph)})`;ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(x,y+1,4+ph*12,(4+ph*12)*.42,0,0,TAU);ctx.stroke();
   ctx.fillStyle='rgba(91,63,60,.2)';ctx.beginPath();ctx.ellipse(x,y+1,5.5-b*.5,1.8-b*.12,0,0,TAU);ctx.fill();
-  ctx.save();ctx.translate(x,y+1-b);ctx.scale(sq,1/sq);ctx.rotate(Math.sin(t*.7)*.08);drawPropImg(SNK[sn.type]||'sn_donut',0,0,false,gold?1.45:1.22);ctx.restore();
+  ctx.save();ctx.translate(x,y+1-b);ctx.scale(sq,1/sq);ctx.rotate(Math.sin(t*.7)*.08);drawPropImg(snk(sn.type),0,0,false,gold?1.45:1.22);ctx.restore();
   for(let k=0;k<(gold?3:2);k++){const a=now*2+k*TAU/(gold?3:2)+sn.x,rr=12;const sx=x+Math.cos(a)*rr,sy=y-9+Math.sin(a)*rr*.45;if(Math.sin(now*6+k*2)>-.2)sparkle(sx,sy,gold?1.8:1.4,gold?'#ffe066':'#fff6c8')}
 }
 // (function declarations are hoisted, so the vector versions can't be kept as fallbacks; props just wait for the atlas)
-function drawPie(cx,cy){if(!drawPropImg('pie',cx,cy+4,false,.82))drawPieToon(cx,cy)}
+function drawPie(cx,cy){if(!drawPropImg(pieName(),cx,cy+4,false,.82))drawPieToon(cx,cy)}
 function drawBin(c,r,home){if(!propReady)return;const x=c*TS+8,y=r*TS+14;
   if(home){const near=Math.hypot(player.x-x,player.y-(y-4))<52,b=near?Math.abs(Math.sin(now*6))*2:0;
     ctx.fillStyle='rgba(160,240,190,.35)';ctx.beginPath();ctx.ellipse(x,y,14+Math.sin(now*3)*1.5,5,0,0,TAU);ctx.fill();
@@ -2116,8 +2128,8 @@ function drawBin(c,r,home){if(!propReady)return;const x=c*TS+8,y=r*TS+14;
 function drawHedge(c,r){if(!propReady)return;const x=c*TS+8,y=r*TS+15;kShadow(x,y-1,9);drawPropImg('bush',x,y+.5,hsh(c,r,8)<.5,.84)}
 function drawTree(c,r){if(!propReady)return;const x=c*TS+8,y=r*TS+15;kShadow(x,y,10);drawPropImg('tree',x,y,hsh(c,r,9)<.5,.74)}
 function drawFence(c,r){if(!propReady)return;drawPropFit('fence',c*TS-.3,r*TS-4,16.6,16.5)}
-function drawLamp(l){if(!propReady)return;ctx.fillStyle='rgba(255,236,160,.28)';ctx.beginPath();ctx.ellipse(l.x,l.y-1,15,5,0,0,TAU);ctx.fill();kShadow(l.x,l.y,4);drawPropImg('lamp',l.x,l.y+1,false,.84)}
-function drawCar(c){if(!propReady)return;const i=Math.abs(Math.round(c.x0!==undefined?c.x0:(c.id||0)))%4;
+function drawLamp(l){if(!propReady)return;if(S.world==='forest'){drawForestLamp(l);return}if(S.world==='moon'){kShadow(l.x,l.y,4);drawPropImg('m_flag',l.x,l.y+1,false,.85);if(Math.sin(now*3+l.x)>0)kE(l.x,l.y-21.5,1.4,1.4,'#ff9fb6',0);return}ctx.fillStyle='rgba(255,236,160,.28)';ctx.beginPath();ctx.ellipse(l.x,l.y-1,15,5,0,0,TAU);ctx.fill();kShadow(l.x,l.y,4);drawPropImg('lamp',l.x,l.y+1,false,.84)}
+function drawCar(c){if(!propReady)return;if(S.world==='moon'){if(c.skin===undefined)c.skin=Math.floor(Math.random()*2);kShadow(c.x,c.y,17);if(Math.random()<.3)parts.push({x:c.x-c.dir*15,y:c.y-1,t:0,life:.5,col:'rgba(220,214,236,',sz:2.5});drawPropImg('m_rover'+(c.skin%2),c.x,c.y+1,c.dir<0,.95);return}const i=Math.abs(Math.round(c.x0!==undefined?c.x0:(c.id||0)))%4;
   if(c.skin===undefined)c.skin=Math.floor(Math.random()*4);kShadow(c.x,c.y,17);drawPropImg('car'+c.skin,c.x,c.y+1,c.dir<0,1.05)}
 const CITEM=['board','pot','bowl','cake','plates','jar','plant','teapot'];
 function sinkBase(c,r){return tileCh(c,r)==='C'&&!isWallK(c,r+1)&&isWallK(c-1,r)&&isWallK(c+1,r)&&hsh(c,r,21)<.14}
@@ -2160,6 +2172,7 @@ function drawSpr(n,x,y,flip,k=1,rot=0,sq=1){const d=SPR[n];if(!d||(d.img&&!d.img
 function walkFx(mv,ph){return mv?{bob:Math.abs(Math.sin(ph))*1.4,rot:Math.sin(ph)*.07,sq:1+Math.abs(Math.cos(ph))*.04}:{bob:0,rot:0,sq:1+Math.sin(now*2.4)*.018}}
 function drawRaccoon(p){
   if(!sprReady){scaled(p,kRaccoon);return}
+  if(drawRaccoonX(p))return;
   const d=p.dir,mv=Math.hypot(p.vx,p.vy)>8||!!p.jump,z=p.z||0,ph=p.anim*1.3;
   kShadow(p.x,p.y,6.5-z*.15);
   const tired=p.energy<18&&!p.rush&&!mv&&!p.carry,caught=state==='caught',side=d==='left'||d==='right',flip=d==='left';
@@ -2167,16 +2180,18 @@ function drawRaccoon(p){
   let n;
   if(caught)n='c_x';else if(tired)n='c_t';
   else if(mv)n='cw_'+key+fr;else n=d==='up'?'c_b':side?'c_s':'c_f';
+  if(S.world==='moon'&&XSPR_IMG.ready)n=moonN(n);
   const bob=mv?(fr&1?1.2:0):Math.sin(now*2.4)*.25,sq=mv?1:1+Math.sin(now*2.4)*.015,y=p.y-z-bob;
   drawSpr(n,p.x,y,flip,1,0,sq);
   if(p.carry){
     // the pie rides on his head and wobbles when he runs
     const h=SPR[n][3]/SPR[n][6],hx=p.x+(side?(flip?-2.4:2.4):0),wob=mv?Math.sin(ph*2)*.16:Math.sin(now*2)*.04,lift=mv?Math.abs(Math.sin(ph))*1.2:0,pa=pieFx?now-pieFx.t0:9,pop=pa<.6?1+Math.sin(pa/.6*Math.PI)*.7:1,up=pa<.6?Math.sin(pa/.6*Math.PI)*10:0;
-    ctx.save();ctx.translate(hx,y-h+3.2-lift-up);ctx.rotate(wob);drawPropImg('pie',0,0,false,1.2*pop);ctx.restore();
+    ctx.save();ctx.translate(hx,y-h+3.2-lift-up);ctx.rotate(wob);drawPropImg(pieName(),0,0,false,1.2*pop);ctx.restore();
     if(Math.sin(now*5)>.4)sparkle(hx+(flip?-10:10),y-h-8,1.8)}
   p._img=null;
 }
 function drawCook(c){
+  if(drawEnemyX(c))return;
   if(c.style==='ranger'||c.style==='camper'){drawRanger(c);return}
   if(!sprReady){scaled(c,kCook);return}
   const d=dirOf(c.fa),mv=c.moving,fx=walkFx(mv,c.anim*1.2),angry=c.state==='chase'||c.state==='alert',st=c.style==='sous'?'s':c.style==='cop'?'p':'k';
@@ -2188,6 +2203,7 @@ function drawCook(c){
   drawSpr(n,c.x,c.y-fx.bob,flip,c.fat?1.08:1,fx.rot,fx.sq*(c.fat?.94:1));
 }
 function drawDog(e){
+  if(drawEnemyX(e))return;
   if(!sprReady){scaled(e,kDog);return}
   const d=dirOf(e.fa),mv=e.moving,fx=walkFx(mv,e.anim*1.6),k9=e.style==='k9';
   kShadow(e.x,e.y,5.5);
@@ -2211,7 +2227,7 @@ function drawPieOnCounter(c,r){
     ctx.fillStyle=gr;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(L,-2.6);ctx.lineTo(L,2.6);ctx.closePath();ctx.fill()}
   ctx.restore();
   ctx.fillStyle='rgba(91,63,60,.25)';ctx.beginPath();ctx.ellipse(x,y-.2,10,2.4,0,0,TAU);ctx.fill();
-  drawPropImg('pie',x,y+.5,false,1.55*p);
+  drawPropImg(pieName(),x,y+.5,false,1.55*p);
   for(let i=0;i<3;i++){const ph=(now*.7+i/3)%1;ctx.strokeStyle=`rgba(255,255,255,${.7*(1-ph)})`;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-4+i*4,y-14-ph*9);ctx.quadraticCurveTo(x-2+i*4,y-16-ph*9,x-3.5+i*4,y-18-ph*9);ctx.stroke()}
   for(let k=0;k<4;k++){const a=now*1.4+k*TAU/4;if(Math.sin(now*5+k*1.3)>-.1)sparkle(x+Math.cos(a)*15,y-8+Math.sin(a)*6,1.6+Math.sin(now*6+k)*.4,'#fff6c8')}
 }
@@ -2240,6 +2256,7 @@ function lighting(){
   ctx.save();ctx.globalCompositeOperation='multiply';ctx.globalAlpha=K?.09:.1;ctx.translate(-(ox%48),-(oy%48));ctx.scale(.25,.25);ctx.fillStyle=grainPat2;ctx.fillRect(0,0,(VW+96)*4,(VH+96)*4);ctx.restore();
   // soft vignette + a faint cool night tint on the street
   if(!K){ctx.fillStyle='rgba(120,110,190,.08)';ctx.fillRect(0,0,VW,VH)}
+  if(S.world==='moon')moonLight();
   const v=ctx.createRadialGradient(VW/2,VH/2,VH*.35,VW/2,VH/2,VH*.8);v.addColorStop(0,'rgba(70,45,60,0)');v.addColorStop(1,'rgba(70,45,60,.2)');ctx.fillStyle=v;ctx.fillRect(0,0,VW,VH);
 }
 
@@ -2294,7 +2311,7 @@ Object.assign(SFX,{
 });
 const FITEM=['f_honey','','f_honey','','f_honey'];   // '' = mushrooms: decoration, not knockable
 
-function setWorld(w){if(w!=='forest')w='city';WORLD=w;try{localStorage.setItem('pieheist-world',w)}catch(e){}loadBest();syncWorldChips();if(state==='title')newRun()}
+function setWorld(w){if(w!=='forest'&&w!=='moon')w='city';WORLD=w;try{localStorage.setItem('pieheist-world',w)}catch(e){}loadBest();syncWorldChips();if(state==='title')newRun()}
 function syncWorldChips(){document.querySelectorAll('#title [data-world]').forEach(b=>{const on=b.dataset.world===WORLD;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))})}
 syncWorldChips();
 
@@ -2314,7 +2331,7 @@ function genCamp(){
 function genRiver(){
   const cols=16,W=cols*TS;
   for(let tries=0;tries<80;tries++){
-    const rows=[],row=ch=>Array(cols).fill(ch),lanes=[],regions=[],logs=[];
+    const rows=[],row=ch=>Array(cols).fill(ch),lanes=[],regions=[],logs=[],lamps=[];
     rows.push(row('W'));rows.push(row('W'));
     const dc=3+rnd(10);rows[1][dc]='E';
     const top=row(',');for(let k=0;k<3;k++){const c=rnd(cols);if(Math.abs(c-dc)>1)top[c]='B'}
@@ -2329,6 +2346,7 @@ function genRiver(){
           const L={r:r0+k,dir,sp,P:cnt*(gap+len)};lanes.push(L);const sinky=k===1&&Math.random()<.6,off=rnd(W);
           for(let q=0;q<cnt;q++)logs.push({lane:L,x:off+q*(gap+len)-W,len,y:(r0+k)*TS,dir,sp,ph:Math.random()*6,sink:sinky&&q%2===0})}
         rows.push(row(','));regions.push({r0:r0-1,r1:r0-1,type:'bank'},{r0:r0+n,r1:r0+n,type:'bank'});
+        lamps.push({x:(1+rnd(4))*TS+4,y:(r0-1)*TS+13},{x:(10+rnd(4))*TS+4,y:(r0-1)*TS+13});
       }else if(seg==='meadow'){
         rows.push(row(','));const r0=rows.length;for(let k=0;k<6;k++)rows.push(row('g'));rows.push(row(','));
         for(let k=0;k<3;k++){const r=r0+1+rnd(4),c=1+rnd(cols-3),len=1+rnd(2);for(let q=0;q<len;q++)if(rows[r][c+q]==='g')rows[r][c+q]='H'}
@@ -2361,7 +2379,7 @@ function genRiver(){
     const sn=[],sp2=walk.filter(t=>t.r>4);
     for(let k=0;k<60&&sn.length<6;k++){const t=pick(sp2);if(sn.every(o=>Math.abs(o.x/TS-t.c)+Math.abs(o.y/TS-t.r)>=4))sn.push({x:t.c*TS+8,y:t.r*TS+10,type:pick(['cookie','candy','choc','cookie'])})}
     return {kind:'street',world:'forest',snacks:sn,map:g.map(r=>r.join('')),cols,rows:R2,start:{x:dc*TS+8,y:2*TS+12},doorCol:dc,
-      home:{c:zc,r:hr},walk,spawns,lanes,cars:[],logs,lamps:[],burstT:5,knocked:new Set(),debris:[],safe:null,ripples:[]};
+      home:{c:zc,r:hr},walk,spawns,lanes,cars:[],logs,lamps:lamps.concat(dc+2<cols-1?[{x:(dc+2)*TS+8,y:2*TS+14,sign:1}]:[]),burstT:5,knocked:new Set(),debris:[],safe:null,ripples:[]};
   }
 }
 
@@ -2599,6 +2617,272 @@ function drawRanger(c){
   else if(angry&&d!=='up')n='r_a';else if(d==='up')n='r_b';else if(side)n='r_s';else n='r_f';
   drawSpr(n,c.x,c.y-fx.bob,flip,.95,fx.rot,fx.sq);
 }
+// ===== EXTRAS BEGIN =====
+// ================= ROUND 3: HIDING, BOO!, MOON WORLD, FOREST EXTRAS =================
+const XSPR={"sc_kj":[0,0,107,149,42,149,4],"sc_sj":[109,0,107,142,56,142,4],"sc_rj":[218,0,108,137,48,137,4],"mc_pf":[328,0,84,130,36,130,4],"mc_ps":[414,0,89,129,51,129,4],"mc_x":[505,0,85,125,38,125,4],"sc_kr":[592,0,99,124,60,124,4],"sc_sr":[693,0,100,124,63,124,4],"sc_pj":[795,0,125,122,68,122,4],"sc_pr":[0,151,101,120,71,120,4],"sc_mj":[103,151,114,120,50,120,4],"ra_pop":[219,151,75,118,39,118,4],"mc_s":[296,151,90,118,40,118,4],"ra_start":[388,151,84,117,40,117,4],"sc_rr":[474,151,100,117,74,117,4],"mc_f":[576,151,87,116,37,116,4],"mc_b":[665,151,83,116,47,116,4],"mc_float":[750,151,87,116,40,116,4],"mw_f0":[839,151,86,116,39,116,4],"mw_f1":[927,151,86,116,39,116,4],"mw_f2":[0,273,84,116,44,116,4],"mw_f3":[86,273,84,116,41,116,4],"al_j":[172,273,76,113,37,113,4],"sc_mr":[250,273,129,112,82,112,4],"sc_dj":[381,273,108,111,55,111,4],"al_s":[491,273,62,110,33,110,4],"al_b":[555,273,69,109,34,109,4],"mw_s1":[626,273,82,108,34,108,4],"mw_s3":[710,273,79,108,35,108,4],"al_f":[791,273,73,108,36,108,4],"al_a":[866,273,75,108,34,108,4],"ac_a":[0,391,99,108,48,108,4],"mc_t":[101,391,82,107,37,107,4],"mw_s2":[185,391,78,107,35,107,4],"ac_f":[265,391,89,107,44,107,4],"ac_s":[356,391,74,107,40,107,4],"ac_b":[432,391,86,107,43,107,4],"ra_boo":[520,391,82,100,36,100,4],"ra_wet":[604,391,78,100,37,100,4],"mw_b3":[684,391,76,100,42,100,4],"mw_b0":[762,391,77,99,42,99,4],"mw_b1":[841,391,76,99,40,99,4],"mw_b2":[919,391,76,99,40,99,4],"ra_sn0":[0,501,86,96,42,96,4],"ra_sn1":[88,501,83,96,48,96,4],"ra_laugh":[173,501,89,95,41,95,4],"ad_f":[264,501,89,93,45,93,4],"sc_dr":[355,501,115,92,50,92,4],"ap_f":[472,501,73,92,36,92,4],"ap_s":[547,501,96,90,37,90,4],"ra_duck":[645,501,87,62,43,62,4]};
+const XPROPD={"m_rocket":[0,0,204,288,102,288,8],"m_rover0":[206,0,288,279,144,279,8],"m_rover1":[496,0,288,276,144,276,8],"f_lantern":[786,0,161,272,80,272,8],"f_sign":[949,0,117,176,58,176,8],"m_dish":[1068,0,121,176,60,176,8],"m_flag":[1191,0,151,176,76,176,8],"m_crates":[1344,0,128,150,64,150,8],"m_dome":[1474,0,160,141,80,141,8],"h_bags":[1636,0,136,128,68,128,8],"m_crystal":[1774,0,128,127,64,127,8],"m_cactus":[1904,0,120,124,60,124,8],"h_bags_p":[0,290,136,122,68,122,8],"h_bush":[138,290,136,122,68,122,8],"fs_acorn":[276,290,88,122,44,122,8],"m_console":[366,290,128,121,64,121,8],"h_basket_p":[496,290,124,119,62,119,8],"h_bush_p":[622,290,136,119,68,119,8],"h_log_p":[760,290,136,118,68,118,8],"h_log":[898,290,136,117,68,117,8],"m_rock":[1036,290,128,117,64,117,8],"h_box_p":[1166,290,120,113,60,113,8],"h_basket":[1288,290,124,111,62,111,8],"h_box":[1414,290,120,109,60,109,8],"h_table":[1536,290,136,108,68,108,8],"f_bpie":[1674,290,104,106,52,106,8],"h_table_p":[1780,290,136,105,68,105,8],"fs_fish":[1918,290,45,104,22,104,8],"fs_berry":[0,414,96,102,48,102,8],"fs_honey":[98,414,96,102,48,102,8],"m_crater":[196,414,144,100,72,100,8],"fs_smore":[342,414,96,95,48,95,8]};
+const XSPR_IMG=new Image();XSPR_IMG.onload=()=>{XSPR_IMG.ready=true};XSPR_IMG.src='assets/art/x-sprites.webp';
+const XPROP_IMG=new Image();XPROP_IMG.onload=()=>{XPROP_IMG.ready=true;if(S&&S.world)buildBg()};XPROP_IMG.src='assets/art/x-props.webp';
+for(const k in XSPR){SPR[k]=XSPR[k];SPR[k].img=XSPR_IMG}
+for(const k in XPROPD){PROP[k]=XPROPD[k];PROP[k].img=XPROP_IMG}
+
+const W3=(c,f,m)=>S&&S.world==='moon'?m:S&&S.world==='forest'?f:c;
+const pieName=()=>S&&S.world==='forest'?'f_bpie':'pie';
+const SNKF={candy:'fs_berry',cookie:'fs_acorn',choc:'fs_smore',donut:'fs_honey',fries:'fs_fish',burger:'fs_fish'};
+const snk=t=>(S&&S.world==='forest'&&SNKF[t])||SNK[t]||'sn_donut';
+
+// ---------- lines (text only for now; recorded voices come after Ander approves them) ----------
+const ALIEN_VOICE={base:420,wave:'triangle',rate:.05,vol:.2},CMDR_VOICE={base:180,wave:'square',rate:.06,vol:.2},BLOB_VOICE={base:620,wave:'sine',rate:.05,vol:.22};
+Object.assign(LINES,{
+  alien:{idle:['Beep. Boop. Snack time?','Earth pie detected... no, false alarm.','Zorp zorp zorp.','Who left the airlock open?','I miss my home planet. It had pie.'],
+    spot:['EARTHLING DETECTED!','Halt, fuzzy invader!','A masked creature! Report to the commander!','ZORP! Intruder!'],
+    hear:['Zorp?','Did the sensors beep?'],lost:['It vanished... like a comet.','Scanning... scanning...'],
+    giveup:['Must have been space dust.','Back to my moon rounds.'],pie:['THE SACRED PIE!','Not the Earth dessert!'],caught:['Captured! For science!','Into the specimen jar!']},
+  cmdr:{idle:['Status report: nothing. Good.','Polish the antennas, crew!','This base runs on pie and discipline.'],
+    spot:['RED ALERT! Fluffy intruder!','All units! Raccoon on deck!','Lock down the base!'],
+    hear:['Report!','Seal the corridors!'],lost:['Scan every crater!','He cannot hide forever. Probably.'],
+    giveup:['Unacceptable. Carry on.'],pie:['THAT PIE WAS FOR THE GALACTIC SUMMIT!'],caught:['Commander: 1. Earthling: 0.']},
+  blob:{idle:['*bloop*','*wobble wobble*','*happy squish*'],spot:['*BLOOP BLOOP!*','*angry wobble!*'],hear:['*bloop?*'],lost:['*sniff... bloop*'],giveup:['*naps in a crater*'],pie:['*drool bloop*'],caught:['*proud bloop*']},
+  drone:{idle:['*hmmmmm*','Scanning sector seven.'],spot:['TARGET ACQUIRED!','INTRUDER! INTRUDER!'],hear:['*whirr?*'],lost:['Signal lost.'],giveup:['Returning to patrol.'],pie:['PIE THEFT LOGGED.'],caught:['Target secured.']}
+});
+const SCREAM={cook:['AAAH! Mother of soufflé!','EEEK!'],sous:['WAAAH! Who did that?!'],cop:['EEK! My donut!','Holy cannoli!'],ranger:['YIKES! A wild raccoon!'],camper:['MOMMY!'],
+  alien:['ZORP?! ZOOORP!'],cmdr:['ABORT! ABORT!'],dog:['*YELP!*'],k9:['*YELP!*'],blob:['*SQUEAK!*'],drone:['BZZT?!']};
+Object.assign(COON,{
+  boo:['BOO!','Boo! Heh-heh-heh!','Surprise!'],booBear:['Oh no. Wrong fluffy guy.','Nope. Nope. NOPE.'],
+  hide:['Shhh... nobody can see me.','I am the shadow.','Fat... but I still fit!','I’m a box now.','Shhh... I’m furniture.'],pop:['Peekaboo!','Ta-daa!','Did you miss me?'],
+  // forest: bear puns
+  start_forest:['I’ll grab that pie with my BEAR hands!','This pie smells un-BEAR-ably good.'],
+  idle_forest:['Bear with me. I’m a professional.','Don’t feed the wildlife? Buddy, I AM the wildlife.','Leaf me alone, I’m working!'],
+  pie_forest:['Berry nice. Berry, berry mine!','Got it with my BEAR hands!'],
+  // moon
+  start_moon:['Houston, we have a pie-blem.','Pie... in... SPACE!'],
+  idle_moon:['Is the moon made of cheese? Disappointing.','In space, no one can hear you munch.'],
+  pie_moon:['The pie has landed!'],
+  jump_moon:['One small hop for a raccoon... one giant leap for pie-kind!','Look, Ma! Zero gravity, zero calories!'],
+  doorM:['Houston, the pie has left the base.'],winM:['Mission accomplished. Pie secured for launch!'],
+  alien:['Take me to your leader... then to your pantry.']
+});
+SFX.scream=e=>{if(e.kind==='dog'&&clip('dog-whine',1,1.4))return;const b=e.style==='alien'||e.style==='blob'?700:e.style==='cmdr'?300:420;
+  tone(b,.32,{type:'sawtooth',slide:b*2.6,vol:.09,lp:2600});tone(b*1.5,.22,{type:'square',slide:b*3,vol:.03,when:ac&&ac.currentTime+.08})};
+SFX.fwip=()=>{noise(.12,{hp:1200,lp:5000,vol:.08});tone(380,.1,{type:'sine',slide:180,vol:.06})};
+// hiding swoosh: an airy sweep that dives down, then a soft thump as he lands in the spot
+SFX.swoop=()=>{if(!ac)return;const t=ac.currentTime;try{const src=ac.createBufferSource(),f=ac.createBiquadFilter(),g=ac.createGain();src.buffer=noiseBuf;f.type='bandpass';f.Q.value=2.2;
+  f.frequency.setValueAtTime(3200,t);f.frequency.exponentialRampToValueAtTime(420,t+.26);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.22,t+.05);g.gain.exponentialRampToValueAtTime(.0001,t+.3);
+  src.connect(f).connect(g).connect(sfxBus);src.start(t);src.stop(t+.32)}catch(e){}
+  tone(900,.24,{type:'sine',slide:220,vol:.05});tone(120,.1,{type:'triangle',slide:70,vol:.12,when:t+.22});noise(.06,{lp:600,vol:.08,when:t+.22})};
+const HIDE_EYES={"box": [[2.21, -8.44], [-0.71, -8.44]], "basket": [[-1.11, -8.95], [2.06, -9.06]], "table": [[-1.69, -2.15], [0.71, -2.14]], "bags": [[-1.06, -7.3], [1.38, -7.38]], "log": [[1.94, -3.81], [-0.69, -3.81]], "bush": [[2.06, -6.79], [-0.69, -6.75]]};
+
+// ---------- hiding spots ----------
+function hideTypes(s){if(s.world==='forest')return['log','bush'];if(s.world==='moon')return['box'];return s.kind==='kitchen'?['box','basket','table']:['bags','box']}
+function placeHides(s){
+  s.hidesPlaced=1;s.hideType={};const g=s.map.map(r=>r.split('')),K=s.kind==='kitchen',types=hideTypes(s),st=tileOf(s.start.x,s.start.y);
+  const taken=new Set((s.spawns||[]).map(t=>t.c+','+t.r));(s.snacks||[]).forEach(sn=>taken.add(Math.floor(sn.x/TS)+','+Math.floor((sn.y-2)/TS)));
+  if(s.pie)for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)taken.add((s.pie.c+a)+','+(s.pie.r+b));
+  const open=(c,r)=>{const ch=g[r]&&g[r][c];return ch!==undefined&&!SOLID.has(ch)&&ch!=='r'&&ch!=='w'&&ch!=='K'&&ch!=='D'&&ch!=='Q'};
+  const cand=[];
+  for(let r=3;r<s.rows-3;r++)for(let c=1;c<s.cols-1;c++){const ch=g[r][c];if(K?ch!=='.':!(ch===','||ch==='g'))continue;
+    if(Math.abs(c-st.c)+Math.abs(r-st.r)<5||taken.has(c+','+r))continue;
+    const n=DIRS.filter(([a,b])=>open(c+a,r+b)).length;if(n<3)continue;   // never plug a corridor
+    if(!K&&(g[r-1][c]==='r'||g[r+1][c]==='r'||g[r-1][c]==='w'||g[r+1][c]==='w'))continue;
+    cand.push({c,r})}
+  shuffle(cand);const out=[];
+  for(const t of cand){if(out.length>=4)break;if(out.every(o=>Math.abs(o.c-t.c)+Math.abs(o.r-t.r)>=6))out.push(t)}
+  out.forEach((t,k)=>{g[t.r][t.c]='K';s.hideType[t.c+','+t.r]=types[k%types.length]});
+  s.map=g.map(r=>r.join(''));
+}
+function hideTick(dt){
+  const p=player,t=tileOf(p.x,p.y),on=tileCh(t.c,t.r)==='K'&&!p.jump,still=Math.hypot(p.vx,p.vy)<14;
+  p.hideT=on&&still?(p.hideT||0)+dt:0;
+  const was=p.hidden;
+  if(!was&&p.hideT>.22){
+    const watched=enemies.some(e=>(e.state==='chase'||e.state==='alert'||e.state==='charge'||e.state==='roar')&&Math.hypot(e.x-p.x,e.y-p.y)<70&&los(e.x,e.y-3,p.x,p.y-3));
+    if(!watched){const cc=center(t.c,t.r);p.hx0=p.x;p.hy0=p.y;p.x=cc.x;p.y=cc.y;p.vx=p.vy=0;p.hidden=true;p.hc={c:t.c,r:t.r};p.duckT=now;p.blinkAt=now+1.5;SFX.swoop();
+      for(let i=0;i<8;i++)parts.push({x:p.x-7+Math.random()*14,y:p.y-2-Math.random()*6,t:0,life:.45});
+      if(!S.hideTold){S.hideTold=1;toast('HIDDEN!\nStay still — move to pop out')}
+      if(Math.random()<.4)setTimeout(()=>{if(state==='play'&&p.hidden)say(p,pickCoon('hide'))},400)}
+    else if(!p.hideWarn||now-p.hideWarn>3){p.hideWarn=now;toast('Too late — they saw you!')}}
+  if(was&&!(on&&p.hideT>0)){p.hidden=false;p.popT=now;SFX.swoop();for(let i=0;i<6;i++)parts.push({x:p.x-6+Math.random()*12,y:p.y-4,t:0,life:.4});if(Math.random()<.3)say(p,pickCoon('pop'))}
+  if(p.hidden)for(const e of enemies){if((e.state==='chase'||e.state==='search')&&e.kind!=='bear'&&Math.hypot(e.x-p.x,e.y-p.y)<15){p.hidden=false;caught(e);break}}
+  const chip=$('hideChip');if(chip)chip.hidden=!(p.hidden&&state==='play');
+}
+function drawHide(c,r){
+  const ty=S.hideType&&S.hideType[c+','+r]||'box',x=c*TS+8,y=r*TS+15.5,p=player,mine=p.hidden&&p.hc&&p.hc.c===c&&p.hc.r===r;
+  const da=mine?now-p.duckT:9,sq=da<.28?1+Math.sin(da/.28*Math.PI)*.14:1,flip=hsh(c,r,3)<.5&&ty!=='table';
+  if(!mine&&state==='play'&&Math.hypot(p.x-x,p.y-y+5)<26){const ph=(now*1.2)%1;ctx.strokeStyle=`rgba(255,255,255,${.85*(1-ph)})`;ctx.lineWidth=1.1;ctx.beginPath();ctx.ellipse(x,y-1,6+ph*7,(6+ph*7)*.4,0,0,TAU);ctx.stroke()}
+  kShadow(x,y,8.5);
+  const peek=mine&&da>.26,sq2=peek&&da<.5?1+Math.sin((da-.26)/.24*Math.PI)*.16:sq;
+  ctx.save();ctx.translate(x,y);ctx.scale(1/sq2,sq2);drawPropImg('h_'+ty+(peek?'_p':''),0,0,flip,1);
+  if(peek){if(now>p.blinkAt+.13)p.blinkAt=now+2+Math.random()*2.5;
+    if(now>p.blinkAt){for(const[ex,ey]of(HIDE_EYES[ty]||[])){const X=flip?-ex:ex;ctx.fillStyle='#3e3437';ctx.beginPath();ctx.ellipse(X,ey,1.35,1.15,0,0,TAU);ctx.fill();
+      ctx.strokeStyle='#b9adb2';ctx.lineWidth=.45;ctx.beginPath();ctx.moveTo(X-.95,ey+.1);ctx.quadraticCurveTo(X,ey+.75,X+.95,ey+.1);ctx.stroke()}}}
+  ctx.restore();
+  if(mine){const d=PROP['h_'+ty];const h=d?d[3]/d[6]:14;
+    if(p.carry){ctx.save();ctx.translate(x,y-h+2+Math.sin(now*2)*.4);drawPropImg(pieName(),0,0,false,.95);ctx.restore()}
+    if(S.world==='moon'){ctx.strokeStyle='rgba(200,230,255,.9)';ctx.lineWidth=.9;ctx.beginPath();ctx.arc(x,y-h+8,6.5,Math.PI*1.05,Math.PI*1.95);ctx.stroke()}
+    if(da>.3&&da<2.2){const a=Math.min(1,(2.2-da)*2);ctx.globalAlpha=a;kRR(x+5,y-h-9,13,7,3.5,'#fff',.7);ctx.fillStyle='#8a7fb8';ctx.font='900 5px Figtree,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('shh',x+11.5,y-h-5.4);ctx.globalAlpha=1}}
+}
+
+// ---------- BOO! ----------
+function booTarget(){
+  if(!player||player.jump||player.hidden)return null;
+  for(const e of enemies){if(!(e.state==='look'||e.state==='patrol'||e.state==='search'))continue;
+    const dx=player.x-e.x,dy=player.y-e.y,d=Math.hypot(dx,dy);if(d>22)continue;
+    if(Math.abs(angDiff(Math.atan2(dy,dx),e.fa))<1.95)continue;return e}
+  return null;
+}
+function tryBoo(){
+  if((player.booCd||0)>now)return false;const e=booTarget();if(!e)return false;
+  player.booT=now;player.booCd=now+3.5;player.vx=player.vy=0;say(player,pickCoon('boo'),true);
+  if(e.kind==='bear'){setTimeout(()=>{if(state==='play'){e.fa=Math.atan2(player.y-e.y,player.x-e.x);bearSpot(e)}},250);
+    setTimeout(()=>{if(state==='play')say(player,pickCoon('booBear'),true)},800);return true}
+  e.state='scared';e.t=2.6;e.st0=now;e.flee=Math.atan2(e.y-player.y,e.x-player.x);e.path=[];hitStop=.12;shake=.12;SFX.scream(e);
+  setTimeout(()=>{if(state==='play')say(e,pick(SCREAM[e.style]||SCREAM[e.kind]||SCREAM.cook),true)},60);
+  if(!e.dropped){e.dropped=1;S.snacks.push({x:e.x,y:e.y+2,type:e.style==='cop'?'donut':e.kind==='dog'?'candy':'cookie'})}
+  const R=e.kind==='dog'?170:130;
+  enemies.forEach(o=>{if(o!==e&&o.state!=='scared'&&Math.hypot(o.x-e.x,o.y-e.y)<R)toSearch(o,{x:e.x,y:e.y},o.lines.hear)});
+  if(!S.booTold){S.booTold=1;toast('BOO! Scared silly!\nBut the scream draws attention')}
+  return true;
+}
+function scaredTick(e,dt){
+  e.t-=dt;e.moving=false;
+  if(now-e.st0>.45){const v=e.sp.chase*1.05||70,x0=e.x,y0=e.y;moveEnt(e,Math.cos(e.flee)*v*dt,Math.sin(e.flee)*v*dt);
+    if(Math.hypot(e.x-x0,e.y-y0)<v*dt*.3)e.flee+=(Math.random()<.5?1:-1)*Math.PI/2;
+    e.fa=e.flee;e.moving=true;e.anim+=dt*v*.12;if(Math.random()<dt*14)parts.push({x:e.x,y:e.y,t:0,life:.3})}
+  if(e.t<=0){e.state='look';e.t=.6;e.base=e.fa;toSearch(e,{x:player.x,y:player.y},e.lines.lost)}
+}
+const SCARED={cook:['sc_kj','sc_kr'],sous:['sc_sj','sc_sr'],cop:['sc_pj','sc_pr'],ranger:['sc_rj','sc_rr'],camper:['sc_mj','sc_mr'],
+  alien:['al_j','al_s'],cmdr:['ac_a','ac_s'],dog:['sc_dj','sc_dr'],k9:['sc_dj','sc_dr'],blob:['ap_f','ap_s'],drone:['ad_f','ad_f']};
+function drawEnemyX(e){
+  const st=e.kind==='dog'?(e.style||'dog'):e.style||'cook';
+  if(e.state==='scared'){const f=SCARED[st]||SCARED.cook,a=now-e.st0,jump=a<.45,k=e.kind==='dog'?.72:(st==='alien'||st==='cmdr'||st==='blob'||st==='drone')?1:.95;
+    kShadow(e.x,e.y,6);const hop=jump?Math.sin(a/.45*Math.PI)*6:Math.abs(Math.sin(now*18))*1.2,jit=jump?Math.sin(now*60)*.8:0;
+    drawSpr(jump?f[0]:f[1],e.x+jit,e.y-hop,!jump&&Math.cos(e.flee)<0,k);
+    for(let i=0;i<2;i++)if(Math.sin(now*9+i*2)>0)kE(e.x+(i?7:-7),e.y-24-hop,1,1.5,'#7cc4f0',0);return true}
+  if(S.world!=='moon')return false;
+  const d=dirOf(e.fa),side=d==='left'||d==='right',mv=e.moving,fx=walkFx(mv,e.anim*1.2),angry=e.state==='chase'||e.state==='alert';
+  if(st==='blob'){kShadow(e.x,e.y,5.5);drawSpr(side?'ap_s':'ap_f',e.x,e.y-fx.bob,d==='left',.62,fx.rot,fx.sq);return true}
+  if(st==='drone'||st==='k9'){const hv=Math.sin(now*4+e.phase)*1.5;kShadow(e.x,e.y,5);drawSpr('ad_f',e.x,e.y-6-hv,false,.6);
+    ctx.fillStyle=`rgba(255,240,160,${.25+.15*Math.sin(now*8)})`;ctx.beginPath();ctx.ellipse(e.x,e.y,5,2,0,0,TAU);ctx.fill();return true}
+  const p=st==='cmdr'?'ac_':'al_';kShadow(e.x,e.y,6.5);
+  const n=angry&&d!=='up'?p+'a':d==='up'?p+'b':side?p+'s':p+'f';
+  drawSpr(n,e.x,e.y-fx.bob,side&&d==='left',st==='cmdr'?.98:1,fx.rot,fx.sq);return true;
+}
+function moonEnemy(e,sp){
+  if(e.kind==='cook'){const boss=sp.style==='sous'||sp.style==='cop'||sp.style==='cmdr';
+    Object.assign(e,boss?{style:'cmdr',voice:CMDR_VOICE,lines:LINES.cmdr,view:92,lostMax:3}:{style:'alien',voice:ALIEN_VOICE,lines:LINES.alien},{vo:null,fat:false})}
+  else if(e.kind==='dog'){const dr=sp.style==='k9';Object.assign(e,dr?{style:'drone',voice:CMDR_VOICE,lines:LINES.drone}:{style:'blob',voice:BLOB_VOICE,lines:LINES.blob})}
+}
+
+// ---------- raccoon extra poses + moon suit ----------
+const moonN=n=>{if(n==='c_f'||n==='c_s'||n==='c_b'||n==='c_t'||n==='c_x')return'mc'+n.slice(1);
+  if(n.startsWith('cw_')){const k=n[3],i=+n[4];return k==='s'&&i===0?'mw_s1':'mw_'+k+i}return n};
+function drawRaccoonX(p){
+  if(p.hidden){const a=(now-p.duckT)/.26;if(a<1&&SPR.ra_duck){const sx=p.hx0+(p.x-p.hx0)*a,sy=p.hy0+(p.y-p.hy0)*a-Math.sin(a*Math.PI)*9,k=1-a*.55;
+      drawSpr(S.world==='moon'?'mc_float':'ra_duck',sx,sy+a*4,p.dir==='left',k)}return true}
+  let n=null;const moon=S.world==='moon',mv=Math.hypot(p.vx,p.vy)>8||!!p.jump;
+  if(p.booT&&now-p.booT<.55)n=moon?'mc_float':'ra_boo';
+  else if(state==='win')n=moon?'mc_float':'ra_laugh';
+  else if(p.startT&&now-p.startT<.55&&!p.carry)n=moon?'mc_float':'ra_start';
+  else if((p.wetT||0)>0&&!mv)n='ra_wet';
+  else if(moon&&p.jump&&!p.jump.small&&p.z>4)n='mc_float';
+  if(!n||!SPR[n])return false;
+  const z=p.z||0;kShadow(p.x,p.y,6.5-z*.15);const flip=p.dir==='left',y=p.y-z;
+  drawSpr(n,p.x,y,flip,1);
+  if(n==='ra_wet'&&Math.random()<.2)parts.push({x:p.x-4+Math.random()*8,y:p.y-8,t:0,life:.4,col:'rgba(140,200,245,',sz:1.5});
+  if(p.carry){const h=SPR[n][3]/SPR[n][6];ctx.save();ctx.translate(p.x,y-h+3.2);drawPropImg(pieName(),0,0,false,1.2);ctx.restore()}
+  return true;
+}
+let moonJumpSaid=0;
+function moonJumpLine(){if(!moonJumpSaid||Math.random()<.22){moonJumpSaid=1;setTimeout(()=>{if(state==='play')say(player,pickCoon('jump_moon'),true)},150)}}
+
+// ---------- world-level overlay fx (BOO prompt, rocket smoke) ----------
+function extraFx(){
+  if(state==='play'){const e=booTarget();if(e&&(player.booCd||0)<now){const x=e.x,y=e.y-(e.kind==='dog'?24:38)+Math.sin(now*8)*1;
+    kRR(x-10,y-5,20,8,4,'#ff9fb6',.8);ctx.fillStyle='#fff';ctx.font='900 5.4px Figtree,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('BOO!',x,y-.8)}}
+  if(S.world==='moon'&&S.kind==='street'&&S.home){const hx=S.home.c*TS+8,hy=S.home.r*TS+15;S.smoke=S.smoke||[];
+    if(Math.random()<.35)for(const s of[-1,1])S.smoke.push({x:hx+s*4,y:hy+1,vx:s*(8+Math.random()*10),vy:-1-Math.random()*2,t0:now,life:1.3+Math.random()*.8,r:2+Math.random()*1.5});
+    S.smoke=S.smoke.filter(s=>now-s.t0<s.life);
+    for(const s of S.smoke){const a=(now-s.t0)/s.life,x=s.x+s.vx*(now-s.t0),y=s.y+s.vy*(now-s.t0)*3;ctx.fillStyle=`rgba(${240-a*20},${236-a*10},255,${.7*(1-a)})`;ctx.beginPath();ctx.arc(x,y,s.r+a*4,0,TAU);ctx.fill()}}
+}
+
+// ---------- forest extras: lanterns + signpost ----------
+function drawForestLamp(l){
+  if(l.sign){kShadow(l.x,l.y,5);drawPropImg('f_sign',l.x,l.y+1,false,1);return}
+  ctx.fillStyle='rgba(255,220,140,.25)';ctx.beginPath();ctx.ellipse(l.x+5,l.y-1,15,5,0,0,TAU);ctx.fill();kShadow(l.x,l.y,4);drawPropImg('f_lantern',l.x,l.y+1,false,1);
+}
+
+// ---------- MOON WORLD ----------
+function genMoonBase(){const s=genKitchen();s.world='moon';s.spawns=s.spawns.map((sp,k)=>k===0?{...sp,style:'cmdr'}:{...sp,style:undefined});return s}
+function genMoonField(){const s=genStreet();s.world='moon';return s}
+const MP={top:'#eef0fb',topL:'#ffffff',front:'#cfc8ee',frontD:'#b9b0e3',seam:'rgba(120,110,170,.3)'};
+function drawPanel(c,r){
+  const x=c*TS,y=r*TS,below=isWallK(c,r+1),above=isWallK(c,r-1),L=isWallK(c-1,r),Rt=isWallK(c+1,r);
+  if(!below)ctx.drawImage(SH_DOWN,x,y+16,16,7);if(!Rt)ctx.drawImage(SH_SIDE,x+16,y-4,4,20);
+  ctx.fillStyle=MP.top;ctx.fillRect(x-.01,y-6,16.02,below?22:12);
+  ctx.fillStyle=MP.topL;if(!above)ctx.fillRect(x+(L?0:1.5),y-5,16-(L?0:1.5)-(Rt?0:1.5),1.6);
+  ctx.fillStyle='#bfeadb';ctx.fillRect(x,y-1.5,16,1.6);
+  ctx.strokeStyle=MP.seam;ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(x+.5,y-6);ctx.lineTo(x+.5,y+(below?16:6));ctx.stroke();
+  kStroke(.9);ctx.beginPath();if(!above){ctx.moveTo(x,y-6);ctx.lineTo(x+16,y-6)}if(!L){ctx.moveTo(x,y-6);ctx.lineTo(x,y+(below?16:6))}if(!Rt){ctx.moveTo(x+16,y-6);ctx.lineTo(x+16,y+(below?16:6))}ctx.stroke();
+  if(!below){ctx.fillStyle=MP.front;ctx.fillRect(x-.01,y+6,16.02,10);ctx.fillStyle=MP.frontD;ctx.fillRect(x,y+14.2,16,1.8);
+    for(let k=0;k<3;k++){const on=Math.sin(now*(2+k)+c*1.7+k)>.2;kE(x+3.5+k*4.5,y+10,1,1,on?['#9ee0c2','#ff9fb6','#ffd66b'][k]:'#a79fd6',0)}
+    kStroke(.9);ctx.beginPath();ctx.moveTo(x,y+6);ctx.lineTo(x+16,y+6);ctx.moveTo(x,y+16);ctx.lineTo(x+16,y+16);if(!L){ctx.moveTo(x,y+6);ctx.lineTo(x,y+16)}if(!Rt){ctx.moveTo(x+16,y+6);ctx.lineTo(x+16,y+16)}ctx.stroke()}
+  ctx.drawImage(SHADE_TOP,x,y-6,16,below?22:12);
+}
+function drawMoonTile(o){
+  const c=o.c,r=o.r,x=c*TS,y=r*TS;
+  if(S.kind==='kitchen')switch(o.t){
+    case'C':case'P':drawPanel(c,r);return true;
+    case'O':kShadow(x+8,y+13,8);drawPropImg('m_console',x+8,y+15,false,1);return true;
+    case'R':kShadow(x+8,y+14,8);drawPropImg('m_crystal',x+8,y+15,hsh(c,r,4)<.5,.95);return true;
+    case'S':kShadow(x+8,y+14,8);drawPropImg('m_crates',x+8,y+15,hsh(c,r,4)<.5,1);return true;
+  }else switch(o.t){
+    case'B':kShadow(x+8,y+14,6);drawPropImg('m_rock',x+8,y+15,hsh(c,r,5)<.5,.75);return true;
+    case'H':kShadow(x+8,y+14,7);drawPropImg('m_crystal',x+8,y+15.5,hsh(c,r,8)<.5,.85);return true;
+    case'X':{const v=hsh(c,r,9),n=v<.34?'m_dish':v<.67?'m_cactus':'m_dome';kShadow(x+8,y+14,9);drawPropImg(n,x+8,y+15,hsh(c,r,10)<.5,n==='m_dome'?.8:1);return true}
+    case'N':{const L=tileCh(c-1,r)==='N',Rt=tileCh(c+1,r)==='N';ctx.drawImage(SH_DOWN,x,y+13,16,5);
+      kRR(x-(L?1:0),y+5,16+(L?1:0)+(Rt?1:0),4.2,2,'#e7e9f6',.8);if(!L)kRR(x+1,y+2,3.5,11,1.5,'#cfc8ee',.8);if(!Rt)kRR(x+11.5,y+2,3.5,11,1.5,'#cfc8ee',.8);
+      if((c+r)%2)kE(x+8,y+7.1,1,1,Math.sin(now*3+c)>0?'#9ee0c2':'#ff9fb6',0);return true}
+    case'Z':{const hx=x+8,hy=y+15,near=Math.hypot(player.x-hx,player.y-(hy-4))<52,b=near?Math.sin(now*30)*.4:Math.sin(now*12)*.2;
+      ctx.fillStyle='rgba(160,240,190,.3)';ctx.beginPath();ctx.ellipse(hx,hy,15+Math.sin(now*3)*1.5,5,0,0,TAU);ctx.fill();kShadow(hx,hy,10);
+      drawPropImg('m_rocket',hx+b,hy+6.2,false,1);if(Math.sin(now*4)>0){sparkle(hx-14,hy-30,1.8);sparkle(hx+15,hy-14,1.4)}return true}
+  }
+  return false;
+}
+function moonBg(g){
+  const r_=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h)},W=S.cols*TS,H=S.rows*TS;
+  const stars=(x0,y0,w,h,k)=>{for(let i=0;i<w*h/90;i++){const sx=x0+hsh(i,k,1)*w,sy=y0+hsh(i,k,2)*h;r_(sx,sy,hsh(i,k,3)<.2?1.2:.7,hsh(i,k,3)<.2?1.2:.7,'rgba(255,255,255,.85)')}};
+  if(S.kind==='kitchen'){
+    for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){const x=c*TS,y=r*TS;r_(x,y,16,16,((c+r)&1)?'#ece8fb':'#e2ebfb');
+      g.strokeStyle='rgba(130,120,180,.25)';g.lineWidth=.5;g.strokeRect(x+.25,y+.25,15.5,15.5);
+      if(hsh(c,r,40)<.25){for(const[a,b]of[[2,2],[14,2],[2,14],[14,14]])kE(x+a,y+b,.45,.45,'rgba(130,120,180,.45)',0)}
+      if(hsh(c,r,41)<.05){kRR(x+3,y+5,10,6,1.5,'#d3cdee',.5);for(let k=0;k<4;k++)r_(x+4.5+k*2.2,y+6.2,1,3.6,'#b9b0e3')}}
+    const by=(S.rows-1)*TS;
+    r_(0,0,W,TS,'#2c2950');stars(0,0,W,TS,5);
+    for(let c=2;c<S.cols-2;c+=5){const x=c*TS+8;kE(x,7,6,6,'#d9dcf0',.9);kE(x,7,4.6,4.6,'#1f1c40',0);kE(x-1,6.5,2.6,2.6,'#7fb6ec',0);kE(x+.2,7.4,1.2,.8,'#9ee0a0',0);kE(x-2,5,.8,.8,'#fff',0)}
+    r_(0,TS,7,H-TS,'#2c2950');r_(W-7,TS,7,H-TS,'#2c2950');r_(0,by+7,W,TS-7,'#2c2950');stars(0,TS,7,H-TS,6);stars(W-7,TS,7,H-TS,7);
+    r_(7,TS,9,by-TS+7,'#d4d7ec');r_(W-TS,TS,9,by-TS+7,'#d4d7ec');r_(7,by,W-14,7,'#d4d7ec');
+    r_(8.5,TS,1.6,by-TS+6,'#eef0fb');r_(W-TS+1,TS,1.6,by-TS+6,'#eef0fb');
+    g.strokeStyle=KB;g.lineWidth=.9;g.beginPath();g.moveTo(TS,TS);g.lineTo(TS,by);g.lineTo(W-TS,by);g.lineTo(W-TS,TS);g.moveTo(7,TS);g.lineTo(7,by+7);g.lineTo(W-7,by+7);g.lineTo(W-7,TS);g.stroke();
+    for(let r=1;r<S.rows-1;r+=2){kE(11.5,r*TS+8,.8,.8,(r%4)?'#9ee0c2':'#ff9fb6',0);kE(W-11.5,r*TS+8,.8,.8,(r%4)?'#ff9fb6':'#9ee0c2',0)}
+  }else{
+    const M=(c,r)=>(r<0||r>=S.rows||c<0||c>=S.cols)?'W':S.map[r][c];
+    for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){const x=c*TS,y=r*TS,ch=M(c,r);
+      if(ch==='r'){r_(x,y,16,16,'#c6c0da');for(let k=0;k<4;k++)r_(x+k*4+1,y+4,2,1,'rgba(120,110,160,.35)');for(let k=0;k<4;k++)r_(x+k*4+1,y+11,2,1,'rgba(120,110,160,.35)');
+        if(M(c,r-1)!=='r')r_(x,y,16,2,'rgba(80,70,120,.18)');continue}
+      r_(x,y,16,16,ch==='g'?'#d6d0e8':((c+r)&1)?'#e4e0f1':'#dfdbee');
+      for(let k=0;k<3;k++)if(hsh(c,r,80+k)<.5)kE(x+hsh(c,r,90+k)*16,y+hsh(c,r,95+k)*16,.6,.45,'rgba(140,130,180,.35)',0);
+      if(hsh(c,r,60)<(ch==='g'?.22:.06)){const cx=x+4+hsh(c,r,61)*8,cy=y+5+hsh(c,r,62)*7,cr=2+hsh(c,r,63)*3;kE(cx,cy,cr,cr*.6,'#cbc4e0',0);kE(cx+.4,cy+.3,cr*.7,cr*.42,'#bdb5d6',0);g.strokeStyle='rgba(255,255,255,.6)';g.lineWidth=.5;g.beginPath();g.ellipse(cx,cy,cr,cr*.6,0,Math.PI*.1,Math.PI*.9);g.stroke()}
+      if(M(c,r+1)==='r'){r_(x,y+13,16,3,'#ebe8f6');g.strokeStyle=KB;g.lineWidth=.7;g.beginPath();g.moveTo(x,y+16);g.lineTo(x+16,y+16);g.stroke()}}
+    S.lanes.forEach((L,i)=>{if(i%2)return;const y=(L.r+2)*TS;for(let x=2;x<W;x+=12)kRR(x,y-.8,6,1.6,.8,'rgba(255,255,255,.7)',0)});
+    // moon base wall with the airlock you came out of
+    r_(0,0,W,2*TS,'#d4d7ec');r_(0,0,W,TS*.9,'#2c2950');stars(0,0,W,TS*.9,9);
+    g.strokeStyle=KB;g.lineWidth=.9;g.beginPath();g.moveTo(0,TS*.9);g.lineTo(W,TS*.9);g.moveTo(0,2*TS);g.lineTo(W,2*TS);g.stroke();
+    for(let c=0;c<S.cols;c++){if(Math.abs(c-S.doorCol)<=1)continue;if(c%3===1){kE(c*TS+8,TS*1.45,3.6,3.6,'#bfe0f6',.8);kE(c*TS+7,TS*1.35,1.2,1.2,'#fff',0)}}
+    const dx=S.doorCol*TS;kRR(dx+1,TS*.95,14,TS*1.05+1,4,'#9ee0c2',.9);r_(dx+7.6,TS,.8,TS,'rgba(60,90,80,.5)');kE(dx+8,TS*.95+3,1.2,1.2,Math.sin(now*4)>0?'#ff9fb6':'#fff',0);
+  }
+}
+function moonLight(){ctx.fillStyle='rgba(60,50,130,.07)';ctx.fillRect(0,0,VW,VH)}
+// ===== EXTRAS END =====
 // ===== FOREST END =====
 
 // ---------- loop ----------
@@ -2607,7 +2891,7 @@ function frame(ts){
   const t=ts/1000,dt=Math.min(.05,t-(last||t));last=t;now=t;
   if(hitStop>0){hitStop-=dt}else if(state==='play'){
     if(fartAt>0&&time>fartAt&&!player.jump)doFart();
-    time+=dt;grace-=dt;sceneT+=dt;updatePlayer(dt);
+    time+=dt;grace-=dt;sceneT+=dt;updatePlayer(dt);if(state==='play')hideTick(dt);
     if(state==='play'){if(S.kind==='kitchen')updateKitchen(dt);else{if(S.world==='forest')updateRiver(dt);if(state==='play')updateStreet(dt)}}
     if(state==='play')updateEnemies(dt,true);
     if(state==='play')chatter(dt);

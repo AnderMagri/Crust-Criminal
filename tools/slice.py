@@ -102,3 +102,24 @@ def forest(S,OUT):
             ('each',{'f_pine':('h',44),'f_oak':('h',40),'f_bush':('w',17),'f_stump':('w',15),'f_rock':('w',17),'f_fire':('w',16),'f_tent':('w',18),
                      'f_table':('w',18),'f_honey':('w',8),'f_mush':('w',9),'f_grass':('w',16),'f_den':('h',30)}),False)],
           OUT+'/forest-props.webp',OUT+'/forest-props.json',PPU=8)
+
+def extras(S,OUT,rocket='moon-rocket-home-v2.png'):
+    # Round 3: hiding spots, raccoon actions, scared enemies, moon world. Separate atlases (x-sprites / x-props).
+    walk=['mw_'+d+str(i) for d in 'fsb' for i in range(4)]
+    walk[4]=''   # that side-row frame came out front-facing; the game reuses a neighbour instead
+    build([(S+'/raccoon-actions-v1.png',4,2,['ra_sn0','ra_sn1','ra_boo','ra_duck','ra_pop','ra_wet','ra_laugh','ra_start'],('ref','ra_boo',25),True),
+           (S+'/scared-enemies-v1.png',4,3,['sc_kj','sc_kr','sc_sj','sc_sr','sc_pj','sc_pr','sc_dj','sc_dr','sc_rj','sc_rr','sc_mj','sc_mr'],('ref','sc_kr',31),True),
+           (S+'/moon-raccoon-v1.png',4,2,['mc_f','mc_s','mc_b','mc_float','mc_pf','mc_ps','mc_t','mc_x'],('ref','mc_f',29),True),
+           (S+'/moon-raccoon-walk-v1.png',4,3,walk,('ref','mw_f0',29),True),
+           (S+'/moon-aliens-v1.png',4,3,['al_f','al_s','al_b','al_a','ac_f','ac_s','ac_b','ac_a','ap_f','ap_s','ad_f','al_j'],('ref','al_f',27),True)],
+          OUT+'/x-sprites.webp',OUT+'/x-sprites.json')
+    build([(S+'/hiding-spots-v1.png',4,3,['h_box','h_box_p','h_basket','h_basket_p','h_table','h_table_p','h_bags','h_bags_p','h_log','h_log_p','h_bush','h_bush_p'],
+            ('each',{'h_box':('w',15),'h_box_p':('w',15),'h_basket':('w',15.5),'h_basket_p':('w',15.5),'h_table':('w',17),'h_table_p':('w',17),
+                     'h_bags':('w',17),'h_bags_p':('w',17),'h_log':('w',17),'h_log_p':('w',17),'h_bush':('w',17),'h_bush_p':('w',17)}),False),
+           (S+'/forest-props-v2.png',4,2,['f_bpie','fs_berry','fs_fish','fs_acorn','fs_honey','fs_smore','f_lantern','f_sign'],
+            ('each',{'f_bpie':('w',13),'fs_berry':('w',12),'fs_fish':('h',13),'fs_acorn':('w',11),'fs_honey':('w',12),'fs_smore':('w',12),'f_lantern':('h',34),'f_sign':('h',22)}),False),
+           (S+'/moon-props-v1.png',4,3,['m_rock','m_crater','m_crates','m_dish','m_rover0','m_rover1','','m_crystal','m_cactus','m_console','m_dome','m_flag'],
+            ('each',{'m_rock':('w',16),'m_crater':('w',18),'m_crates':('w',16),'m_dish':('h',22),'m_rover0':('w',36),'m_rover1':('w',36),'m_crystal':('w',16),
+                     'm_cactus':('w',15),'m_console':('w',16),'m_dome':('w',20),'m_flag':('h',22)}),False),
+           (S+'/'+rocket,1,1,['m_rocket'],('each',{'m_rocket':('h',36)}),False)],
+          OUT+'/x-props.webp',OUT+'/x-props.json',PPU=8)

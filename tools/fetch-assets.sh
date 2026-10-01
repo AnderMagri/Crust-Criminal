@@ -103,3 +103,4 @@ get assets/art/sprites-src/moon-aliens-v1.png    "https://app-uploads.krea.ai/a1
 get assets/art/sprites-src/moon-props-v1.png     "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/f5ff4f0f-af32-4c11-9d17-a13a5cbc3546-image.png"
 get assets/art/sprites-src/moon-rocket-home-v1.png  "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/337dc203-f123-4eee-9424-8a8cd7688868-image.png"
 get assets/art/sprites-src/moon-raccoon-walk-v1.png "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/0daa0860-bc07-4f17-ac06-2ec780f2a7c2-image.png"
+get assets/art/sprites-src/moon-rocket-home-v2.png  "https://app-uploads.krea.ai/a1939a2b-9ee7-497e-b970-d13a815875cf/73cfcead-1e43-4430-86f0-51773268b76b-image.png"
