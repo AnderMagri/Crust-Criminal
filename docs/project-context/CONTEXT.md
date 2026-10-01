@@ -73,3 +73,4 @@ Ander — freelance product designer, studio Lighthouse Creative Lab. Mac repo p
 ## Placement rules (no overlapping objects)
 - Hiding spots (`placeHides` in extras.js): a hide sprite is ~20 px tall and reaches into the tile above, so the tile above it (and the one above that, and the two upper diagonals) must be open floor — no counter/jar, table, tree, boulder, building, door, window, pie, water, lamp or another hide. Falls back to looser levels only if fewer than 3 spots fit. Verified on 10 city, 10 forest, 5 moon levels (0 violations).
 - When adding any new placed object, give it the same kind of rule and test it by generating many levels.
+- Exit safe area: no hiding spot within 4 tiles (any direction) of the exit — the kitchen/moon-base door (`S.door`) or the trash-can/rocket home (`S.home`). Music loops are mixed at TRACK_VOL ≈ 1 (was 1.5) — lower again in index.html if still too loud.

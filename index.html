@@ -610,7 +610,7 @@ function playStep(i,t){
 }
 let themeBuf=null,themeSrc=null;
 // ---------- recorded music: title / game / pause tracks, crossfaded by game state ----------
-const TRACKS={title:'assets/music/title-theme.mp3',game:'assets/music/main-theme.mp3',pause:'assets/music/pause-theme.mp3',forest:'assets/music/forest-theme.mp3',moon:'assets/music/moon-theme.mp3'},TRACK_VOL={title:1.25,game:1.5,pause:1.1,forest:1.5,moon:1.5};
+const TRACKS={title:'assets/music/title-theme.mp3',game:'assets/music/main-theme.mp3',pause:'assets/music/pause-theme.mp3',forest:'assets/music/forest-theme.mp3',moon:'assets/music/moon-theme.mp3'},TRACK_VOL={title:.85,game:1,pause:.75,forest:1,moon:1};
 const trk={};let curTrack=null;
 function loadTheme(){for(const n in TRACKS)fetch(TRACKS[n]).then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(b=>ac.decodeAudioData(b)).then(buf=>{trk[n]={buf,src:null,gain:null,off:0};if(n==='game')themeBuf=buf;if(wantTrack()===n)playTrack(n,true)}).catch(()=>{})}
 function wantTrack(){if(state==='title')return'title';if(state==='paused')return'pause';const w=S&&S.world;return w&&trk[w]?w:'game'}
@@ -2723,9 +2723,11 @@ function placeHides(s){
   const taken=new Set((s.spawns||[]).map(t=>t.c+','+t.r));(s.snacks||[]).forEach(sn=>taken.add(Math.floor(sn.x/TS)+','+Math.floor((sn.y-2)/TS)));
   if(s.pie)for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)taken.add((s.pie.c+a)+','+(s.pie.r+b));
   const open=(c,r)=>{const ch=g[r]&&g[r][c];return ch!==undefined&&!SOLID.has(ch)&&ch!=='r'&&ch!=='w'&&ch!=='K'&&ch!=='D'&&ch!=='Q'};
+  const exits=[s.door,s.home].filter(Boolean);
   const cand=[];
   for(let r=3;r<s.rows-3;r++)for(let c=1;c<s.cols-1;c++){const ch=g[r][c];if(K?ch!=='.':!(ch===','||ch==='g'))continue;
     if(Math.abs(c-st.c)+Math.abs(r-st.r)<5||taken.has(c+','+r))continue;
+    if(exits.some(e=>Math.abs(e.c-c)<=4&&Math.abs(e.r-r)<=4))continue;   // exit safe area: nothing may ever block the way out
     const n=DIRS.filter(([a,b])=>open(c+a,r+b)).length;if(n<3)continue;   // never plug a corridor
     if(!K&&(g[r-1][c]==='r'||g[r+1][c]==='r'||g[r-1][c]==='w'||g[r+1][c]==='w'))continue;
     cand.push({c,r})}
