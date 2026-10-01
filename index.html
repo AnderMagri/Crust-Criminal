@@ -300,8 +300,8 @@ function genKitchen(){
     // cooks
     const floor=[];for(let r=1;r<rows-1;r++)for(let c=1;c<cols-1;c++)if(g[r][c]==='.'&&D(c,r)>=0)floor.push({c,r});
     const cand=floor.filter(t=>D(t.c,t.r)>=12),sp=[];
-    for(let k=0;k<300&&sp.length<6;k++){const t=pick(cand);if(sp.every(o=>Math.abs(o.c-t.c)+Math.abs(o.r-t.r)>=6))sp.push(t)}
-    if(sp.length<5)continue;
+    for(let k=0;k<300&&sp.length<5;k++){const t=pick(cand);if(sp.every(o=>Math.abs(o.c-t.c)+Math.abs(o.r-t.r)>=7))sp.push(t)}
+    if(sp.length<4)continue;
     const sn=[],pool=floor.filter(t=>D(t.c,t.r)>=6);
     for(let k=0;k<60&&sn.length<9;k++){const t=pick(pool);if(sn.every(o=>Math.abs(o.c-t.c)+Math.abs(o.r-t.r)>=4))sn.push({x:t.c*TS+8,y:t.r*TS+10,type:sn.length===0&&Math.random()<.7?'donut':pick(['candy','candy','cookie','cookie','choc'])})}
     return {kind:'kitchen',snacks:sn,map:g.map(r=>r.join('')),cols,rows,start,pie,door:{c:dcol,r:dr,side},doorOpen:false,knocked:new Set(),debris:[],
@@ -351,19 +351,19 @@ function genStreet(){
     const walk=[];for(let r=2;r<R2;r++)for(let c=0;c<cols;c++)if(g[r][c]!=='r'&&!SOLID.has(g[r][c])&&D(c,r)>=0)walk.push({c,r});
     const spawns=[];
     for(const reg of shuffle(regions.slice())){
-      if(spawns.length>=3)break;if(reg.type==='block'&&Math.random()<.5)continue;
+      if(spawns.length>=2)break;if(reg.type==='block'&&Math.random()<.5)continue;
       const tiles=walk.filter(t=>t.r>=reg.r0&&t.r<=reg.r1);if(!tiles.length)continue;
       const t=pick(tiles);spawns.push({kind:'dog',c:t.c,r:t.r,region:reg});
     }
     const side=walk.filter(t=>t.r>6&&g[t.r][t.c]===','&&!regions.some(q=>q.type==='park'&&t.r>=q.r0&&t.r<=q.r1));
-    for(let k=0;k<2&&side.length;k++){const t=side.splice(rnd(side.length),1)[0];spawns.push({kind:'cook',style:'cop',c:t.c,r:t.r})}
-    if(Math.random()<.45){const pool=walk.filter(t=>t.r>10&&t.r<R2-4);if(pool.length){const t=pick(pool);spawns.push({kind:'dog',style:'k9',c:t.c,r:t.r})}}
+    for(let k=0;k<1&&side.length;k++){const t=side.splice(rnd(side.length),1)[0];spawns.push({kind:'cook',style:'cop',c:t.c,r:t.r})}
+    if(Math.random()<.2){const pool=walk.filter(t=>t.r>10&&t.r<R2-4);if(pool.length){const t=pick(pool);spawns.push({kind:'dog',style:'k9',c:t.c,r:t.r})}}
     for(const L of lanes){const n=1+rnd(2),W=cols*TS;for(let k=0;k<n;k++)
       cars.push({x:(rnd(W)+k*W/2)%W,y:L.r*TS+27,dir:L.dir,sp:L.sp,color:pick(['#c0392b','#2e6fa8','#e0b12a','#3f8a4e','#8a4fa0','#dcdad2']),voice:CAR_VOICE,cd:0,bub:null,hcd:0,off:24})}
     const sn=[],sp2=walk.filter(t=>t.r>4);
     for(let k=0;k<60&&sn.length<6;k++){const t=pick(sp2);if(sn.every(o=>Math.abs(o.x/TS-t.c)+Math.abs(o.y/TS-t.r)>=4))sn.push({x:t.c*TS+8,y:t.r*TS+10,type:pick(['fries','fries','burger','candy'])})}
     return {kind:'street',snacks:sn,map:g.map(r=>r.join('')),cols,rows:R2,start:{x:dc*TS+8,y:2*TS+12},doorCol:dc,
-      home:{c:zc,r:hr},walk,spawns,lanes,cars,lamps,burstT:4,knocked:new Set(),debris:[]};
+      home:{c:zc,r:hr},walk,spawns,lanes,cars,lamps,burstT:7,knocked:new Set(),debris:[]};
   }
 }
 
@@ -2356,7 +2356,7 @@ function genRiver(){
     const spawns=[];
     for(const reg of shuffle(regions.filter(q=>q.type==='park'))){if(spawns.length>=2)break;const t=pick(walk.filter(t=>t.r>=reg.r0&&t.r<=reg.r1));if(t)spawns.push({kind:'bear',c:t.c,r:t.r,region:reg})}
     const banks=shuffle(regions.filter(q=>q.type==='bank'&&q.r0>5));
-    for(let k=0;k<2&&k<banks.length;k++){const tl=walk.filter(t=>t.r===banks[k].r0);if(tl.length){const t=pick(tl);spawns.push({kind:'cook',style:'ranger',c:t.c,r:t.r})}}
+    for(let k=0;k<1&&k<banks.length;k++){const tl=walk.filter(t=>t.r===banks[k].r0);if(tl.length){const t=pick(tl);spawns.push({kind:'cook',style:'ranger',c:t.c,r:t.r})}}
     if(!spawns.some(s=>s.kind==='bear')){const pool=walk.filter(t=>t.r>8&&t.r<R2-4&&g[t.r][t.c]===',');if(pool.length){const t=pick(pool);spawns.push({kind:'bear',c:t.c,r:t.r})}}
     const sn=[],sp2=walk.filter(t=>t.r>4);
     for(let k=0;k<60&&sn.length<6;k++){const t=pick(sp2);if(sn.every(o=>Math.abs(o.x/TS-t.c)+Math.abs(o.y/TS-t.r)>=4))sn.push({x:t.c*TS+8,y:t.r*TS+10,type:pick(['cookie','candy','choc','cookie'])})}
