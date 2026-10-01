@@ -1,3 +1,5 @@
+> **Status (Oct 1):** everything below is implemented — hiding spots, BOO!, difficulty, Krea art and voices. Kept for history. See `docs/project-context/CONTEXT.md` for the current state and `docs/krea-prompts/` for asset recipes.
+
 # Crust Criminal — next up (needs Krea credits)
 
 ## 1. Hiding spots
