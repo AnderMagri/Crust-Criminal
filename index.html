@@ -36,16 +36,16 @@ body{margin:0;font-family:var(--body);font-weight:700}
   background:radial-gradient(90% 70% at 50% 40%,#fde2e8,#d9ccf2)}
 #stage{position:relative;line-height:0;box-shadow:0 0 0 4px #fff,0 20px 50px rgba(91,63,60,.3);overflow:hidden;border-radius:18px}
 canvas{display:block;touch-action:none}
-#hud{position:absolute;left:8px;right:8px;top:8px;display:flex;gap:6px;align-items:flex-start;line-height:1.1;font-family:var(--disp);font-size:13px;letter-spacing:.03em;pointer-events:none;z-index:3}
-.pill{background:#fff;color:var(--ink);border:2.5px solid var(--pink);border-radius:999px;padding:5px 10px 4px;box-shadow:0 3px 0 rgba(242,124,154,.45)}
+#hud{position:absolute;left:8px;right:8px;top:8px;display:flex;gap:6px;align-items:flex-start;line-height:1.1;font-family:var(--disp);font-size:16px;letter-spacing:.03em;pointer-events:none;z-index:3}
+.pill{background:#fff;color:var(--ink);border:3px solid var(--pink);border-radius:999px;padding:8px 12px 6px;min-height:40px;display:flex;align-items:center;box-shadow:0 3px 0 rgba(242,124,154,.45)}
 #obj{background:var(--pink);color:#fff;border-color:#fff;text-shadow:0 1px 0 rgba(200,70,100,.5)}
-#obj{flex:1;min-width:0}
-#energy{position:absolute;left:8px;top:42px;z-index:3;display:flex;align-items:center;gap:6px;pointer-events:none;background:#fff;border:2.5px solid var(--pink);border-radius:999px;padding:4px 10px 4px 5px;box-shadow:0 3px 0 rgba(242,124,154,.45)}
-#energy .ico{width:20px;height:20px;background:var(--pink);clip-path:path('M10 18 C3 13 0 9 2 5 C4 1 8 2 10 5 C12 2 16 1 18 5 C20 9 17 13 10 18Z')}
+#obj{flex:1;min-width:0;font-size:15px;line-height:1.05}
+#energy{position:absolute;left:8px;top:56px;z-index:3;display:flex;align-items:center;gap:6px;pointer-events:none;background:#fff;border:2.5px solid var(--pink);border-radius:999px;padding:5px 12px 5px 6px;border-width:3px;box-shadow:0 3px 0 rgba(242,124,154,.45)}
+#energy .ico{width:24px;height:24px;background:var(--pink);clip-path:path('M12 21.6 C3.6 15.6 0 10.8 2.4 6 C4.8 1.2 9.6 2.4 12 6 C14.4 2.4 19.2 1.2 21.6 6 C24 10.8 20.4 15.6 12 21.6Z')}
 #energy .col{display:flex;flex-direction:column;gap:2px}
-#energy .lbl{font-family:var(--disp);font-size:11px;line-height:1;color:var(--ink);letter-spacing:.05em}
+#energy .lbl{font-family:var(--disp);font-size:13px;line-height:1;color:var(--ink);letter-spacing:.05em}
 #energy .lbl i{font-style:normal;color:var(--mute)}
-#energy .track{width:104px;height:9px;background:#fde2e8;border:2px solid var(--pinkD);border-radius:6px;position:relative;overflow:hidden}
+#energy .track{width:132px;height:12px;background:#fde2e8;border:2px solid var(--pinkD);border-radius:6px;position:relative;overflow:hidden}
 #energy .fill{height:100%;width:70%;background:linear-gradient(#ffc2d1,#ff8fab);border-radius:4px;transition:width .2s linear}
 #energy .track:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 19%,rgba(43,37,48,.35) 19% 20%)}
 #energy.low{background:#fde3df}#energy.low .fill{background:var(--alert)}#energy.low .lbl{color:var(--alert);animation:blink .6s steps(2) infinite}
@@ -55,7 +55,7 @@ canvas{display:block;touch-action:none}
 @keyframes rise{to{transform:translate(-50%,-190%);opacity:0}}
 #obj.run{background:var(--alert)}
 #clock{font-variant-numeric:tabular-nums}
-#mute,#music{pointer-events:auto;font-family:var(--disp);font-size:13px;line-height:1.1;color:var(--ink);background:#fff;border:2.5px solid var(--pink);border-radius:999px;box-shadow:0 3px 0 rgba(242,124,154,.45);padding:5px 9px 4px;cursor:pointer;min-height:28px}
+#mute,#music{pointer-events:auto;font-family:var(--disp);font-size:17px;line-height:1;color:var(--ink);background:#fff;border:3px solid var(--pink);border-radius:999px;box-shadow:0 3px 0 rgba(242,124,154,.45);padding:0;cursor:pointer;min-height:40px;min-width:40px}
 #mute:focus-visible,#music:focus-visible{outline:2px solid var(--crust);outline-offset:2px}
 
 #toast{position:absolute;left:50%;top:18%;transform:translateX(-50%);font-family:var(--disp);font-size:18px;letter-spacing:.02em;color:#fff;-webkit-text-stroke:1px var(--pinkD);text-shadow:0 3px 0 var(--pinkD),0 0 10px rgba(255,255,255,.8);line-height:1.2;white-space:pre;pointer-events:none;z-index:4;text-align:center}
@@ -74,6 +74,12 @@ canvas{display:block;touch-action:none}
 #title h1{margin:0;font-family:var(--disp);font-weight:400;font-size:clamp(38px,12vw,58px);line-height:.9;color:var(--crust);-webkit-text-stroke:2px var(--ink);text-shadow:0 5px 0 var(--ink)}
 #title h1 span{display:block;color:var(--paper)}
 #title .start{font-family:var(--disp);font-size:20px;letter-spacing:.02em;color:#fff;background:var(--pink);border:4px solid #fff;border-radius:999px;box-shadow:0 5px 0 var(--pinkD),0 8px 20px rgba(242,124,154,.4);padding:10px 22px 7px;animation:bob 1.2s ease-in-out infinite}
+#title .quitApp{margin-top:10px;font:800 13px Figtree,sans-serif;color:var(--ink);background:rgba(255,250,243,.85);border:2px solid #f6d3dc;border-radius:999px;padding:6px 16px;cursor:pointer}
+#bye{position:absolute;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#fde2e8;text-align:center;padding:24px}
+#bye img{width:min(62%,240px);height:auto;margin-bottom:10px}
+#bye h2{margin:0;font-family:var(--disp);font-weight:400;font-size:34px;color:var(--crust);-webkit-text-stroke:1.2px var(--ink);text-shadow:0 3px 0 var(--ink)}
+#bye p{margin:0;font-size:15px;color:var(--ink);max-width:260px;line-height:1.35}
+#bye button{font-family:var(--disp);font-size:18px;color:#fff;background:var(--pink);border:3px solid #fff;border-radius:999px;box-shadow:0 4px 0 var(--pinkD);padding:10px 22px 8px;cursor:pointer}
 #title .small{margin-top:12px;font-size:12px;color:var(--ink);background:rgba(255,250,243,.8);border-radius:10px;padding:4px 8px;max-width:260px;line-height:1.35}
 #titleArt{width:min(62%,300px);image-rendering:pixelated}
 #keys{position:absolute;left:8px;right:8px;bottom:8px;z-index:3;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 10px;font-size:11px;line-height:1.3;color:var(--ink);pointer-events:none;text-shadow:0 1px 0 #fff}
@@ -95,7 +101,7 @@ canvas{display:block;touch-action:none}
 @keyframes pop{from{transform:translate(-50%,-100%) scale(.6)}}
 @media (prefers-reduced-motion:reduce){.say{animation:none}#msg .go{animation:none}}
 
-#pauseBtn{pointer-events:auto;font-family:var(--disp);font-size:12px;letter-spacing:-.1em;line-height:1.1;color:var(--ink);background:#fff;border:2.5px solid var(--pink);border-radius:999px;box-shadow:0 3px 0 rgba(242,124,154,.45);padding:5px 9px 4px 8px;cursor:pointer;min-height:28px}
+#pauseBtn{pointer-events:auto;font-family:var(--disp);font-size:15px;letter-spacing:-.1em;line-height:1;color:var(--ink);background:#fff;border:3px solid var(--pink);border-radius:999px;box-shadow:0 3px 0 rgba(242,124,154,.45);padding:0 2px 0 0;cursor:pointer;min-height:40px;min-width:40px}
 #menu{position:absolute;inset:0;z-index:7;display:grid;place-items:center;background:rgba(74,71,117,.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);padding:16px}
 #menu .mcard{position:relative;width:min(100%,290px);display:flex;flex-direction:column;gap:10px;background:var(--paper);border:4px solid var(--pink);border-radius:26px;box-shadow:0 6px 0 rgba(242,124,154,.5),0 18px 40px rgba(60,40,70,.3);padding:22px 20px 18px;text-align:left;line-height:1.2;animation:pop .22s cubic-bezier(.3,1.5,.6,1)}
 #menu .fullcoon{position:absolute;right:-26px;top:-78px;width:142px;height:auto;pointer-events:none;filter:drop-shadow(0 4px 0 rgba(91,63,60,.18));transform-origin:70% 90%;animation:snooze 2.8s ease-in-out infinite}
@@ -142,8 +148,9 @@ canvas{display:block;touch-action:none}
       <video id="titleVid" muted playsinline loop preload="auto" aria-hidden="true" hidden></video>
       <div id="tq" class="tq" hidden></div>
       <canvas id="titleArt" width="40" height="44" aria-hidden="true"></canvas>
-      <div class="bottom"><div class="worlds" role="group" aria-label="World"><button type="button" data-world="city">City</button><button type="button" data-world="forest">Forest</button></div><div class="start">Tap to start</div><div class="small">Phone: drag to move, tap to jump · Keyboard: WASD/arrows to move, Space to jump</div></div>
+      <div class="bottom"><div class="worlds" role="group" aria-label="World"><button type="button" data-world="city">City</button><button type="button" data-world="forest">Forest</button></div><div class="start">Tap to start</div><button type="button" class="quitApp">Quit game</button><div class="small">Phone: drag to move, tap to jump · Keyboard: WASD/arrows to move, Space to jump</div></div>
     </div>
+    <div id="bye" hidden><img src="assets/art/full-raccoon.webp" alt=""><h2>See ya, bandit!</h2><p>The heist is over. You can close this window now.</p><button type="button" id="byeAgain">Play again</button></div>
     <div id="menu" hidden role="dialog" aria-modal="true" aria-labelledby="menuTitle">
       <div class="mcard">
         <img class="fullcoon" src="assets/art/full-raccoon.webp" alt="" aria-hidden="true">
@@ -153,6 +160,7 @@ canvas{display:block;touch-action:none}
         <button class="mbtn primary" id="mResume" type="button">Resume</button>
         <button class="mbtn" id="mRestart" type="button">Restart heist</button>
         <button class="mbtn quit" id="mQuit" type="button">Quit to title</button>
+        <button class="mbtn ghost" id="mExit" type="button">Quit game</button>
         <div class="toggles"><button class="tog" id="mMusic" type="button">Music: on</button><button class="tog" id="mVoices" type="button">Voices: on</button></div>
       </div>
     </div>
@@ -705,7 +713,7 @@ function setObj(){
 
 // ---------- input ----------
 const keys={},MOVE_KEYS=['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'];
-addEventListener('keydown',e=>{const k=e.key.toLowerCase();
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(state==='bye')return;
   if(e.repeat&&(k===' '||k==='enter')){e.preventDefault();return}
   if(MOVE_KEYS.includes(k)||k===' ')e.preventDefault();
   if(k==='escape'||k==='p'){e.preventDefault();if(state==='paused')resumeGame();else pauseGame();return}
@@ -740,7 +748,8 @@ stage.addEventListener('pointerup',endJoy);stage.addEventListener('pointercancel
 $('mute').addEventListener('click',e=>{e.stopPropagation();audio();setVoice(!voiceOn)});
 $('music').addEventListener('click',e=>{e.stopPropagation();audio();setMusic(!musicOn)});
 $('title').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();grabFocus();
-  const wb=e.target.closest('[data-world]');if(wb){audio();setWorld(wb.dataset.world);return}const first=!ac||ac.state!=='running';audio();
+  const wb=e.target.closest('[data-world]');if(wb){audio();setWorld(wb.dataset.world);return}
+  if(e.target.closest('.quitApp')){quitGame();return}const first=!ac||ac.state!=='running';audio();
   if(e.target.closest('.start')||!first)onAction()});
 
 // ---------- pause menu ----------
@@ -757,6 +766,17 @@ function syncMenuToggles(){$('mMusic').textContent='Music: '+(musicOn?'on':'off'
 $('pauseBtn').addEventListener('click',e=>{e.stopPropagation();audio();state==='paused'?resumeGame():pauseGame()});
 $('mResume').addEventListener('click',resumeGame);
 $('mRestart').addEventListener('click',()=>{closeMenu();clearBubbles();newRun();state='play';hideMsg();sayStart()});
+function quitGame(){
+  // Wrapped Android app: really exit. Browser / installed web app: try to close; browsers usually refuse, so show a goodbye screen with everything stopped.
+  try{const A=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;if(A&&A.exitApp){A.exitApp();return}}catch(e){}
+  $('menu').hidden=true;clearBubbles();state='bye';joy=null;try{if(ac)ac.suspend()}catch(e){}
+  const v=$('titleVid');if(v)try{v.pause()}catch(e){}
+  try{window.close()}catch(e){}
+  setTimeout(()=>{$('bye').hidden=false},150);
+}
+$('mExit').addEventListener('click',quitGame);
+$('byeAgain').addEventListener('click',()=>location.reload());
+$('bye').addEventListener('pointerdown',e=>e.stopPropagation());
 $('mQuit').addEventListener('click',()=>{closeMenu();clearBubbles();newRun();state='title';hideMsg();$('title').hidden=false;tqNext=1.2;const v=$('titleVid');if(v&&!v.hidden)v.play().catch(()=>{})});
 $('mMusic').addEventListener('click',()=>{setMusic(!musicOn);syncMenuToggles()});
 $('mVoices').addEventListener('click',()=>{setVoice(!voiceOn);syncMenuToggles()});
