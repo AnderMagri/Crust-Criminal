@@ -78,3 +78,6 @@ Ander — freelance product designer, studio Lighthouse Creative Lab. Mac repo p
 - Title screen: the pixel canvas raccoon (`#titleArt`) is hidden unless splash.jpg fails; no enemy chatter on the title (only the raccoon's one opening line).
 - Pause menu: tapping outside the card resumes; "Quit game" exists only on the title screen ("Quit to title" stays in pause).
 - Forest: tall-grass hiding tiles (`G`) were removed — logs and bushes are the hiding spots. Knocking over a honey jar spills honey (`honeySpill`, forest.js): any bear within ~190 px drops what it is doing (even a chase), walks to the puddle, eats for ~6.5 s and then forgets the raccoon.
+- Caught / heist-complete cards show a 'Quit to title' button next to the tap-to-retry action (intro cards don't).
+- Forest camp walls are a mix of fallen logs and mossy boulders (`drawLog` / `drawForestRock` in forest.js; `wallIsLog` picks the material per 2x2 block). Logs are drawn as cylinders (side view for horizontal, vertical cylinder with a ring end facing the viewer); rocks are one lumpy boulder per tile in vertical runs.
+- Logs have a beginning and an end: in genCamp any tree / tent / fire pit that sits in line with (or between) wall pieces is turned into wall, so nothing stands in the middle of a log. Log end rings are drawn between the ring centres so no outline pokes past the corners.

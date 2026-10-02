@@ -86,6 +86,7 @@ canvas{display:block;touch-action:none}
 #msg p{margin:0;font-size:15px;line-height:1.45;font-weight:600}
 #msg .go{font-family:var(--disp);font-size:15px;color:#fff;background:var(--pink);border:3px solid #fff;border-radius:999px;padding:7px 16px 6px;align-self:center;box-shadow:0 4px 0 var(--pinkD);animation:bob 1.1s ease-in-out infinite}
 #msg .hint{font-size:12px;color:var(--mute)}
+#msg .msgQuit{align-self:center;font-family:var(--disp);font-size:14px;color:var(--ink);background:#fff;border:3px solid var(--pink);border-radius:999px;padding:6px 16px 4px;box-shadow:0 3px 0 rgba(242,124,154,.45);cursor:pointer}
 @keyframes blink{50%{opacity:.35}}
 #title{position:absolute;inset:0;z-index:6;background:#fde2e8;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:4% 10px 9%;line-height:1.1;text-align:center;cursor:pointer}
 #title .logo{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%}
@@ -220,6 +221,7 @@ canvas{display:block;touch-action:none}
         <h2 id="mTitle">Pie Heist</h2>
         <p id="mBody">Climb in through the kitchen window, find the cherry pie in the maze of counters, and sneak out the back door. Then cross the street home to your trash can. Cooks can\u2019t follow when you vault a counter.</p>
         <div class="go" id="mGo">Tap to start</div>
+        <button class="msgQuit" id="msgQuit" type="button" hidden>Quit to title</button>
         <div class="hint" id="mHint">Drag anywhere to move · Tap to jump a counter, fence or hedge · Keyboard: WASD or arrows, Space jumps · M mutes · R restarts</div>
       </div>
     </div>
@@ -837,6 +839,8 @@ function quitGame(){
 }
 $('byeAgain').addEventListener('click',()=>location.reload());
 $('bye').addEventListener('pointerdown',e=>e.stopPropagation());
+$('msgQuit').addEventListener('pointerdown',e=>{e.stopPropagation()});
+$('msgQuit').addEventListener('click',e=>{e.stopPropagation();$('mQuit').click()});
 $('mQuit').addEventListener('click',()=>{closeMenu();clearBubbles();newRun();state='title';hideMsg();$('title').hidden=false;tqNext=1.2;const v=$('titleVid');if(v&&!v.hidden)v.play().catch(()=>{})});
 $('mMusic').addEventListener('click',()=>{setMusic(!musicOn);syncMenuToggles()});
 $('mVoices').addEventListener('click',()=>{setVoice(!voiceOn);syncMenuToggles()});
@@ -926,7 +930,7 @@ function onAction(){
 // ---------- ui ----------
 function hideMsg(){$('msg').hidden=true}
 function showMsg(eye,title,cls,body,go,hint){$('mEye').textContent=eye;const t=$('mTitle');t.textContent=title;t.className=cls||'';
-  $('mBody').textContent=body;$('mGo').textContent=go;$('mHint').textContent=hint||'';$('mHint').hidden=!hint;$('msg').hidden=false}
+  $('msgQuit').hidden=!(cls==='bad'||cls==='good');$('mBody').textContent=body;$('mGo').textContent=go;$('mHint').textContent=hint||'';$('mHint').hidden=!hint;$('msg').hidden=false}
 function toast(s){const el=$('toast');el.textContent=s;el.hidden=false;toastT=1.8}
 const fmt=t=>{const m=Math.floor(t/60),s=(t%60).toFixed(1);return m+':'+(s<10?'0':'')+s};
 
@@ -1003,7 +1007,7 @@ function caught(e,bonk){
   const F=S.world==='forest',M=S.world==='moon',who=bonk?(M?'A rover':'A car'):e.kind==='bear'?'A bear':M?(e.style==='blob'?'A space blob':e.style==='drone'?'A drone':e.style==='cmdr'?'The commander':'An alien'):e.kind==='dog'?'A dog':F?(e.style==='camper'?'A camper':'A ranger'):'A cook';
   setTimeout(()=>{if(state==='caught')showMsg(S.kind==='kitchen'?W3('Part 1 · The Kitchen','Part 1 · The Campsite','Part 1 · The Moon Base'):W3('Part 2 · The Street','Part 2 · The River','Part 2 · The Crater Field'),bonk?'Bonk!':'Busted!','bad',
     bonk?'You got clipped crossing the road. Wait for a gap between cars.':
-    `${who} caught you${pieTaken?' and the pie is going back':''}. `+(e.kind==='bear'?'Bears charge in a straight line. Put a tree or a log between you and them.':F?'Hide in tall grass or break line of sight behind logs, then double back.':'Break line of sight behind counters and hedges, then double back.'),
+    `${who} caught you${pieTaken?' and the pie is going back':''}. `+(e.kind==='bear'?'Bears charge in a straight line. Put a tree or a log between you and them.':F?'Hide in a log or bush, or break line of sight behind logs, then double back.':'Break line of sight behind counters and hedges, then double back.'),
     'Tap to try a new heist')},500);
 }
 function win(){
@@ -2364,6 +2368,13 @@ function genCamp(){
   const s=genKitchen();s.world='forest';
   const g=s.map.map(r=>r.split('')),st=tileOf(s.start.x,s.start.y);
   // (tall-grass hiding clumps removed: the real hiding spots — logs and bushes — replace them)
+  // a log must have a beginning and an end: trees / tents / fire pits that sit in line with a wall run become part of the wall
+  const inLine=(c,r)=>{for(const[dc,dr]of[[1,0],[-1,0],[0,1],[0,-1]]){const at=(k)=>g[r+dr*k]&&g[r+dr*k][c+dc*k];
+      if(at(1)==='C'&&(at(2)==='C'||at(-1)==='C'))return true}return false};
+  const flanked=(c,r)=>{const ch=g[r][c];let a=c,b=c;while(g[r][a-1]===ch)a--;while(g[r][b+1]===ch)b++;return g[r][a-1]==='C'&&g[r][b+1]==='C'};
+  for(let pass=0;pass<4;pass++){const hit=[];
+    for(let r=1;r<s.rows-1;r++)for(let c=1;c<s.cols-1;c++){if('ROS'.includes(g[r][c])&&(inLine(c,r)||flanked(c,r)))hit.push([c,r])}
+    for(const[c,r]of hit){const ch=g[r][c];if(ch==='C')continue;g[r][c]='C';if(ch!=='R'){for(const d of[-1,1])for(let k=1;g[r][c+d*k]===ch;k++)g[r][c+d*k]='C'}}}
   s.map=g.map(r=>r.join(''));
   // the camper screams for help, two bears roam, the rest are rangers
   s.spawns=s.spawns.map((sp,k)=>k===0?{...sp,style:'camper'}:(k===1||k===3)?{kind:'bear',c:sp.c,r:sp.r}:{...sp,style:'ranger'});
@@ -2523,7 +2534,7 @@ function forestBg(g){
         for(let k=0;k<2;k++){const wx=x+hsh(c,r,80+k)*12,wy=y+3+hsh(c,r,85+k)*10;g.strokeStyle='rgba(255,255,255,.5)';g.lineWidth=.7;g.beginPath();g.moveTo(wx,wy);g.quadraticCurveTo(wx+2,wy-1.2,wx+4,wy);g.stroke()}
         if(M(c,r-1)!=='w')r_(x,y,16,3,'rgba(60,110,150,.22)');continue}
       if(ch==='W'){r_(x,y,16,16,'#6f9e62');continue}
-      const open=ch===',';grassTile(g,c,r,x,y,open?'rgba(255,248,225,.22)':'rgba(90,150,90,.05)');
+      const open=ch===','||ch==='B'||ch==='Z';grassTile(g,c,r,x,y,open?'rgba(255,248,225,.22)':'rgba(90,150,90,.05)');
       // sandy banks along the water
       if(M(c,r+1)==='w'){r_(x,y+10,16,6,'#f1dcae');g.strokeStyle=KB;g.lineWidth=.8;g.beginPath();g.moveTo(x,y+16);g.lineTo(x+16,y+16);g.stroke();for(let k=0;k<3;k++)kE(x+2+hsh(c,r,90+k)*12,y+12+hsh(c,r,93+k)*3,.9,.6,'#cdb58a',0);
         g.fillStyle='#f1dcae';g.beginPath();for(let k=0;k<4;k++){g.moveTo(x+k*4+4,y+10);g.arc(x+k*4+2,y+10,2,0,Math.PI,true)}g.fill()}
@@ -2584,30 +2595,56 @@ function drawFirePit(x,y){
   ctx.save();ctx.translate(x,y+15);ctx.scale(1/f,f);drawPropImg('f_fire',0,0,false,1.5);ctx.restore();
   for(let k=0;k<3;k++){const ph=(now*.8+k/3+x*.01)%1;ctx.fillStyle=`rgba(255,${160+rnd(60)},80,${1-ph})`;ctx.fillRect(x-4+k*4+Math.sin(ph*9+k)*2,y-8-ph*16,1.2,1.2)}
 }
+// camp walls are a mix of fallen logs and mossy boulders (blocks of 2x2 tiles share a material)
+const wallIsLog=(c,r)=>hsh(c>>1,r>>1,77)>=.42;
 function drawLog(c,r){
-  const x=c*TS,y=r*TS,below=isWallK(c,r+1),above=isWallK(c,r-1),L=isWallK(c-1,r),Rt=isWallK(c+1,r),horiz=L||Rt||!(above||below),h=below?22:12;
-  if(!below)ctx.drawImage(SH_DOWN,x+(L?0:.5),y+16,16-(L?0:.5)-(Rt?0:.5),7);if(!Rt)ctx.drawImage(SH_SIDE,x+16,y-4,4,20);
-  ctx.fillStyle=LTOP;ctx.fillRect(x-.01,y-6,16.02,h);
-  ctx.fillStyle=LTOPL;if(!above)ctx.fillRect(x+(L?0:1.5),y-5,16-(L?0:1.5)-(Rt?0:1.5),1.6);
-  // bark grain along the log
-  ctx.strokeStyle='rgba(140,92,58,.42)';ctx.lineWidth=.6;ctx.beginPath();
-  if(horiz)for(let k=0;k<3;k++){const yy=y-3+k*3.4+hsh(c,r,20+k)*1.2,x0=x+hsh(c,r,23+k)*6;ctx.moveTo(x0,yy);ctx.lineTo(x0+5+hsh(c,r,26+k)*6,yy)}
-  else for(let k=0;k<3;k++){const xx=x+3+k*4.6+hsh(c,r,20+k)*1.2,y0=y-5+hsh(c,r,23+k)*6;ctx.moveTo(xx,y0);ctx.lineTo(xx,y0+5+hsh(c,r,26+k)*6)}
-  ctx.stroke();
-  if(hsh(c,r,30)<.45){const mx=x+3+hsh(c,r,31)*9,my=y-3+hsh(c,r,32)*4;kE(mx,my,3.4,1.8,MOSS,0);kE(mx-.8,my-.6,1.4,.7,MOSSL,0)}
-  kStroke(.9);ctx.beginPath();if(!above){ctx.moveTo(x,y-6);ctx.lineTo(x+16,y-6)}if(!L){ctx.moveTo(x,y-6);ctx.lineTo(x,y+(below?16:6))}if(!Rt){ctx.moveTo(x+16,y-6);ctx.lineTo(x+16,y+(below?16:6))}ctx.stroke();
-  if(!below){
-    if(horiz){ctx.fillStyle=LFRONT;ctx.fillRect(x-.01,y+6,16.02,10);ctx.fillStyle=LFRONTD;ctx.fillRect(x,y+14,16,2);
-      ctx.strokeStyle='rgba(90,60,40,.35)';ctx.lineWidth=.6;ctx.beginPath();for(let k=0;k<3;k++){const xx=x+2+k*5+hsh(c,r,34+k)*2;ctx.moveTo(xx,y+7.5);ctx.lineTo(xx+.6,y+13.5)}ctx.stroke();
-      kStroke(.9);ctx.beginPath();ctx.moveTo(x,y+6);ctx.lineTo(x+16,y+6);ctx.moveTo(x,y+16);ctx.lineTo(x+16,y+16);if(!L){ctx.moveTo(x,y+6);ctx.lineTo(x,y+16)}if(!Rt){ctx.moveTo(x+16,y+6);ctx.lineTo(x+16,y+16)}ctx.stroke()}
-    else{ctx.fillStyle=LFRONT;ctx.fillRect(x-.01,y+6,16.02,10);kE(x+8,y+11,7.2,4.6,LRING,.9);ctx.strokeStyle='rgba(170,120,80,.6)';ctx.lineWidth=.55;
-      for(const k of[.66,.36]){ctx.beginPath();ctx.ellipse(x+8,y+11,7.2*k,4.6*k,0,0,TAU);ctx.stroke()}kE(x+8,y+11,.8,.6,'#c79a6a',0);
-      kStroke(.9);ctx.beginPath();ctx.moveTo(x,y+6);ctx.lineTo(x+16,y+6);ctx.moveTo(x,y+6);ctx.lineTo(x,y+16);ctx.lineTo(x+16,y+16);ctx.lineTo(x+16,y+6);ctx.stroke()}
-  }
-  ctx.drawImage(SHADE_TOP,x,y-6,16,h);if(!below&&horiz)ctx.drawImage(SHADE_FRONT,x,y+6,16,10);
-  // cut ends of a horizontal log show their rings
-  if(horiz)for(const[e,ex]of[[!L,x+2.6],[!Rt,x+13.4]]){if(!e)continue;const eh=below?11:(above?8:11),ey=y-6+(below?11:(above?8:11));
-    kE(ex,ey,2.6,eh,LRING,.9);ctx.strokeStyle='rgba(170,120,80,.55)';ctx.lineWidth=.5;ctx.beginPath();ctx.ellipse(ex,ey,1.4,eh*.6,0,0,TAU);ctx.stroke()}
+  if(!wallIsLog(c,r)){drawForestRock(c,r);return}
+  const lg=(cc,rr)=>isWallK(cc,rr)&&wallIsLog(cc,rr),a=lg(c,r-1),b=lg(c,r+1),l=lg(c-1,r),rt=lg(c+1,r),vert=a||b;
+  const x=c*TS,y=r*TS;
+  if(!vert){   // lying log seen from the side: the body runs between the two end-ring centres, so nothing pokes out at the corners
+    const top=y-2,h=16,x0=l?x-.02:x+2.4,x1=rt?x+16.02:x+13.6,w=x1-x0;
+    ctx.drawImage(SH_DOWN,x+(l?0:.5),y+h-3,16-(l?0:.5)-(rt?0:.5),7);if(!rt)ctx.drawImage(SH_SIDE,x+16,y-2,4,16);
+    ctx.fillStyle=LTOP;ctx.fillRect(x0,top,w,h);ctx.fillStyle=LTOPL;ctx.fillRect(x0,top+1.2,w,3.2);
+    ctx.fillStyle=LFRONT;ctx.fillRect(x0,top+9.5,w,6.5);ctx.fillStyle=LFRONTD;ctx.fillRect(x0,top+13.4,w,2.6);
+    ctx.strokeStyle='rgba(140,92,58,.5)';ctx.lineWidth=.6;ctx.beginPath();
+    for(let k=0;k<4;k++){const yy=top+3.5+k*3+hsh(c,r,20+k)*1,x1_=Math.max(x0,Math.min(x+hsh(c,r,23+k)*6,x1-6));ctx.moveTo(x1_,yy);ctx.lineTo(Math.min(x1,x1_+5+hsh(c,r,26+k)*6),yy)}ctx.stroke();
+    if(hsh(c,r,30)<.5){const mx=Math.max(x0+3,Math.min(x+4+hsh(c,r,31)*8,x1-3)),my=top+2.5;kE(mx,my,3.2,1.5,MOSS,0);kE(mx-.8,my-.5,1.3,.6,MOSSL,0)}
+    kStroke(.9);ctx.beginPath();ctx.moveTo(x0,top);ctx.lineTo(x1,top);ctx.moveTo(x0,top+h);ctx.lineTo(x1,top+h);ctx.stroke();
+    ctx.drawImage(SHADE_TOP,x,top,16,16);
+    for(const ex of[!l?x+2.4:null,!rt?x+13.6:null]){if(ex===null)continue;
+      kE(ex,top+8,2.4,8,LRING,.9);ctx.strokeStyle='rgba(170,120,80,.6)';ctx.lineWidth=.5;ctx.beginPath();ctx.ellipse(ex,top+8,1.3,4.8,0,0,TAU);ctx.stroke();kE(ex,top+8,.5,.8,'#c79a6a',0)}
+    return}
+  // log lying away from us: a vertical cylinder; the ring end faces the viewer at the bottom, a rounded far end at the top
+  const bw=14.4,x0=x+.8,topC=y-2,eRy=6.2,eyC=y+8.8,botBody=b?y+14.02:eyC,topBody=a?y-2.02:topC;
+  if(!b)ctx.drawImage(SH_DOWN,x+1,y+12,14,7);ctx.drawImage(SH_SIDE,x+15.5,y-3,4,18);
+  const hh=botBody-topBody;
+  ctx.fillStyle=LTOP;ctx.fillRect(x0,topBody,bw,hh);ctx.fillStyle=LTOPL;ctx.fillRect(x0+2.2,topBody,2.6,hh);
+  ctx.fillStyle=LFRONT;ctx.fillRect(x0+bw-4.6,topBody,4.6,hh);ctx.fillStyle=LFRONTD;ctx.fillRect(x0+bw-2,topBody,2,hh);
+  ctx.strokeStyle='rgba(140,92,58,.5)';ctx.lineWidth=.6;ctx.beginPath();
+  for(let k=0;k<3;k++){const xx=x0+3.2+k*3.4+hsh(c,r,20+k)*.8,y0=y-1+hsh(c,r,23+k)*5;ctx.moveTo(xx,y0);ctx.lineTo(xx,Math.min(botBody,y0+4+hsh(c,r,26+k)*5))}ctx.stroke();
+  if(hsh(c,r,30)<.5){const my=y+2+hsh(c,r,31)*6;kE(x+6,my,1.8,3,MOSS,0);kE(x+5.4,my-.6,.8,1.4,MOSSL,0)}
+  kStroke(.9);ctx.beginPath();ctx.moveTo(x0,topBody);ctx.lineTo(x0,botBody);ctx.moveTo(x0+bw,topBody);ctx.lineTo(x0+bw,botBody);ctx.stroke();
+  if(!a){kE(x+8,topC,bw/2,3,LTOPL,.9);ctx.strokeStyle='rgba(170,120,80,.5)';ctx.lineWidth=.5;ctx.beginPath();ctx.ellipse(x+8,topC,bw/4,1.5,0,0,TAU);ctx.stroke()}
+  if(!b){kE(x+8,eyC,bw/2,eRy,LRING,.9);ctx.strokeStyle='rgba(170,120,80,.6)';ctx.lineWidth=.55;for(const k of[.66,.36]){ctx.beginPath();ctx.ellipse(x+8,eyC,bw/2*k,eRy*k,0,0,TAU);ctx.stroke()}kE(x+8,eyC,.8,.6,'#c79a6a',0)}
+}
+function drawForestRock(c,r){
+  const x=c*TS,y=r*TS,below=isWallK(c,r+1),L=isWallK(c-1,r),Rt=isWallK(c+1,r);
+  const rock=(cx,cy,rx,ry,k)=>{
+    ctx.fillStyle='rgba(91,63,60,.16)';ctx.beginPath();ctx.ellipse(cx+1,cy+ry*.85,rx*1.05,ry*.4,0,0,TAU);ctx.fill();
+    const pts=[];for(let i=0;i<10;i++){const a=i/10*TAU,w=1+(hsh(c*7+k,r,i)-.5)*.22;pts.push([cx+Math.cos(a)*rx*w,cy+Math.sin(a)*ry*w])}
+    const path=()=>{ctx.beginPath();for(let i=0;i<10;i++){const p0=pts[i],p1=pts[(i+1)%10],mx=(p0[0]+p1[0])/2,my=(p0[1]+p1[1])/2;if(!i)ctx.moveTo(mx,my);else ctx.quadraticCurveTo(p0[0],p0[1],mx,my)}
+      const p0=pts[0],p1=pts[1];ctx.quadraticCurveTo(p0[0],p0[1],(p0[0]+p1[0])/2,(p0[1]+p1[1])/2);ctx.closePath()};
+    path();ctx.fillStyle='#bdb7a9';ctx.fill();ctx.save();path();ctx.clip();
+    ctx.fillStyle='#968f80';ctx.beginPath();ctx.ellipse(cx+rx*.2,cy+ry*.75,rx*1.1,ry*.75,0,0,TAU);ctx.fill();
+    ctx.fillStyle='#dcd7ca';ctx.beginPath();ctx.ellipse(cx-rx*.35,cy-ry*.5,rx*.42,ry*.2,-.35,0,TAU);ctx.fill();
+    // moss cap on top + a crack
+    ctx.fillStyle=MOSS;ctx.beginPath();ctx.ellipse(cx+(hsh(c,r,k+20)-.5)*rx*.6,cy-ry*.62,rx*.6,ry*.28,0,0,TAU);ctx.fill();ctx.fillStyle=MOSSL;ctx.beginPath();ctx.ellipse(cx+(hsh(c,r,k+20)-.5)*rx*.6-rx*.15,cy-ry*.7,rx*.28,ry*.1,0,0,TAU);ctx.fill();
+    if(hsh(c,r,k+22)<.6){ctx.strokeStyle='rgba(90,80,66,.5)';ctx.lineWidth=.5;ctx.beginPath();const qx=cx+(hsh(c,r,k+23)-.5)*rx;ctx.moveTo(qx,cy);ctx.lineTo(qx+1,cy+ry*.35);ctx.lineTo(qx-.6,cy+ry*.7);ctx.stroke()}
+    ctx.restore();path();kStroke(.9);ctx.stroke()};
+  const sz=.85+hsh(c,r,32)*.35;
+  const tall=below||isWallK(c,r-1);   // in a vertical run: one big boulder per tile, nothing piled on top of it
+  rock(x+8+(hsh(c,r,30)-.5)*2.4,y+(tall?6.6:5.6)-hsh(c,r,31)*1.2,(tall?7.6:8.4)*sz,(tall?8:6.6)*sz,40);
+  if(!tall&&hsh(c,r,35)<.5){const sx=x+(hsh(c,r,36)<.5?(L?5:1.8):(Rt?11:14.2));rock(sx,y+12.4,3,2.2,60)}
 }
 function drawLogFence(c,r){
   const x=c*TS,y=r*TS,L=tileCh(c-1,r)==='N',Rt=tileCh(c+1,r)==='N';
@@ -2749,7 +2786,8 @@ function placeHides(s){
   // (counter + its jar/pot, table, tree, boulder, building, lamp, door, another hide) may sit there.
   const tall=(c,r)=>{const ch=g[r]&&g[r][c];return ch===undefined||SOLID.has(ch)||'KDQPw'.includes(ch)};
   const lampNear=t=>(s.lamps||[]).some(l=>Math.abs(l.x-(t.c*TS+8))<14&&Math.abs(l.y-(t.r*TS+8))<26);
-  const clear=(t,lvl)=>{if(tall(t.c,t.r-1)||lampNear(t))return false;if(lvl<2)return true;if(tall(t.c,t.r-2))return false;if(lvl<3)return true;return!tall(t.c-1,t.r-1)&&!tall(t.c+1,t.r-1)};
+  const clear=(t,lvl)=>{if(tall(t.c,t.r-1)||tall(t.c,t.r+1)||lampNear(t))return false;   // also nothing directly below: a log/rock/tree there would overlap the sprite's base
+    if(lvl>=3&&(tall(t.c-1,t.r)||tall(t.c+1,t.r)||tall(t.c-1,t.r+1)||tall(t.c+1,t.r+1)))return false;if(lvl<2)return true;if(tall(t.c,t.r-2))return false;if(lvl<3)return true;return!tall(t.c-1,t.r-1)&&!tall(t.c+1,t.r-1)};
   shuffle(cand);let out=[];
   for(const lvl of[3,2,1]){out=[];for(const t of cand){if(out.length>=4)break;if(clear(t,lvl)&&out.every(o=>Math.abs(o.c-t.c)+Math.abs(o.r-t.r)>=6))out.push(t)}if(out.length>=3)break}
   out.forEach((t,k)=>{g[t.r][t.c]='K';s.hideType[t.c+','+t.r]=types[k%types.length]});
