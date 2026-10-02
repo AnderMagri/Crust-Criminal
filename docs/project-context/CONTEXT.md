@@ -81,3 +81,5 @@ Ander — freelance product designer, studio Lighthouse Creative Lab. Mac repo p
 - Caught / heist-complete cards show a 'Quit to title' button next to the tap-to-retry action (intro cards don't).
 - Forest camp walls are a mix of fallen logs and mossy boulders (`drawLog` / `drawForestRock` in forest.js; `wallIsLog` picks the material per 2x2 block). Logs are drawn as cylinders (side view for horizontal, vertical cylinder with a ring end facing the viewer); rocks are one lumpy boulder per tile in vertical runs.
 - Logs have a beginning and an end: in genCamp any tree / tent / fire pit that sits in line with (or between) wall pieces is turned into wall, so nothing stands in the middle of a log. Log end rings are drawn between the ring centres so no outline pokes past the corners.
+
+- Forest camp walls are now image pieces (round 5, `forest-walls-v1`): small logs, medium logs (single images), picnic tables and boulders, cut from each wall run in `genCamp` (`s.pieces`, `s.pieceAt`). Procedural log drawing (`drawLogProc`) is only a fallback.

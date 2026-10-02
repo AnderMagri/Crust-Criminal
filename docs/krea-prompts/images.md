@@ -19,6 +19,7 @@ Layout = columns x rows, names listed row by row (left to right). Source PNGs li
 | `moon-rocket-home-v2` | 1x1 | rocket-shaped trash can (the home), sitting on the ground, no fire | x-props |
 | `moon-snacks-v1` | 4x2 | galaxy pie, Saturn donut, moon cheese, star candy, crater cookie, ice-cream sandwich, space-food tube, alien jelly | x-props |
 | `raccoon-sneak-v1` | 3x2 | raccoon HEAD only, sneaky half-closed eyes: look left, center, right; blink; one-eye peek; "shh" up-right. Cut into `assets/art/sneak-0..5.webp` (same canvas, 104 px high) for the HIDDEN pill | (loose webp) |
+| `forest-walls-v1` | 4x2 | camp wall pieces: small log, medium log, small log upright, medium log upright, picnic table, picnic table rotated, boulder, boulder pair | x-props (`wl_*`) |
 | `moon-hide-v1` | 3x2 | alien cookie jar (green), alien cookie jar (purple, three eyes), moon-rock pile empty / peeking, crashed pod empty / peeking | x-props |
 
 Older sheets (city/kitchen/street): `kitchen-props-v1`, `kitchen-fixtures-v1`, `snacks-v1`, `counter-items-v2`, `floor-tiles-v1` and the raccoon / enemies / props sheets feeding `sprites.webp` / `props.webp` / `tiles.webp`.
@@ -50,6 +51,16 @@ Row 1: (1) sneaky half-closed eyes, pupils glancing far to the LEFT; (2) sneaky 
 Row 2: (4) eyes fully shut in a blink, same smirk; (5) one eye shut and the other half-open slit peeking to the left, cheeky; (6) eyes almost shut, pupils glancing up-right, tiny worried 'shh' pursed lips.
 ```
 Slicing: crop each cell to its alpha bounding box, paste on one shared canvas (so the face does not jump between frames), resize to 104 px high, save webp. In game: `sneakTick()` in index.html cycles the frames on a 6 s loop.
+
+### forest-walls-v1 (`gpt-image-2.5-flare`, 4:3, 2K, transparent)
+References: `forest-props-v1.png` + `forest-props-v2.png`.
+```
+Game sprite sheet on a fully transparent background, matching the exact kawaii art style of the reference images (thick dark-brown outlines, soft cel shading, pastel colors, tiny white highlights, slightly top-down 3/4 view). A clean 4 columns x 2 rows grid of 8 separate forest camp wall pieces, each centered in its own cell with generous empty transparent space between them, no overlapping, no text, no labels, no shadows on the background, nothing sitting on top of the pieces (no mushrooms, no jars, no food, no animals):
+Row 1: (1) a SMALL fallen tree log lying sideways, short and chubby, about as long as it is tall, light brown bark with a few tiny moss patches, a pale cut ring visible on BOTH round ends, complete single object with a clear beginning and end; (2) a MEDIUM fallen tree log lying sideways, about twice as long as the small one, same bark, pale cut rings on BOTH round ends, clear beginning and end, nothing in the middle; (3) a SMALL fallen log lying pointing toward the viewer (long axis running vertically in the picture): the big pale round cut ring faces the viewer at the bottom, the far end rounded at the top, short; (4) a MEDIUM fallen log lying pointing toward the viewer, about twice as long as (3), ring end at the bottom, rounded far end at the top.
+Row 2: (5) a wooden picnic table seen from the side with its long axis horizontal, tabletop plus two attached benches, simple warm brown planks, two tiles wide; (6) the same style picnic table rotated so its long axis runs vertically in the picture (seen from the short end, both benches visible left and right of the tabletop, extending away from the viewer); (7) a single chubby grey mossy boulder with a green moss cap, one object; (8) a pair of two small grey boulders touching each other with moss on top, one compact object.
+Consistent scale: small log and boulder are roughly one tile, medium log and picnic table roughly two tiles. Cute, chunky, clean silhouettes.
+```
+How it is used: `genCamp()` (forest.js) cuts every wall run into whole pieces (1 or 2 tiles; horizontal runs first, then vertical) and `drawLog()` draws each piece once from its anchor tile. Sprite widths (world px) are in `tools/slice.py`. Nothing is placed on upright logs / rotated tables (`itemAt`). The old procedural log/rock drawing stays as a fallback while the atlas loads.
 
 ## Ideas for next sheets (not made yet)
 - Forest: berry-bush hiding spot with peeking raccoon (currently reuses `h_bush`), river log variants, owl / squirrel decor.
