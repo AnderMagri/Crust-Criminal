@@ -1,44 +1,74 @@
 # Crust Criminal
 
-A portrait, pixel-art stealth game for phones. A chubby raccoon sneaks into a restaurant
-kitchen through a window, steals a cherry pie, escapes out the back door and crosses the
-street to get home to its trash can.
+A kawaii stealth game for phones, played in portrait. A chubby raccoon sneaks into a
+kitchen, steals a pie and runs home with it without getting caught.
 
-## Play
+**Play it:** https://andermagri.github.io/Crust-Criminal/
 
-Open `index.html` in a browser (phone held upright works best).
+It installs as an app from the browser ("Add to Home Screen") and works offline after the
+first visit.
 
-- Drag anywhere to move, tap to jump over counters, fences, hedges and bins
-- Keyboard: arrows / WASD to move, Space to jump, M voices, N music, R restart
+## How to play
+
+- **Phone:** drag anywhere to move, tap to jump. A second finger also jumps while you steer.
+- **Keyboard:** WASD or arrows to move, Space to jump, Esc or P for the pause menu,
+  R to restart, M to toggle voices, N to toggle music.
+
+Every run has two parts: grab the pie and find the exit, then cross the outdoors to get home.
+Levels are generated fresh each time, and your best time is saved per world.
 
 ## What's in the game
 
-- **Kitchen:** random maze of counters, ovens, fridges and shelves. Five cooks with
-  different speeds plus a faster sous chef who whistles for the whole kitchen.
-  Jumping a counter with pots or plates on it knocks them off and draws attention
-  (orange jump arrows warn you).
-- **Energy:** a snack bar drains as you move (faster with the pie) and each jump costs a bite. Low energy slows you and stops vaulting. Eat candy, cookies, chocolate, fries and burgers along the way; munching is loud, so cooks may come looking. A rare golden donut gives a sugar rush.
-- **Street:** random roads, parks and fence blocks. Cars, dogs, two police officers,
-  sometimes a police dog (faster than you), and a cook who chases you out the door.
-- **Audio:** recorded music (one theme per world, plus title and pause themes), recorded
-  voices per character and recorded sound effects, all played through Web Audio. Anything
-  that has no recording, or fails to load, falls back to synthesized music, effects and
-  gibberish "babble" with speech bubbles.
-- **Worlds:** City, Forest and Moon, picked on the title screen. Hiding spots and a
-  sneak-up "BOO!" work in all three.
+- **Three worlds**, picked on the title screen:
+  - **City:** a restaurant kitchen (a maze of counters, ovens, fridges and shelves), then a
+    street with roads, parks and fences. Home is your trash can.
+  - **Forest:** a campsite of logs, tents and campfires with rangers, a camper and bears,
+    then a river you cross on floating logs. Home is a hollow log.
+  - **Moon:** a moon base of boulder corridors with aliens and their commander, then a
+    crater field with rovers. Jumps float in low gravity. Home is a rocket.
+- **Enemies with vision cones.** Break line of sight and they lose you. The sous chef, the
+  camper and the commander call everyone else when they spot you. Bears charge in a straight
+  line and stun themselves if they hit something.
+- **Jumping.** Vault over counters, fences, hedges and bins. Knocking pots, jars or plates off
+  a counter is loud and draws attention (orange arrows warn you before you jump).
+- **Energy.** Moving drains it (faster with the pie) and each vault costs a bite. Low energy
+  slows you down. Snacks refill it, but munching is loud. A golden donut gives a sugar rush.
+- **Hiding spots.** Walk up to a box, basket, bush, log or pile of rocks and the raccoon hops
+  in by himself. Enemies can't see him until he moves.
+- **BOO!** Sneak up behind a calm enemy and jump: they scream, drop a snack and run, but the
+  scream brings others to look. Don't try it on a bear.
+- **Outdoors hazards.** Cars and rovers (some brake and honk), dogs, a police officer,
+  sometimes a police dog, and a cook who bursts out the door after you.
+- **Audio.** Recorded music for each world, recorded voices for each character, sound effects
+  and ambience. A line with no recording is spoken as synthesized "babble".
 
-## Assets
+## Running it locally
 
-Generated with Krea (images) and ElevenLabs / Seed Audio via Krea (music, voices).
-Run `tools/fetch-assets.sh` to download them into `assets/`:
+The game is a single `index.html` with no build step. Serve the folder with any static web
+server (audio does not load from a `file://` page):
 
-- `assets/art/title-3d.jpg` – 3D cartoon key art for the title screen (current choice)
-- `assets/art/title-pixel-*.png` – earlier pixel-art title explorations
-- `assets/music/main-theme.mp3` – produced orchestral caper theme for title/menus
-- `assets/voices/raccoon-*.mp3` – the raccoon's recorded lines, played in-game (falls back to babble if missing)
-- `assets/voices/*-sample.mp3` – voice casting samples for the chef and the cop
+```bash
+python3 -m http.server 8000
+```
+
+Then open http://localhost:8000.
+
+## Project layout
+
+- `index.html` – the whole game (HTML, CSS and JavaScript)
+- `sw.js` – service worker for offline play; bump `VERSION` on every release
+- `manifest.webmanifest` – install settings
+- `assets/art/` – sprite sheets, props, tiles, splash and logo
+  (`sprites-src/` holds the original sheets that `tools/slice.py` cuts up)
+- `assets/music/`, `assets/voices/`, `assets/sfx/` – audio
+- `assets/fonts/` – Titan One and Figtree, self-hosted
+- `tools/` – asset scripts
+- `docs/` – project notes
+
+Art was generated with Krea; music and voices with ElevenLabs and Seed Audio through Krea.
+The prompts are in `docs/krea-prompts/`.
 
 ## More
 
-`docs/project-context/CONTEXT.md` describes how the game is put together, the release steps
-(bump `VERSION` in `sw.js`) and the design decisions made so far.
+`docs/project-context/CONTEXT.md` explains how the code is organised, the release steps and
+the design decisions made so far. Read it before changing the game.
