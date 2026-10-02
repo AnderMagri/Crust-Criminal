@@ -198,7 +198,7 @@ canvas{display:block;touch-action:none}
       <div class="logo"><img id="logoImg" src="assets/art/logo.webp" alt="Crust Criminal" onerror="this.hidden=true;document.getElementById('logoText').hidden=false"><h1 id="logoText" hidden>Crust<span>Criminal</span></h1><div class="worlds" role="group" aria-label="World"><button type="button" data-world="city">City</button><button type="button" data-world="forest">Forest</button><button type="button" data-world="moon">Moon</button></div></div>
       <video id="titleVid" muted playsinline loop preload="auto" aria-hidden="true" hidden></video>
       <div id="tq" class="tq" hidden></div>
-      <canvas id="titleArt" width="40" height="44" aria-hidden="true"></canvas>
+      <canvas id="titleArt" width="40" height="44" aria-hidden="true" hidden></canvas>
       <div class="bottom"><div class="start">Tap to start</div><button type="button" class="quitApp">Quit game</button><div class="small">Phone: drag to move, tap to jump · Keyboard: WASD/arrows to move, Space to jump</div></div>
     </div>
     <div id="bye" hidden><img src="assets/art/full-raccoon.webp" alt=""><h2>See ya, bandit!</h2><p>The heist is over. You can close this window now.</p><button type="button" id="byeAgain">Play again</button></div>
@@ -211,7 +211,6 @@ canvas{display:block;touch-action:none}
         <button class="mbtn primary" id="mResume" type="button">Resume</button>
         <button class="mbtn" id="mRestart" type="button">Restart heist</button>
         <button class="mbtn quit" id="mQuit" type="button">Quit to title</button>
-        <button class="mbtn ghost" id="mExit" type="button">Quit game</button>
         <div class="toggles"><button class="tog" id="mMusic" type="button">Music: on</button><button class="tog" id="mVoices" type="button">Voices: on</button></div>
       </div>
     </div>
@@ -460,13 +459,14 @@ const COON={start:['Pie time!','Sniff sniff... is that... CHERRY?!','Operation: 
   honk:['Yeah yeah, honk at me one more time, buddy!','Beep beep! Raccoon coming through!'],dog:['Easy, puppy! I have treats! ...No I don’t.'],cops:['The cops! Act natural... act natural...'],busted:['Eep!','I was just looking!','Tell my family... I loved... trash.'],
   bonk:['Oof!','Ow ow ow.'],oops:['Oopsie!','Nobody saw that. Nobody.','Shhh!'],win:['Home sweet trash! Heh-heh!','Pieeeeeee!','Five-star heist. Would steal again.']};
 
+const MUSV=.3;   // music bus level; ducked to 45% while anyone is talking
 let ac=null,voiceOn=true,musicOn=true,master,musBus,sfxBus,vocBus,noiseBuf;
 try{voiceOn=localStorage.getItem('pieheist-voices')!=='off';musicOn=localStorage.getItem('pieheist-music')!=='off'}catch(e){}
 function audio(){
   try{if(!ac){ac=new (window.AudioContext||window.webkitAudioContext)();
       master=ac.createGain();master.gain.value=.9;master.connect(ac.destination);
       const comp=ac.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=4;comp.connect(master);
-      musBus=ac.createGain();musBus.gain.value=musicOn?.42:0;musBus.connect(comp);
+      musBus=ac.createGain();musBus.gain.value=musicOn?MUSV:0;musBus.connect(comp);
       sfxBus=ac.createGain();sfxBus.gain.value=.9;sfxBus.connect(comp);
       vocBus=ac.createGain();vocBus.gain.value=1;vocBus.connect(comp);
       noiseBuf=ac.createBuffer(1,ac.sampleRate,ac.sampleRate);const d=noiseBuf.getChannelData(0);for(let k=0;k<d.length;k++)d[k]=Math.random()*2-1;
@@ -499,7 +499,7 @@ const SFX={
     [60,64,67,72,76,79,84,88,91,96].forEach((n,k)=>tone(mtof(n),.1,{type:'square',vol:.035,lp:5000,when:t+.08+k*.045}));
     [72,76,79,84].forEach(n=>{tone(mtof(n),1.2,{type:'triangle',vol:.05,att:.02,when:t+.55});tone(mtof(n)*1.006,1.2,{type:'sine',vol:.035,att:.02,when:t+.55})});
     [0,.12,.24,.36,.5].forEach(d=>tone(mtof(100+Math.floor(Math.random()*6)),.18,{type:'sine',vol:.03,when:t+.7+d}));
-    if(musBus&&musicOn){musBus.gain.cancelScheduledValues(t);musBus.gain.setTargetAtTime(.08,t,.04);musBus.gain.setTargetAtTime(.42,t+1.6,.3)}},
+    if(musBus&&musicOn){musBus.gain.cancelScheduledValues(t);musBus.gain.setTargetAtTime(.08,t,.04);musBus.gain.setTargetAtTime(MUSV,t+1.6,.3)}},
   alert(){tone(988,.06,{vol:.04});tone(1319,.1,{vol:.04,when:ac&&ac.currentTime+.07})},
   bark(){tone(420,.07,{slide:300,vol:.06});tone(380,.09,{slide:250,vol:.06,when:ac&&ac.currentTime+.11});noise(.05,{hp:900,lp:3000,vol:.04})},
   slam(){noise(.3,{lp:500,vol:.3});tone(80,.25,{type:'sawtooth',slide:40,vol:.12});noise(.06,{hp:3000,vol:.08,when:ac&&ac.currentTime+.02})},
@@ -619,10 +619,10 @@ function playTrack(n,force){if(!ac||(curTrack===n&&!force))return;const t=ac.cur
   curTrack=n;const T=trk[n];if(!T||T.src)return;
   const s=ac.createBufferSource(),g=ac.createGain();s.buffer=T.buf;s.loop=true;g.gain.value=0;g.gain.setTargetAtTime(TRACK_VOL[n],t,n==='pause'?.5:.3);s.connect(g).connect(musBus);
   const off=n!=='title'&&n!=='pause'?T.off||0:0;s.start(t,off);T.src=s;T.gain=g;T.t0=t-off}
-function startTheme(){if(!themeBuf||themeSrc)return;themeSrc=ac.createBufferSource();themeSrc.buffer=themeBuf;themeSrc.loop=true;const g=ac.createGain();g.gain.value=1.5;themeSrc.connect(g).connect(musBus);themeSrc.start()}
+function startTheme(){if(!themeBuf||themeSrc)return;themeSrc=ac.createBufferSource();themeSrc.buffer=themeBuf;themeSrc.loop=true;const g=ac.createGain();g.gain.value=1;themeSrc.connect(g).connect(musBus);themeSrc.start()}
 function musicTick(){
   if(ac)playTrack(wantTrack());
-  const gT=trk[curTrack],gs=curTrack!=='title'&&curTrack!=='pause'&&gT&&gT.src;if(gs){gs.playbackRate.setTargetAtTime(intensity>0?1.06:1,ac.currentTime,.4);return}   // recorded theme playing: nudge the tempo up in chases
+  const gT=trk[curTrack],gs=curTrack!=='title'&&curTrack!=='pause'&&gT&&gT.src;if(gs){if(gs.playbackRate.value!==1)gs.playbackRate.setTargetAtTime(1,ac.currentTime,.2);return}   // recorded theme playing: nudge the tempo up in chases
   if(curTrack&&trk[curTrack]&&trk[curTrack].src)return;
   if(!ac||!musicOn||ac.state!=='running')return;
   if(nextT<ac.currentTime-.2)nextT=ac.currentTime+.05;
@@ -630,7 +630,7 @@ function musicTick(){
 }
 setInterval(musicTick,25);
 function setMusic(on){musicOn=on;const b=$('music');b.classList.toggle('off',!on);b.setAttribute('aria-pressed',String(!on));
-  if(musBus)musBus.gain.setTargetAtTime(on?.42:0,ac.currentTime,.05);try{localStorage.setItem('pieheist-music',on?'on':'off')}catch(e){}}
+  if(musBus)musBus.gain.setTargetAtTime(on?MUSV:0,ac.currentTime,.05);try{localStorage.setItem('pieheist-music',on?'on':'off')}catch(e){}}
 function babble(text,v){
   if(!voiceOn||!ac)return;
   try{const t0=ac.currentTime+.02,letters=text.replace(/[^a-z]/gi,'').length;
@@ -691,9 +691,10 @@ let voiceSrc=null,voiceEnd=0,voicePrio=-1,voiceG=null,voiceWho=null,voiceStart=0
 function voiceFree(prio){return !ac||ac.currentTime>voiceEnd||prio>voicePrio}
 function laneMode(prio,who){if(!ac)return 'main';const t=ac.currentTime;if(t>voiceEnd||prio>voicePrio)return 'main';
   if(who!==voiceWho&&t>voice2End&&t-voiceStart>.35&&prio>=1)return 'overlap';return null}
+function duckMusic(until){if(!musBus||!musicOn)return;const t=ac.currentTime;musBus.gain.cancelScheduledValues(t);musBus.gain.setTargetAtTime(MUSV*.45,t,.08);musBus.gain.setTargetAtTime(MUSV,until+.1,.4)}
 function playClip(name,prio,who,mode){try{const t=ac.currentTime;
   const src=ac.createBufferSource(),g=ac.createGain();src.buffer=clipBuf[name];src.playbackRate.value=CLIP_RATE;
-  const dur=src.buffer.duration/CLIP_RATE;
+  const dur=src.buffer.duration/CLIP_RATE;duckMusic(t+dur);
   if(mode==='overlap'){g.gain.value=.85*(clipGain[name]||1);src.connect(g).connect(vocBus);src.start();voice2Src=src;voice2End=t+dur+.1;
     if(voiceG){voiceG.gain.setTargetAtTime(.75,t,.05)}return}
   if(voiceSrc&&t<voiceEnd){try{voiceSrc.stop()}catch(_){}}
@@ -834,13 +835,12 @@ function quitGame(){
   try{window.close()}catch(e){}
   setTimeout(()=>{$('bye').hidden=false},150);
 }
-$('mExit').addEventListener('click',quitGame);
 $('byeAgain').addEventListener('click',()=>location.reload());
 $('bye').addEventListener('pointerdown',e=>e.stopPropagation());
 $('mQuit').addEventListener('click',()=>{closeMenu();clearBubbles();newRun();state='title';hideMsg();$('title').hidden=false;tqNext=1.2;const v=$('titleVid');if(v&&!v.hidden)v.play().catch(()=>{})});
 $('mMusic').addEventListener('click',()=>{setMusic(!musicOn);syncMenuToggles()});
 $('mVoices').addEventListener('click',()=>{setVoice(!voiceOn);syncMenuToggles()});
-$('menu').addEventListener('pointerdown',e=>e.stopPropagation());
+$('menu').addEventListener('pointerdown',e=>{e.stopPropagation();if(e.target===$('menu')){e.preventDefault();resumeGame()}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='play')pauseGame()});
 
 // ---------- title screen: animated splash + the raccoon's opening line ----------
@@ -907,7 +907,7 @@ function tryJump(){
     setTimeout(()=>{if(state!=='play')return;SFX.crash();shake=.12;S.debris.push({x:bx,y:by,k:hsh(c1,r1,7)});noiseAt(bx,by,130);
       if(spill){toast(item==='ms_jelly'?'ALIEN JELLY!':(item==='m_jar1'||item==='m_jar2')?'ALIEN COOKIES!':item==='jar'?'COOKIES!':item==='f_honey'?'HONEY!':'CAKE!');const px=d[1]?1:0,py=d[0]?1:0;   // spill sideways along the landing row
         spill.forEach((ty,i)=>{const s=i?1:-1,x=t.x+px*s*13,y=t.y+py*s*13;if(!solidAt(Math.floor(x/TS),Math.floor((y-2)/TS)))S.snacks.push({x,y,type:ty})});
-        for(let i=0;i<10;i++)parts.push({x:t.x-8+Math.random()*16,y:t.y-4,t:0,life:.5,col:'rgba(240,190,120,',sz:2})}
+        if(item==='f_honey'&&typeof honeySpill==='function')honeySpill(t.x,t.y);for(let i=0;i<10;i++)parts.push({x:t.x-8+Math.random()*16,y:t.y-4,t:0,life:.5,col:'rgba(240,190,120,',sz:2})}
       else toast('CRASH!');
       say(player,pickCoon('oops'),true)},220)}
   else if(ch==='B'){setTimeout(()=>{if(state!=='play')return;SFX.clang();noiseAt(c1*TS+8,r1*TS+8,110)},200)}
@@ -1541,6 +1541,7 @@ function render(){
       case'H':drawHedge(o.c,o.r);break;case'X':drawTree(o.c,o.r);break;case'N':drawFence(o.c,o.r);break;
     }
   }
+  for(const h of (S.honey||[]))if(typeof drawHoney==='function')drawHoney(h);
   for(const b of (S.debris||[])){const x=Math.round(b.x),y=Math.round(b.y);
     if(S.world==='forest'){kE(x,y+1,7,2.6,'rgba(255,196,60,.75)',.5);kE(x-2,y,2,.8,'rgba(255,240,180,.8)',0);kRR(x+3,y-3,5,4,1.5,'#b98a5e',.5);continue}
     if(b.k<.12){R(x-5,y,3,1,'#c9965b');R(x+1,y+1,4,1,'#c9965b');R(x-2,y-1,2,1,'#e07b39');R(x+3,y-2,2,1,'#4a7a55')}
@@ -2362,10 +2363,7 @@ syncWorldChips();
 function genCamp(){
   const s=genKitchen();s.world='forest';
   const g=s.map.map(r=>r.split('')),st=tileOf(s.start.x,s.start.y);
-  // clumps of tall grass to hide in
-  for(let k=0,n=0;k<80&&n<7;k++){const t=pick(s.walk);if(Math.abs(t.c-st.c)+Math.abs(t.r-st.r)<5||Math.abs(t.c-s.pie.c)+Math.abs(t.r-s.pie.r)<4||g[t.r][t.c]!=='.')continue;
-    const q=[t];let m=0;const size=3+rnd(3);
-    while(q.length&&m<size){const u=q.shift();if(g[u.r][u.c]!=='.'||Math.abs(u.c-s.pie.c)+Math.abs(u.r-s.pie.r)<3)continue;g[u.r][u.c]='G';m++;for(const[a,b]of shuffle(DIRS.slice()))q.push({c:u.c+a,r:u.r+b})}n++}
+  // (tall-grass hiding clumps removed: the real hiding spots — logs and bushes — replace them)
   s.map=g.map(r=>r.join(''));
   // the camper screams for help, two bears roam, the rest are rangers
   s.spawns=s.spawns.map((sp,k)=>k===0?{...sp,style:'camper'}:(k===1||k===3)?{kind:'bear',c:sp.c,r:sp.r}:{...sp,style:'ranger'});
@@ -2394,14 +2392,12 @@ function genRiver(){
         rows.push(row(','));const r0=rows.length;for(let k=0;k<6;k++)rows.push(row('g'));rows.push(row(','));
         for(let k=0;k<3;k++){const r=r0+1+rnd(4),c=1+rnd(cols-3),len=1+rnd(2);for(let q=0;q<len;q++)if(rows[r][c+q]==='g')rows[r][c+q]='H'}
         for(let k=0;k<3;k++){const r=r0+1+rnd(4),c=1+rnd(cols-2);if(rows[r][c]==='g')rows[r][c]='X'}
-        for(let k=0;k<3;k++){let r=r0+rnd(6),c=rnd(cols);for(let q=0;q<4;q++){if(rows[r]&&rows[r][c]==='g')rows[r][c]='G';const d=pick(DIRS);r=clamp(r+d[1],r0,r0+5);c=clamp(c+d[0],0,cols-1)}}
         regions.push({r0,r1:r0+5,type:'park'});
       }else{
         rows.push(row(','));const r0=rows.length;rows.push(row(','));
         const f=row('N');const gaps=2+rnd(2);for(let k=0;k<gaps;k++){const c=1+rnd(cols-3);f[c]=',';f[c+1]=','}rows.push(f);
         rows.push(row(','));rows.push(row(','));
         for(let k=0;k<3;k++){const r=r0+(Math.random()<.5?0:2),c=rnd(cols);if(rows[r][c]===',')rows[r][c]='B'}
-        for(let k=0;k<2;k++){const r=r0+(Math.random()<.5?0:3),c=rnd(cols);if(rows[r][c]===',')rows[r][c]='G'}
         regions.push({r0,r1:r0+3,type:'block'});
       }
     }
@@ -2455,7 +2451,24 @@ function bearSpot(e){
   if(!S.bearTold){S.bearTold=1;toast('BEAR! It charges in a straight line.\nDuck behind a log or tree!')}
   if(Math.random()<.6)setTimeout(()=>{if(state==='play')say(player,pickCoon('bear'))},700);
 }
+// ---------- spilled honey: bears drop everything (the chase included) and go eat it ----------
+function honeySpill(x,y){S.honey=S.honey||[];S.honey.push({x,y,left:1});
+  for(const e of enemies)if(e.kind==='bear'&&e.state!=='stun'&&e.state!=='honey'&&Math.hypot(e.x-x,e.y-y)<190){e.state='honey';e.hp=S.honey[S.honey.length-1];e.path=bfsTo(e,{x,y});e.eat=0;e.hstuck=0;e.t=0;
+    say(e,'Honey...',true);toast('The bear smells honey!')}}
+function honeyTick(e,dt){
+  const h=e.hp;if(!h||h.left<=0||!(S.honey||[]).includes(h)){e.hp=null;e.state='look';e.t=1;e.base=e.fa;return}
+  const d=Math.hypot(h.x-e.x,h.y-e.y);e.fa=lerpAng(e.fa,Math.atan2(h.y-e.y,h.x-e.x),Math.min(1,8*dt));
+  if(d>9&&e.eat===0){e.hstuck+=dt;if(!e.path.length||e.hstuck>.5){e.path=bfsTo(e,{x:h.x,y:h.y});e.hstuck=0}
+    const x0=e.x,y0=e.y;follow(e,105,dt);if(Math.hypot(e.x-x0,e.y-y0)<.1&&!e.path.length)e.eat=.001;return}
+  e.eat+=dt;e.moving=false;e.fa=lerpAng(e.fa,Math.PI/2,Math.min(1,5*dt));
+  if(Math.random()<dt*3)sparkle(e.x+(Math.random()*8-4),e.y-14,1,'#ffd24a');
+  h.left=Math.max(0,1-e.eat/6.5);
+  if(e.eat>6.5){S.honey=S.honey.filter(q=>q!==h);e.hp=null;e.state='look';e.t=1.4;e.base=e.fa;e.last=null;say(e,'*burp* ...What was I doing?',true)}
+}
+function drawHoney(h){const x=Math.round(h.x),y=Math.round(h.y+2),k=.45+.55*h.left;
+  kE(x,y,9*k,3.4*k,'rgba(214,150,30,.9)',.6);kE(x-1,y-.5,6*k,2*k,'rgba(255,205,70,.95)',0);kE(x-2.5*k,y-1,2*k,.8*k,'rgba(255,245,200,.9)',0)}
 function bearTick(e,dt,detect){
+  if(e.state==='honey'){honeyTick(e,dt);return true}
   if(e.state==='roar'){e.t-=dt;e.fa=lerpAng(e.fa,Math.atan2(player.y-e.y,player.x-e.x),Math.min(1,10*dt));
     if(e.t<=0){const a=Math.atan2(player.y-3-e.y,player.x-e.x);e.state='charge';e.ca=a;e.fa=a;e.t=1.9;e.last={x:player.x,y:player.y}}
     return true}
@@ -2649,6 +2662,7 @@ function drawBear(e){
   kShadow(e.x,e.y,8.5);
   if(e.state==='stun'){n='b_x';fx={bob:0,rot:Math.sin(now*6)*.06,sq:1}}
   else if(e.state==='charge'){n='b_c';flip=Math.cos(e.ca)<0;fx={bob:Math.abs(Math.sin(now*22))*1.6,rot:0,sq:1}}
+  else if(e.state==='honey'&&e.eat>0){n='b_f';fx={bob:Math.abs(Math.sin(now*9))*.9,rot:Math.sin(now*9)*.04,sq:1}}
   else if(e.state==='roar'){n='b_r';fx={bob:Math.abs(Math.sin(now*30))*.6,rot:0,sq:1+Math.sin(now*30)*.03}}
   else if(d==='up')n='b_b';else if(side){n='b_s';flip=d==='left'}else n='b_f';
   drawSpr(n,e.x,e.y-fx.bob,flip,1.12,fx.rot,fx.sq);
@@ -3038,7 +3052,7 @@ function frame(ts){
     if(state==='play'){if(S.kind==='kitchen')updateKitchen(dt);else{if(S.world==='forest')updateRiver(dt);if(state==='play')updateStreet(dt)}}
     if(state==='play')updateEnemies(dt,true);
     if(state==='play')chatter(dt);
-  }else if(state==='title'){updateEnemies(dt,false);chatter(dt)}
+  }else if(state==='title'){updateEnemies(dt,false)}
   else if(state==='caught'&&S.kind==='street')for(const c of cars){c.x+=c.dir*c.sp*dt*.3}
   intensity=state==='title'||(state==='play'&&enemies.some(e=>e.state==='chase'||e.state==='alert'))?1:0;
   updateCam(dt,false);updateAmbience();forestAmb(dt);titleTick(dt);
@@ -3065,7 +3079,7 @@ function fit(){
 }
 addEventListener('resize',fit);
 // Rubber-hose splash on the title screen; the little canvas raccoon is only a fallback if the image fails
-(function(){const im=new Image();im.onload=()=>{const t=$('title');t.style.background='linear-gradient(to bottom,rgba(253,226,232,0) 72%,rgba(253,226,232,.7) 100%),url("assets/art/splash.jpg") center top/cover no-repeat,#fde2e8';$('titleArt').hidden=true};im.src='assets/art/splash.jpg'})();
+(function(){const im=new Image();im.onload=()=>{const t=$('title');t.style.background='linear-gradient(to bottom,rgba(253,226,232,0) 72%,rgba(253,226,232,.7) 100%),url("assets/art/splash.jpg") center top/cover no-repeat,#fde2e8';$('titleArt').hidden=true};im.onerror=()=>{$('titleArt').hidden=false};im.src='assets/art/splash.jpg'})();
 (function(){const c=$('titleArt'),g=c.getContext('2d'),m=ctx;ctx=g;
   g.drawImage(COON_SPR.cd[0],10,22);ctx.save();ctx.translate(20,20);drawPie(0,0);ctx.restore();ctx=m})();
 setTimeout(()=>{try{window.focus();$('stage').focus({preventScroll:true})}catch(_){}},100);
