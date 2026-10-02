@@ -1,10 +1,16 @@
 <!doctype html>
+<!--
+  Crust Criminal. Copyright (c) 2026 Anderson Magri / BlockMagic Studio. All rights reserved.
+  Not open source: no copying, redistribution or reuse of the code, art or audio without written permission. See LICENSE.
+-->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Crust Criminal</title>
 <meta name="description" content="A chubby raccoon steals a cherry pie and runs home to its trash can.">
+<meta name="author" content="Anderson Magri / BlockMagic Studio">
+<meta name="copyright" content="© 2026 Anderson Magri / BlockMagic Studio. All rights reserved.">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#ff9fb6">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -34,6 +40,7 @@ body{margin:0;font-family:var(--body);font-weight:700}
   padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);
   background:radial-gradient(90% 70% at 50% 40%,#fde2e8,#d9ccf2)}
 #stage{position:relative;line-height:0;box-shadow:0 0 0 4px #fff,0 20px 50px rgba(91,63,60,.3);overflow:hidden;border-radius:18px}
+#stage.full{border-radius:0}   /* phone layout: the game fills the screen, so no card corners */
 canvas{display:block;touch-action:none}
 #hud{position:absolute;left:8px;right:8px;top:8px;display:flex;gap:6px;align-items:flex-start;line-height:1.1;font-family:var(--disp);font-size:16px;letter-spacing:.03em;pointer-events:none;z-index:3}
 .pill{background:#fff;color:var(--ink);border:3px solid var(--pink);border-radius:999px;padding:8px 12px 6px;min-height:40px;display:flex;align-items:center;box-shadow:0 3px 0 rgba(242,124,154,.45)}
@@ -246,6 +253,8 @@ function solidAt(c,r){
   return SOLID.has(ch);
 }
 const tileCh=(c,r)=>(r<0||r>=S.rows||c<0||c>=S.cols)?'#':S.map[r][c];
+// ground tile for the outdoor backgrounds: a hiding spot counts as whatever it stands on
+function bgCh(c,r){if(r<0||r>=S.rows||c<0||c>=S.cols)return'W';const ch=S.map[r][c];return ch==='K'?(S.hideUnder&&S.hideUnder[c+','+r])||',':ch}
 const hits=(x,y)=>[[x-4,y-4],[x+3.9,y-4],[x-4,y-.1],[x+3.9,y-.1]].some(([a,b])=>solidAt(Math.floor(a/TS),Math.floor(b/TS)));
 function moveEnt(e,dx,dy){wetSolid=e!==player;
   if(!hits(e.x+dx,e.y))e.x+=dx;else e.vx=0;
@@ -1408,7 +1417,7 @@ function buildBg(){
     r_(0,(S.rows-1)*TS,S.cols*TS,TS,OUT);r_(TS-2,(S.rows-1)*TS,S.cols*TS-2*TS+4,2,OUTL);
     kitchenWalls(g);
   }else{
-    const M=(c,r)=>(r<0||r>=S.rows||c<0||c>=S.cols)?'W':S.map[r][c],ground=ch=>ch==='r'?'r':'gHX'.includes(ch)?'g':',';
+    const M=bgCh,ground=ch=>ch==='r'?'r':'gHX'.includes(ch)?'g':',';
     for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){const x=c*TS,y=r*TS,u=ground(M(c,r));
       if(u==='r'){if(!tileAt(g,6,x,y,c,r,1))r_(x,y,16,16,'#c3bedb');else r_(x,y,16,16,'rgba(195,190,219,.35)');for(let k=0;k<3;k++)if(hsh(c,r,80+k)<.5)kE(x+hsh(c,r,90+k)*16,y+hsh(c,r,95+k)*16,.5,.4,'rgba(120,110,160,.25)',0);if(ground(M(c,r-1))===',')r_(x,y,16,2,'rgba(91,63,60,.14)')}
       else if(u==='g'){if(!tileAt(g,7,x,y,c,r,1))r_(x,y,16,16,(r&1)?'#cdeec4':'#c3e8b9');else r_(x,y,16,16,'rgba(205,238,196,.25)');if(hsh(c,r,70)<.45){const tx=x+3+hsh(c,r,71)*9,ty=y+5+hsh(c,r,72)*7;g.strokeStyle='#9fd08f';g.lineWidth=.7;g.beginPath();g.moveTo(tx,ty+2);g.lineTo(tx-.8,ty);g.moveTo(tx+1,ty+2);g.lineTo(tx+1.3,ty-.6);g.moveTo(tx+2,ty+2);g.lineTo(tx+2.8,ty);g.stroke()}if(hsh(c,r,60)<.08){const fx=x+4+hsh(c,r,61)*8,fy=y+4+hsh(c,r,62)*8;for(let k=0;k<5;k++)kE(fx+Math.cos(k*1.26)*1.3,fy+Math.sin(k*1.26)*1.3,.9,.9,pick(['#f7a9b8','#fff','#ffe08a']),0);kE(fx,fy,.7,.7,'#ffd66b',0)}}
@@ -1871,7 +1880,7 @@ function forestBg(g){
     for(let r=1;r<S.rows-1;r++)for(let c=1;c<S.cols-1;c++){if(S.map[r][c]!=='.'||hsh(c,r,44)>.05||!FPROP_IMG.ready)continue;drawPropImg('f_mush',c*TS+4+hsh(c,r,45)*8,r*TS+13,hsh(c,r,46)<.5,.5)}
     campWalls(g);
   }else{
-    const M=(c,r)=>(r<0||r>=S.rows||c<0||c>=S.cols)?'W':S.map[r][c];
+    const M=bgCh;
     for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){const x=c*TS,y=r*TS,ch=M(c,r);
       if(ch==='w'){r_(x,y,16,16,(r&1)?'#a3d6f0':'#9bd0ec');
         for(let k=0;k<2;k++){const wx=x+hsh(c,r,80+k)*12,wy=y+3+hsh(c,r,85+k)*10;g.strokeStyle='rgba(255,255,255,.5)';g.lineWidth=.7;g.beginPath();g.moveTo(wx,wy);g.quadraticCurveTo(wx+2,wy-1.2,wx+4,wy);g.stroke()}
@@ -2143,7 +2152,8 @@ function placeHides(s){
     if(lvl>=3&&(tall(t.c-1,t.r)||tall(t.c+1,t.r)||tall(t.c-1,t.r+1)||tall(t.c+1,t.r+1)))return false;if(lvl<2)return true;if(tall(t.c,t.r-2))return false;if(lvl<3)return true;return!tall(t.c-1,t.r-1)&&!tall(t.c+1,t.r-1)};
   shuffle(cand);let out=[];
   for(const lvl of[3,2,1]){out=[];for(const t of cand){if(out.length>=4)break;if(clear(t,lvl)&&out.every(o=>Math.abs(o.c-t.c)+Math.abs(o.r-t.r)>=6))out.push(t)}if(out.length>=3)break}
-  out.forEach((t,k)=>{g[t.r][t.c]='K';s.hideType[t.c+','+t.r]=types[k%types.length]});
+  s.hideUnder={};   // the ground each hiding spot stands on, so the background can draw grass under a box in the park
+  out.forEach((t,k)=>{s.hideUnder[t.c+','+t.r]=g[t.r][t.c];g[t.r][t.c]='K';s.hideType[t.c+','+t.r]=types[k%types.length]});
   s.map=g.map(r=>r.join(''));
 }
 function hideTick(dt){
@@ -2206,19 +2216,37 @@ function tryBoo(){
   player.booT=now;player.booCd=now+3.5;player.vx=player.vy=0;say(player,pickCoon('boo'),true);
   if(e.kind==='bear'){later(()=>{if(state==='play'){e.fa=Math.atan2(player.y-e.y,player.x-e.x);bearSpot(e)}},250);
     later(()=>{if(state==='play')say(player,pickCoon('booBear'),true)},800);return true}
-  e.state='scared';e.t=2.6;e.st0=now;e.flee=Math.atan2(e.y-player.y,e.x-player.x);e.path=[];hitStop=.12;shake=.12;SFX.scream(e);
-  later(()=>{if(state==='play')say(e,(e.vo&&ENEMY_VO[e.vo]?pickE(e,SCREAM[e.style]||SCREAM.cook):pick(SCREAM[e.style]||SCREAM[e.kind]||SCREAM.cook)),true)},60);
+  e.state='scared';e.t=2.6;e.st0=now;e.flee=Math.atan2(e.y-player.y,e.x-player.x);e.path=fleePath(e);e.runPath=e.path.length>0;hitStop=.12;shake=.12;SFX.scream(e);
+  later(()=>{if(state==='play')say(e,(e.vo&&ENEMY_VO[e.vo]?pickE(e,SCREAM[e.style]||SCREAM.cook):pick(SCREAM[e.style]||SCREAM[e.kind]||SCREAM.cook)),true)},380);   // after the raccoon's own "BOO!" has started, so the scream recording may overlap it (see laneMode)
   if(!e.dropped){e.dropped=1;S.snacks.push({x:e.x,y:e.y+2,type:e.style==='cop'?'donut':e.kind==='dog'?'candy':'cookie'})}
   const R=e.kind==='dog'?170:130;
   enemies.forEach(o=>{if(o!==e&&o.state!=='scared'&&Math.hypot(o.x-e.x,o.y-e.y)<R)toSearch(o,{x:e.x,y:e.y},o.lines.hear)});
   if(!S.booTold){S.booTold=1;toast('BOO! Scared silly!\nBut the scream draws attention')}
   return true;
 }
+// Where a scared enemy runs: of all the spots within about 14 tiles of walking, the one that ends up farthest from
+// the raccoon. Found by flood fill, so they run around walls instead of bumping into them; they never run through him.
+function fleePath(e){
+  const a=tileOf(e.x,e.y),pt=tileOf(player.x,player.y),C=S.cols;wetSolid=true;
+  try{
+    if(solidAt(a.c,a.r))return [];
+    const prev=new Int32Array(C*S.rows).fill(-1),steps=new Int16Array(C*S.rows),s=a.r*C+a.c,q=[s];prev[s]=s;let best=s,far=-1;
+    for(let h=0;h<q.length;h++){const cur=q[h],c=cur%C,r=(cur/C)|0,cc=center(c,r),d=Math.hypot(cc.x-player.x,cc.y-player.y);
+      if(d>far){far=d;best=cur}
+      if(steps[cur]>=14)continue;
+      for(const[dc,dr]of DIRS){const nc=c+dc,nr=r+dr;if(solidAt(nc,nr)||(nc===pt.c&&nr===pt.r))continue;const ni=nr*C+nc;if(prev[ni]!==-1)continue;prev[ni]=cur;steps[ni]=steps[cur]+1;q.push(ni)}}
+    const path=[];for(let cur=best;cur!==s;cur=prev[cur])path.push(center(cur%C,(cur/C)|0));
+    return path.reverse();
+  }finally{wetSolid=false}
+}
 function scaredTick(e,dt){
   e.t-=dt;e.moving=false;
-  if(now-e.st0>.45){const v=e.sp.chase*1.05||70,x0=e.x,y0=e.y;moveEnt(e,Math.cos(e.flee)*v*dt,Math.sin(e.flee)*v*dt);
-    if(Math.hypot(e.x-x0,e.y-y0)<v*dt*.3)e.flee+=(Math.random()<.5?1:-1)*Math.PI/2;
-    e.fa=e.flee;e.moving=true;e.anim+=dt*v*.12;if(Math.random()<dt*14)parts.push({x:e.x,y:e.y,t:0,life:.3})}
+  if(now-e.st0>.45){const v=Math.max(92,(e.sp.chase||0)*1.45);   // a proper panic: faster than the raccoon
+    if(e.runPath){if(e.path.length){follow(e,v,dt);e.flee=e.fa}}   // ran as far as they could: cower there
+    else{const x0=e.x,y0=e.y;moveEnt(e,Math.cos(e.flee)*v*dt,Math.sin(e.flee)*v*dt);   // boxed in: old straight-line flee
+      if(Math.hypot(e.x-x0,e.y-y0)<v*dt*.3)e.flee+=(Math.random()<.5?1:-1)*Math.PI/2;
+      e.fa=e.flee;e.moving=true;e.anim+=dt*v*.12}
+    if(e.moving&&Math.random()<dt*14)parts.push({x:e.x,y:e.y,t:0,life:.3})}
   if(e.t<=0){e.state='look';e.t=.6;e.base=e.fa;toSearch(e,{x:player.x,y:player.y},e.lines.lost)}
 }
 const SCARED={cook:['sc_kj','sc_kr'],sous:['sc_sj','sc_sr'],cop:['sc_pj','sc_pr'],ranger:['sc_rj','sc_rr'],camper:['sc_mj','sc_mr'],
@@ -2374,7 +2402,7 @@ function moonBg(g){
     for(let r=1;r<S.rows-1;r++){if(hsh(r,1,90)<.4)kE(11.5,r*TS+4+hsh(r,1,91)*8,1.4,1,'#a19bb6',0);if(hsh(r,2,90)<.4)kE(W-11.5,r*TS+4+hsh(r,2,91)*8,1.4,1,'#a19bb6',0)}
     g.strokeStyle=KB;g.lineWidth=.9;g.beginPath();g.moveTo(TS,TS);g.lineTo(TS,by);g.lineTo(W-TS,by);g.lineTo(W-TS,TS);g.moveTo(7,TS);g.lineTo(7,by+7);g.lineTo(W-7,by+7);g.lineTo(W-7,TS);g.stroke();
   }else{
-    const M=(c,r)=>(r<0||r>=S.rows||c<0||c>=S.cols)?'W':S.map[r][c];
+    const M=bgCh;
     for(let r=0;r<S.rows;r++)for(let c=0;c<S.cols;c++){const x=c*TS,y=r*TS,ch=M(c,r);
       if(ch==='r'){r_(x,y,16,16,hsh(c,r,40)<.5?'#d2cfdd':'#d0cddb');for(let k=0;k<4;k++){r_(x+k*4+.5,y+3.4,2.6,1.3,'rgba(120,110,160,.3)');r_(x+k*4+.5,y+11.4,2.6,1.3,'rgba(120,110,160,.3)')}
         if(hsh(c,r,60)<.08){const o=ctx;ctx=g;moonCrater(x+4+hsh(c,r,61)*8,y+8,1.6+hsh(c,r,63)*1.6);ctx=o}
@@ -2462,6 +2490,7 @@ function frame(ts){
 // ---------- fit to screen: portrait phone view, fixed 176px wide ----------
 function fit(){
   const HEAD=$('hud').offsetHeight||56,w=innerWidth,h=innerHeight-HEAD;
+  $('stage').classList.toggle('full',w<innerHeight*.8);
   if(w<innerHeight*.8){VW=176;VH=clamp(Math.round(176*h/w),280,420);SCALE=Math.min(w/VW,h/VH)}
   else{VW=176;VH=330;SCALE=h*.96/VH;if(SCALE>=2)SCALE=Math.floor(SCALE*2)/2}
   const oRS=RS;RS=Math.max(1,Math.min(3,SCALE*(window.devicePixelRatio||1)));cv.width=Math.round(VW*RS);cv.height=Math.round(VH*RS);dirty=true;ctx.imageSmoothingEnabled=true;if(S&&oRS!==RS)buildBg();

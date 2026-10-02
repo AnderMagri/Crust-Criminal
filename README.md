@@ -68,6 +68,14 @@ Then open http://localhost:8000.
 Art was generated with Krea; music and voices with ElevenLabs and Seed Audio through Krea.
 The prompts are in `docs/krea-prompts/`.
 
+## License
+
+© 2026 Anderson Magri / BlockMagic Studio. All rights reserved.
+
+This repository is public so the game can be played and its making can be seen, but it is
+**not open source**. You may not copy, redistribute, modify or reuse the code, artwork,
+characters, music, voices or name without written permission. See [LICENSE](LICENSE).
+
 ## More
 
 `docs/project-context/CONTEXT.md` explains how the code is organised, the release steps and
