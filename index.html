@@ -2211,6 +2211,10 @@ function booTarget(){
     if(Math.abs(angDiff(Math.atan2(dy,dx),e.fa))<1.95)continue;return e}
   return null;
 }
+// Walking right up behind a calm enemy scares them by itself, the same way hiding spots hop you in: on a phone the
+// thumb is busy steering, and the gap between "close enough to BOO" and "bumped into them" is a fraction of a second.
+// (Tapping from a little further back still works.)
+function autoBoo(){const e=booTarget();if(e&&e.kind!=='bear'&&Math.hypot(e.x-player.x,e.y-player.y)<17)tryBoo()}   // bears only on a deliberate tap: walking past one must not start a charge
 function tryBoo(){
   if((player.booCd||0)>now)return false;const e=booTarget();if(!e)return false;
   player.booT=now;player.booCd=now+3.5;player.vx=player.vy=0;say(player,pickCoon('boo'),true);
@@ -2468,7 +2472,7 @@ function frame(ts){
   if(state!=='paused'&&state!=='bye')tickTimers(dt);
   if(hitStop>0){hitStop-=dt}else if(state==='play'){
     if(fartAt>0&&time>fartAt&&!player.jump)doFart();
-    time+=dt;grace-=dt;sceneT+=dt;updatePlayer(dt);if(state==='play')hideTick(dt);
+    time+=dt;grace-=dt;sceneT+=dt;updatePlayer(dt);if(state==='play')hideTick(dt);if(state==='play')autoBoo();
     if(state==='play'){if(S.kind==='kitchen')updateKitchen(dt);else{if(S.world==='forest')updateRiver(dt);if(state==='play')updateStreet(dt)}}
     if(state==='play')updateEnemies(dt,true);
     if(state==='play')chatter(dt);
