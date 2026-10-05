@@ -32,7 +32,7 @@ docs/next-up.md       older plan for hiding/BOO (now implemented)
 ```
 
 ## Source structure inside index.html (important)
-- Everything is inside one IIFE. **Later `function` declarations override earlier ones** — much of the game is layered: base city code, then the "forest" module, then the "extras" (round 3+) module, all injected between `// ===== FOREST BEGIN =====` / `// ===== EXTRAS BEGIN =====` markers, right before `// ---------- loop ----------`.
+- Everything is inside one IIFE, in layers: base city code, then the "forest" module, the "extras" (round 3+) module, the "gameplay" module (lives, hearts, stars) and the "worlds" module (themed worlds + bonus modes), between `// ===== ... BEGIN =====` / `END` markers, right before `// ---------- loop ----------`. **Every function is defined exactly once** (the old pixel-art and "toon" renderers that used to be overridden by later declarations were deleted in Oct 2026). Keep it that way: change a function in place instead of redefining it further down.
 - The extras/forest modules were authored as separate files (`extras.js`, `forest.js`, with `__XSPR__`, `__XPROP__`, `__FSPR__`, `__FPROP__` placeholders for the atlas JSON) in a cloud workspace and injected. **In this repo only the injected result exists** — edit `index.html` directly (search for the function names below).
 - World switch: `S.world` is `undefined` (city) / `'forest'` / `'moon'`; `S.kind` is `'kitchen'` / `'street'`. `W3(city, forest, moon)` picks text per world. Tile characters: `C` counter/wall, `.` floor, `K` hiding spot, `w` water, `G` tall grass, `P` pie, `D` door, `Q` window/gate.
 - Scenes are generated: `genKitchen`, `genStreet`, `genRiver`, `genCamp` (forest), `genMoonBase`, `genMoonField`. Sprites drawn by `drawSpr`/`drawPropImg` from atlases (`SPR`, `PROP`, entries `[x,y,w,h,ax,ay,ppu]`).
@@ -75,7 +75,7 @@ Ander — freelance product designer, studio Lighthouse Creative Lab. Mac repo p
 - When adding any new placed object, give it the same kind of rule and test it by generating many levels.
 - Exit safe area: no hiding spot within 4 tiles (any direction) of the exit — the kitchen/moon-base door (`S.door`) or the trash-can/rocket home (`S.home`). Music loops are mixed at TRACK_VOL ≈ 1 (was 1.5) — lower again in index.html if still too loud.
 - Audio mix: music bus level `MUSV` = .3 and it is ducked to 45% while any voice clip plays (`duckMusic` in `playClip`). The old chase tempo-nudge (playbackRate 1.06) was removed — it made the music seem to speed up and slow down.
-- Title screen: the pixel canvas raccoon (`#titleArt`) is hidden unless splash.jpg fails; no enemy chatter on the title (only the raccoon's one opening line).
+- Title screen: if splash.jpg fails the plain pink background stays (the old pixel raccoon fallback was removed); no enemy chatter on the title (only the raccoon's one opening line).
 - Pause menu: tapping outside the card resumes; "Quit game" exists only on the title screen ("Quit to title" stays in pause).
 - Forest: tall-grass hiding tiles (`G`) were removed — logs and bushes are the hiding spots. Knocking over a honey jar spills honey (`honeySpill`, forest.js): any bear within ~190 px drops what it is doing (even a chase), walks to the puddle, eats for ~6.5 s and then forgets the raccoon.
 - Caught / heist-complete cards show a 'Quit to title' button next to the tap-to-retry action (intro cards don't).
@@ -92,3 +92,18 @@ Ander — freelance product designer, studio Lighthouse Creative Lab. Mac repo p
 - Chase warning: alert wind-up is now 0.75 s (was 0.45), red screen-edge pulse (`LV.warn`), off-screen pointer arrow also for alerting enemies. If you break line of sight / hide before the wind-up ends, the enemy only searches instead of chasing.
 - Snack power-ups: donut = Sugar Rush (existing), cookie = Sneaky Paws 7 s (enemy view x0.6, no munch noise), burger = Full Belly 12 s (energy drains at 40%). Label shows in the energy pill.
 - Stars (`gpStars`, per world, best saved in `pieheist-stars-<world>`): 1 = pie home, 2 = spotted at most 2 times, 3 = under par time (`PAR` = city 130 s, forest 150 s, moon 170 s; tune after real playtests). Win card shows them plus hearts found.
+
+## Engine rules (keep these when adding features; the repo's index.html is the source of truth)
+**Before working in a Cowork workspace, start from the current `index.html`, `sw.js` and this file in the repo.** On Oct 5 a workspace copy brought back an outdated version of this file and one merge mistake (see the first rule).
+- **`frame()` asks for the next animation frame exactly once, on its first line.** Never call `requestAnimationFrame(frame)` anywhere else: a second call inside the bonus-mode branch doubled the work every frame and froze the tab within a second.
+- **Delayed game events use `later(fn, ms)`, never `setTimeout`.** These timers run on game time (they freeze while paused) and are dropped when a scene loads, a heart is lost or a bonus mode starts, so a line, toast or card can never fire into the next run. `setTimeout` is only for audio fades and DOM housekeeping.
+- **The game canvas is GPU-accelerated** (no `willReadFrequently`). Don't call `getImageData` on it. (Noir greys the sprite atlases once on separate canvases, which is fine.)
+- **Frozen screens draw once.** On the title, pause and goodbye screens `frame()` only calls `render()` when `dirty` is set (`loadScene`, `buildBg`, `fit`, `pauseGame` set it). Nothing is simulated behind the title screen.
+- **Wall tile cache (`stampTile`).** City counters (`drawCounter`) and moon boulders (`drawPanel`) are drawn once per scene into an atlas and stamped each frame. They must stay static; anything animated goes in a separate pass. `buildBg()` empties the cache.
+- **Audio is loaded per world to save memory.** Music: only the tracks the current screen can need stay decoded (`tracksNeeded`, `syncTracks`); a missing track file falls back to the main theme. Voices: `clipWorld(name)` decides which world a clip belongs to by its file-name prefix; the themed worlds (dungeon / ice / noir) load only the shared raccoon lines until they get their own recordings.
+- **Title screen input:** the title's `pointerdown` handler starts the game on any tap, so every new control on the title must be handled there first (the world `<select>` is let through untouched so the browser can open it; the keyboard handler ignores keys while it is focused).
+- **Per-world saves** (`bestKey`, `starKey`): call both `loadBest()` and `loadStars()` whenever `WORLD` changes.
+- **Themed worlds reuse the dog slot** for goblins, polar bears and flatfoots (`e.kind==='dog'`): dog-only sounds (bark, sniff, whine) are skipped when `THEMES[S.world]` is set.
+- **Nothing sits on top of wall blocks in the themed worlds** (`items:[]`): snack sprites up there looked like pickups that had spawned out of reach.
+- **Bonus modes** (`startMode` / `exitMode`, `MODES.boss|frank|kart`) always draw in colour, whatever world is selected. In Bin Racers every car starts behind the line and the first crossing starts lap 1, so the race is `LAPS` laps for everyone.
+- The service worker only caches complete, successful responses, and falls back to the cached page if the server returns an error.
