@@ -41,7 +41,8 @@ docs/next-up.md       older plan for hiding/BOO (now implemented)
 
 ## Build / release workflow
 1. Edit `index.html`. Test with Playwright against a local server (`python3 -m http.server`).
-2. **Bump `VERSION` in `sw.js`** and add any new asset to its `ASSETS` list. The SW is network-first for the page, cache-first for assets; the page auto-reloads on update.
+2. **Bump `VERSION` in `sw.js` and `BUILD` in `index.html` together** (`BUILD` is the small number shown at the bottom of the title screen, so you can see which version a phone is really running)
+   Original note: **Bump `VERSION` in `sw.js`** and add any new asset to its `ASSETS` list. The SW is network-first for the page, cache-first for assets; the page auto-reloads on update.
 3. Commit, push from GitHub Desktop; Pages deploys in about a minute.
 4. Players with an old copy may need to clear it once (service worker).
 (The page `<head>` — viewport, manifest, icons — lives in the committed `index.html` itself. If you ever rebuild from a body-only source, prepend `tools/head.html`: `python3 tools/build.py <src> <out>`.)

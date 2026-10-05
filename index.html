@@ -108,6 +108,7 @@ canvas{display:block;touch-action:none}
 #keys b{background:#fff;color:var(--ink);border:1.5px solid var(--pink);border-radius:6px;padding:0 4px;font-weight:600;text-shadow:none}
 @media (pointer:coarse){#keys{display:none}}
 #title .bottom{display:flex;flex-direction:column;align-items:center}
+#title .ver{margin-top:6px;font-size:10px;font-weight:700;color:var(--ink);opacity:.55;letter-spacing:.04em}
 #title .worlds{display:flex;gap:6px;margin-top:6px;background:rgba(255,255,255,.7);padding:4px;border-radius:999px;border:2px solid #fff}
 #title .worlds button{font:400 15px var(--disp);letter-spacing:.02em;color:#7a4f58;background:transparent;border:0;border-radius:999px;padding:7px 16px;cursor:pointer}
 #title .worlds button.on{background:#7cc38a;color:#fff;box-shadow:0 3px 0 #4f9a5f}
@@ -215,7 +216,7 @@ canvas{display:block;touch-action:none}
       <div class="logo"><img id="logoImg" src="assets/art/logo.webp" alt="Crust Criminal" onerror="this.hidden=true;document.getElementById('logoText').hidden=false"><h1 id="logoText" hidden>Crust<span>Criminal</span></h1><div class="worlds"><select id="worldSel" aria-label="World"><option value="city">City</option><option value="forest">Forest</option><option value="moon">Moon</option><option value="dungeon">Dungeon</option><option value="ice">Ice cave</option><option value="noir">Noir</option></select></div><div class="modes" role="group" aria-label="Bonus modes"><button type="button" data-mode="boss">Boss fight</button><button type="button" data-mode="frank">Monster chase</button><button type="button" data-mode="kart">Bin Racers</button></div></div>
       <video id="titleVid" muted playsinline loop preload="auto" aria-hidden="true" hidden></video>
       <div id="tq" class="tq" hidden></div>
-      <div class="bottom"><div class="start">Tap to start</div><button type="button" class="quitApp">Quit game</button><div class="small">Phone: drag to move, tap to jump · Keyboard: WASD/arrows to move, Space to jump</div></div>
+      <div class="bottom"><div class="start">Tap to start</div><button type="button" class="quitApp">Quit game</button><div class="small">Phone: drag to move, tap to jump · Keyboard: WASD/arrows to move, Space to jump</div><div class="ver" id="ver"></div></div>
     </div>
     <div id="bye" hidden><img src="assets/art/full-raccoon.webp" alt=""><h2>See ya, bandit!</h2><p>The heist is over. You can close this window now.</p><button type="button" id="byeAgain">Play again</button></div>
     <div id="menu" hidden role="dialog" aria-modal="true" aria-labelledby="menuTitle">
@@ -829,13 +830,15 @@ addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;joy=null});
 function toCanvas(e){const b=cv.getBoundingClientRect();return{x:(e.clientX-b.left)*VW/b.width,y:(e.clientY-b.top)*VH/b.height}}
 const stage=$('stage');
+const BUILD='v65';   // shown on the title screen; keep in step with VERSION in sw.js
+let selT=-1e9;   // last time the world dropdown was touched
 const grabFocus=()=>{try{window.focus();stage.focus({preventScroll:true})}catch(_){}};
 stage.addEventListener('pointerdown',e=>{
   grabFocus();
   if(e.target.closest('#mute')||e.target.closest('#music')||e.target.closest('#title')||e.target.closest('#menu')||e.target.closest('#pauseBtn'))return;
   e.preventDefault();
   if(modeName){modeDown(e);return}
-  if(state!=='play'){onAction();return}
+  if(state!=='play'){if(performance.now()-selT<700)return;onAction();return}
   if(joy&&joy.id!==e.pointerId){tryJump();return}   // second finger while steering = jump
   const p=toCanvas(e);joy={id:e.pointerId,ox:p.x,oy:p.y,x:p.x,y:p.y,sx:p.x,sy:p.y,t0:performance.now(),moved:false};
   try{stage.setPointerCapture(e.pointerId)}catch(_){}
@@ -846,7 +849,9 @@ const endJoy=e=>{if(modeName){modeUp(e);return}if(joy&&e.pointerId===joy.id){con
 stage.addEventListener('pointerup',endJoy);stage.addEventListener('pointercancel',endJoy);
 $('mute').addEventListener('click',e=>{e.stopPropagation();audio();setVoice(!voiceOn)});
 $('music').addEventListener('click',e=>{e.stopPropagation();audio();setMusic(!musicOn)});
-$('title').addEventListener('pointerdown',e=>{if(e.target.closest('select')){e.stopPropagation();return}   // the world dropdown opens natively
+$('title').addEventListener('pointerdown',e=>{if(e.target.closest('select')){selT=performance.now();e.stopPropagation();return}   // the world dropdown opens natively
+  // a tap while the dropdown is open (or right after it closes) only dismisses it: phones can deliver the tap that picked an option to the page underneath
+  if(document.activeElement===$('worldSel')||performance.now()-selT<700){e.preventDefault();e.stopPropagation();$('worldSel').blur();selT=performance.now();return}
   e.preventDefault();e.stopPropagation();grabFocus();
   const mb=e.target.closest('[data-mode]');if(mb){audio();startMode(mb.dataset.mode);return}
   const wb=e.target.closest('[data-world]');if(wb){audio();setWorld(wb.dataset.world);return}
@@ -1737,7 +1742,7 @@ const FITEM=['f_honey','','f_honey','','f_honey'];   // '' = mushrooms: decorati
 function setWorld(w){if(w!=='forest'&&w!=='moon'&&!THEMES[w])w='city';WORLD=w;try{localStorage.setItem('pieheist-world',w)}catch(e){}loadBest();loadStars();syncWorldChips();loadClips();if(state==='title')newRun()}
 function syncWorldChips(){const ws=document.getElementById('worldSel');if(ws)ws.value=WORLD;document.querySelectorAll('#title [data-world]').forEach(b=>{const on=b.dataset.world===WORLD;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))})}
 syncWorldChips();
-{const ws=document.getElementById('worldSel');if(ws)ws.addEventListener('change',()=>{audio();setWorld(ws.value);ws.blur()})}
+{const ws=document.getElementById('worldSel');if(ws){ws.addEventListener('change',()=>{selT=performance.now();audio();setWorld(ws.value);ws.blur()});for(const t of['focus','blur','click'])ws.addEventListener(t,()=>{selT=performance.now()})}}
 
 // ---------- generation ----------
 function genCamp(){
@@ -3131,6 +3136,7 @@ if('serviceWorker' in navigator&&document.querySelector('link[rel=manifest]'))ad
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&(state==='title'||state==='paused')){reloaded=true;location.reload()}});
   navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{reg.update();document.addEventListener('visibilitychange',()=>{if(!document.hidden)reg.update().catch(()=>{})})}).catch(()=>{})});
 try{audio()}catch(_){}
+$('ver').textContent=BUILD;
 fit();newRun();setVoice(voiceOn);setMusic(musicOn);requestAnimationFrame(frame);
 })();
 </script>
