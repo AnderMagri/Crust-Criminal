@@ -112,6 +112,8 @@ canvas{display:block;touch-action:none}
 #title .worlds button{font:400 15px var(--disp);letter-spacing:.02em;color:#7a4f58;background:transparent;border:0;border-radius:999px;padding:7px 16px;cursor:pointer}
 #title .worlds button.on{background:#7cc38a;color:#fff;box-shadow:0 3px 0 #4f9a5f}
 #title .worlds button[data-world=moon].on{background:#8e7fc4;box-shadow:0 3px 0 #6a5aa6}
+#title .worlds{display:block;padding:0;border:0;background:none;margin-top:6px}
+#title .worlds select{font:400 16px var(--disp);letter-spacing:.02em;color:#7a4f58;background:rgba(255,255,255,.85) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%237a4f58' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center;border:2px solid #fff;border-radius:999px;padding:8px 38px 8px 18px;cursor:pointer;-webkit-appearance:none;appearance:none;box-shadow:0 3px 0 rgba(0,0,0,.12)}
 #title .modes{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;justify-content:center}
 #title .modes button{font:400 13px var(--disp);letter-spacing:.02em;color:#fff;background:#8e7fc4;border:2px solid #fff;border-radius:999px;padding:6px 12px;cursor:pointer;box-shadow:0 3px 0 #6a5aa6}
 #title .modes button[data-mode=frank]{background:#7cae6a;box-shadow:0 3px 0 #54823f}
@@ -210,7 +212,7 @@ canvas{display:block;touch-action:none}
 <div id="hideChip" hidden>HIDDEN · stay still</div>
     <div id="toast" hidden></div>
     <div id="title">
-      <div class="logo"><img id="logoImg" src="assets/art/logo.webp" alt="Crust Criminal" onerror="this.hidden=true;document.getElementById('logoText').hidden=false"><h1 id="logoText" hidden>Crust<span>Criminal</span></h1><div class="worlds" role="group" aria-label="World"><button type="button" data-world="city">City</button><button type="button" data-world="forest">Forest</button><button type="button" data-world="moon">Moon</button><button type="button" data-world="dungeon">Dungeon</button><button type="button" data-world="ice">Ice</button><button type="button" data-world="noir">Noir</button></div><div class="modes" role="group" aria-label="Bonus modes"><button type="button" data-mode="boss">Boss fight</button><button type="button" data-mode="frank">Monster chase</button><button type="button" data-mode="kart">Bin Racers</button></div></div>
+      <div class="logo"><img id="logoImg" src="assets/art/logo.webp" alt="Crust Criminal" onerror="this.hidden=true;document.getElementById('logoText').hidden=false"><h1 id="logoText" hidden>Crust<span>Criminal</span></h1><div class="worlds"><select id="worldSel" aria-label="World"><option value="city">City</option><option value="forest">Forest</option><option value="moon">Moon</option><option value="dungeon">Dungeon</option><option value="ice">Ice cave</option><option value="noir">Noir</option></select></div><div class="modes" role="group" aria-label="Bonus modes"><button type="button" data-mode="boss">Boss fight</button><button type="button" data-mode="frank">Monster chase</button><button type="button" data-mode="kart">Bin Racers</button></div></div>
       <video id="titleVid" muted playsinline loop preload="auto" aria-hidden="true" hidden></video>
       <div id="tq" class="tq" hidden></div>
       <div class="bottom"><div class="start">Tap to start</div><button type="button" class="quitApp">Quit game</button><div class="small">Phone: drag to move, tap to jump · Keyboard: WASD/arrows to move, Space to jump</div></div>
@@ -1731,8 +1733,9 @@ Object.assign(SFX,{
 const FITEM=['f_honey','','f_honey','','f_honey'];   // '' = mushrooms: decoration, not knockable
 
 function setWorld(w){if(w!=='forest'&&w!=='moon'&&!THEMES[w])w='city';WORLD=w;try{localStorage.setItem('pieheist-world',w)}catch(e){}loadBest();syncWorldChips();loadClips();if(state==='title')newRun()}
-function syncWorldChips(){document.querySelectorAll('#title [data-world]').forEach(b=>{const on=b.dataset.world===WORLD;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))})}
+function syncWorldChips(){const ws=document.getElementById('worldSel');if(ws)ws.value=WORLD;document.querySelectorAll('#title [data-world]').forEach(b=>{const on=b.dataset.world===WORLD;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))})}
 syncWorldChips();
+{const ws=document.getElementById('worldSel');if(ws)ws.addEventListener('change',()=>{audio();setWorld(ws.value);ws.blur()})}
 
 // ---------- generation ----------
 function genCamp(){
