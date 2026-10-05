@@ -1,50 +1,32 @@
-> **Status (Oct 1):** everything below is implemented — hiding spots, BOO!, difficulty, Krea art and voices. Kept for history. See `docs/project-context/CONTEXT.md` for the current state and `docs/krea-prompts/` for asset recipes.
+> Full plan: see `docs/roadmap.md` (Oct 5). This file keeps the notes behind it.
 
-# Crust Criminal — next up (needs Krea credits)
+# Crust Criminal: next up (Oct 5 plan)
 
-## 1. Hiding spots
+Done in round 6: lives + secret hearts, chase warning, snack power-ups, star ratings. See `docs/project-context/CONTEXT.md`.
 
-Places the raccoon can duck into. While hidden, enemies can't see him unless they bump right into him (same rule the forest tall grass already uses — `sees()` returns false).
+## Queue (agreed order)
+1. **Dungeon world**: skeletons and goblins, funny quotes. Hide spots: barrels, coffin lids, treasure chests. Snacks: turkey legs, mushrooms, cheese wheels. Pie = "cursed pumpkin pie". Home = a cosy hole in the wall.
+2. **Ice world**: penguins (the patrol cooks) and polar bears (the chargers, like forest bears). Hide spots: snowdrifts, igloo corners, ice blocks. Slippery tiles on the river-equivalent stage. Honey-like bait: fish bucket (penguins and bears rush to eat).
+3. **Boss stage**: one big arena, a large health bar, you hit him by throwing pies. Pie pickups spawn around the arena, he charges and sweeps, 3 phases. Uses the lives system (2 hearts + hidden heart).
+4. **Costumes**: see below.
 
-**Where**
-| World | Hiding spots |
-|---|---|
-| Kitchen | cardboard box, laundry basket, table with a long tablecloth |
-| Street | cardboard box, trash-bag pile, big bush (existing hedge art can stay) |
-| Forest | tall grass (done), hollow log, berry bush |
+## Costumes: how hard?
+- Easy (cheap): accessories drawn on top of the existing sprites (hat, bandana, sunglasses, cape). Needs a head anchor per sprite frame (walk x12, actions, hide peeks). A small table of offsets, about a day of tuning. No new Krea sheets for the body.
+- Medium: recolors / palette swaps of the whole raccoon (ninja black, golden). Cheap in code, only needs a shader-style tint on the sprite sheet.
+- Hard: full body costumes (chef, astronaut, pirate): needs a full set of Krea sheets per costume (walk x3 directions, actions, hide peeks, scared poses) and consistency checks. About 4 to 6 sheets each.
+- Suggested unlock: a costume per world completed with 3 stars, or per secret hearts found.
 
-**Rules**
-- Walk into a hiding tile and stop → hidden after 0.25 s. Moving out, jumping or eating breaks cover.
-- Can't hide while an enemy is already chasing you within 40 px (no "panic-hide" exploit), but you *can* hide to break a chase once out of sight.
-- Max 1 raccoon per spot, obviously.
+## Balancing notes
+- Par times are guesses; collect real completion times and adjust `PAR` in gameplay.js.
+- Watch if the 0.75 s alert wind-up makes dogs too easy to escape.
 
-**Animation (so players instantly get it)**
-1. Duck-in: squash down 120 ms, little rustle puff (leaves/paper bits), soft "fwip" SFX.
-2. Hidden idle: raccoon sprite replaced by the *spot's* "occupied" frame — box/bush with only the mask + eyes peeking, eyes slowly looking left/right. A tiny 💤-style "shh" bubble pops once.
-3. Screen cue: the vision cones that would have caught you flash grey as they pass over; a small "HIDDEN" chip under the energy bar.
-4. Pop-out: hop up + dust puff, raccoon line ("Peekaboo!").
-5. An enemy passing by stops, says "Huh?", sniffs, moves on — sells the tension.
+## Art status (Oct 5): all Krea sheets for the next three worlds are generated
+15 sheets in `assets/art/sprites-src/`: dungeon-chars/props/hide/snacks-v1, ice-chars/props/hide/snacks-v1, ice-raccoon-v1 + ice-raccoon-walk-v1 (scarf + earmuffs, the first costume), gummy-props-v1 + gummy-chars-v1 (gummy-candy look for the first ice stage), boss-v1 + boss-items-v1 (Grand Chef Crumble, pie ammo, splats, extra-life heart), world-tiles-v1. Prompts and grid layouts are in `docs/krea-prompts/images.md` (Round 6). Next step is slicing them into atlases (`tools/slice.py`) and building the world modules.
+- world-tiles-v1 tiles came out tall, not square: centre-crop when slicing.
+- gummy-chars-v1 row 1 is a red gummy penguin, not a gummy bear.
 
-## 2. Scare from behind ("BOO!")
-
-Sneak up on an enemy from behind and tap jump to scare them.
-
-**Rules**
-- Works when: enemy is calm (look/patrol), you're within ~14 px, and you're behind them (more than ~110° from where they face).
-- Effect: enemy screams, jumps (hit-stop 0.15 s), then runs *away* from you for 2.5 s and drops whatever they carry (cooks drop a snack, cops drop a donut = energy).
-- Cost: the scream is loud — everyone within ~130 px comes to look (`noiseAt`). So it's a tool to clear a path, not a free win.
-- 4 s cooldown. Bears can't be scared: try it and the bear turns and charges (funny fail state). Dogs get scared but bark, alerting a wider radius.
-- Small "!" prompt over the enemy's back when a scare is possible.
-
-## 3. Difficulty (done today, code only)
-- Kitchen: 5 cooks (was 6), spaced further apart.
-- Street: max 2 dogs + 1 cop, police dog only 20% of runs (was 45%), the cook bursts out after 7 s (was 4 s).
-- Forest river: 1 ranger on the banks (was 2).
-
-## 4. Krea generation list (same style refs as before: raccoon sheet + enemies sheet + kawaii mockup)
-1. **Hiding props sheet (4×3)**: cardboard box empty / with raccoon peeking, laundry basket empty / peeking, tablecloth table empty / peeking, trash-bag pile empty / peeking, hollow log empty / peeking, berry bush empty / peeking.
-2. **Raccoon actions sheet (4×2)**: tiptoe sneak (2 frames), "BOO!" arms-up scare pose, ducking, hidden-eyes-only, popping out, soggy (river), laughing.
-3. **Scared enemies sheet (4×3)**: chef jump-scare + running away, sous chef, cop dropping donut, puppy yelp, ranger, camper; front + side each where possible.
-4. **Forest props sheet 2** (still pending): blueberry pie, blueberries, fish, acorn, lantern post, signpost.
-5. **Voices** (ElevenLabs, same actors): "BOO!" raccoon variants, chef/cop/ranger screams ("AAAH!", "Mother of soufflé!"), raccoon hide/peek lines ("Peekaboo!", "I'm a box now."), ranger + bear lines.
-6. **SFX**: rustle in/out, box "fwip", scream sting, river splash.
+## Round 7 status (worlds + bonus modes)
+- Built: Dungeon, Ice (gummy-cave first stage, light falling snow dots), Noir (greyscale, pie stays red) worlds on a generic theme layer (tools/src/worlds.js); Boss fight, Monster chase, Bin Racers bonus modes (tools/src/modes.js), launched from title buttons.
+- Placeholders still to replace: closed hiding-spot art ('hc_<type>' sprites; the game already uses them when they exist, otherwise shows the empty one), noir closed hide (Krea credits ran out), music loops for dungeon/ice/noir/boss/frank/kart (tracks fall back to the main theme), recorded voices for the new characters (text bubbles + synth blips for now; "Holy pie!" held), sung "Cannoli, cannoli, da pie is-a mine-a!" clip.
+- index.html is the single source of truth (worlds + modes are inlined; edit it directly). Atlases come from tools/slice_r7.py; tools/mktest.sh makes dist-test.html with the __api hooks for Playwright checks.
+- Image sheets (raw, assets/art/sprites-src): dungeon/ice/gummy/boss/noir/frank/kart chars, props, snacks, hides, tiles (all openai gpt-image-2.5-flare, 4:3 2K, transparent bg except tile sheets).

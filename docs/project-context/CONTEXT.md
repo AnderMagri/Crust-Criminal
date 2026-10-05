@@ -17,7 +17,7 @@ A kawaii mobile-browser stealth game: a chubby raccoon steals a pie from a resta
 
 ## Repo layout
 ```
-index.html            the whole game (HTML + CSS + JS, ~2500 lines, IIFE)
+index.html            the whole game (HTML + CSS + JS, ~3000 lines, IIFE)
 sw.js                 service worker (cache VERSION must be bumped on every release: cc-vNN)
 manifest.webmanifest  PWA manifest
 assets/art/           sprites.webp props.webp tiles.webp (city), forest-*.webp, x-*.webp (+ .json atlases), sneak-*.webp, splash, logo
@@ -32,7 +32,7 @@ docs/next-up.md       older plan for hiding/BOO (now implemented)
 ```
 
 ## Source structure inside index.html (important)
-- Everything is inside one IIFE, in layers: base city code, then the "forest" module, then the "extras" (round 3+) module, between the `// ===== FOREST BEGIN =====` / `// ===== EXTRAS BEGIN =====` markers, right before `// ---------- loop ----------`. **Every function is defined exactly once** (the old pixel-art and "toon" renderers that used to be overridden by later declarations were deleted in Oct 2026) — keep it that way: change a function in place instead of redefining it further down.
+- Everything is inside one IIFE. **Later `function` declarations override earlier ones** — much of the game is layered: base city code, then the "forest" module, then the "extras" (round 3+) module, all injected between `// ===== FOREST BEGIN =====` / `// ===== EXTRAS BEGIN =====` markers, right before `// ---------- loop ----------`.
 - The extras/forest modules were authored as separate files (`extras.js`, `forest.js`, with `__XSPR__`, `__XPROP__`, `__FSPR__`, `__FPROP__` placeholders for the atlas JSON) in a cloud workspace and injected. **In this repo only the injected result exists** — edit `index.html` directly (search for the function names below).
 - World switch: `S.world` is `undefined` (city) / `'forest'` / `'moon'`; `S.kind` is `'kitchen'` / `'street'`. `W3(city, forest, moon)` picks text per world. Tile characters: `C` counter/wall, `.` floor, `K` hiding spot, `w` water, `G` tall grass, `P` pie, `D` door, `Q` window/gate.
 - Scenes are generated: `genKitchen`, `genStreet`, `genRiver`, `genCamp` (forest), `genMoonBase`, `genMoonField`. Sprites drawn by `drawSpr`/`drawPropImg` from atlases (`SPR`, `PROP`, entries `[x,y,w,h,ax,ay,ppu]`).
@@ -75,7 +75,7 @@ Ander — freelance product designer, studio Lighthouse Creative Lab. Mac repo p
 - When adding any new placed object, give it the same kind of rule and test it by generating many levels.
 - Exit safe area: no hiding spot within 4 tiles (any direction) of the exit — the kitchen/moon-base door (`S.door`) or the trash-can/rocket home (`S.home`). Music loops are mixed at TRACK_VOL ≈ 1 (was 1.5) — lower again in index.html if still too loud.
 - Audio mix: music bus level `MUSV` = .3 and it is ducked to 45% while any voice clip plays (`duckMusic` in `playClip`). The old chase tempo-nudge (playbackRate 1.06) was removed — it made the music seem to speed up and slow down.
-- Title screen: if splash.jpg fails the plain pink background stays (the old pixel raccoon fallback was removed); no enemy chatter on the title (only the raccoon's one opening line).
+- Title screen: the pixel canvas raccoon (`#titleArt`) is hidden unless splash.jpg fails; no enemy chatter on the title (only the raccoon's one opening line).
 - Pause menu: tapping outside the card resumes; "Quit game" exists only on the title screen ("Quit to title" stays in pause).
 - Forest: tall-grass hiding tiles (`G`) were removed — logs and bushes are the hiding spots. Knocking over a honey jar spills honey (`honeySpill`, forest.js): any bear within ~190 px drops what it is doing (even a chase), walks to the puddle, eats for ~6.5 s and then forgets the raccoon.
 - Caught / heist-complete cards show a 'Quit to title' button next to the tap-to-retry action (intro cards don't).
@@ -84,11 +84,11 @@ Ander — freelance product designer, studio Lighthouse Creative Lab. Mac repo p
 
 - Forest camp walls are now image pieces (round 5, `forest-walls-v1`): small logs, medium logs (single images), picnic tables and boulders, cut from each wall run in `genCamp` (`s.pieces`, `s.pieceAt`). Procedural log drawing (`drawLogProc`) is only a fallback.
 
-## Engine rules added in the Oct 2026 clean-up (keep these when adding features)
-- **Delayed game events use `later(fn, ms)`, never `setTimeout`.** These timers run on game time (they freeze while paused) and are dropped when a scene loads, so a line, toast or card from one run can never fire into the next. `setTimeout` is only for audio fades and DOM housekeeping.
-- **The canvas is GPU-accelerated** (no `willReadFrequently`). Don't call `getImageData` on the game canvas.
-- **Frozen screens draw once.** On the title, pause and goodbye screens `frame()` only calls `render()` when `dirty` is set (`loadScene`, `buildBg`, `fit`, `pauseGame` set it). Nothing is simulated behind the title screen.
-- **Wall tile cache (`stampTile`).** City counters (`drawCounter`) and moon boulders (`drawPanel`) are drawn once per scene into an atlas and stamped each frame. They must stay static: anything animated on a counter goes in a separate pass (like `counterItem` or the oven glow in `drawOven`). If the art grows beyond the cell (6 units left, 11 above, 28 x 35 in total — `TCX/TCY/TCW/TCH`), enlarge the cell. `buildBg()` empties the cache.
-- **Audio is loaded per world to save memory.** Music: only the tracks the current screen can need stay decoded (`tracksNeeded`, `syncTracks`). Voices: `clipWorld(name)` decides which world a clip belongs to by its file-name prefix (`raccoon-f-`, `ranger-`, `bear-` ... forest; `raccoon-m-`, `alien-`, `cmdr-` moon; `cook-`, `sous-`, `cop-` city; anything else is shared) — name new recordings accordingly.
-- `frame()` requests the next animation frame first, so an exception in one frame cannot freeze the game.
-- The service worker only caches complete, successful responses, and falls back to the cached page if the server returns an error.
+## Round 6: lives, hearts, warning, power-ups, stars (gameplay.js)
+- Source: `gameplay.js` is injected by `tools/inject.py` (FOREST > EXTRAS > GAMEPLAY markers in the workspace index.html); small hooks live in index.html (`loadScene` -> `gpScene`, `newRun` -> `gpRun`, `caught`, `toAlert`, `eatSnack`, `win`, `onAction`, `render`).
+- Lives: each part (kitchen / street) starts with 2 hearts (`LV.lives`, max 3). Caught = lose a heart, respawn at the part start (`gpLoseLife`), enemies reset, 2.8 s of safety (`LV.inv`, `grace`). Out of hearts = Busted card: kitchen restarts the heist, street retries the street (pie kept, hearts back to 2, clock keeps running).
+- One hidden secret heart per part (`S.heart`, `gpScene`): placed on a tucked-away floor tile (next to a wall or hiding spot), away from start / pie / exits / spawns, never on road/water/hiding tiles. Only a faint sparkle shows from ~110 px, the heart itself fades in under ~50 px. +1 heart (or +30 energy if full).
+- Hearts HUD is drawn in the canvas top-left (`gpHud`), small, so the bottom bar stays unchanged.
+- Chase warning: alert wind-up is now 0.75 s (was 0.45), red screen-edge pulse (`LV.warn`), off-screen pointer arrow also for alerting enemies. If you break line of sight / hide before the wind-up ends, the enemy only searches instead of chasing.
+- Snack power-ups: donut = Sugar Rush (existing), cookie = Sneaky Paws 7 s (enemy view x0.6, no munch noise), burger = Full Belly 12 s (energy drains at 40%). Label shows in the energy pill.
+- Stars (`gpStars`, per world, best saved in `pieheist-stars-<world>`): 1 = pie home, 2 = spotted at most 2 times, 3 = under par time (`PAR` = city 130 s, forest 150 s, moon 170 s; tune after real playtests). Win card shows them plus hearts found.
