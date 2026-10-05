@@ -29,3 +29,11 @@ Status legend: [art] Krea sheets generated, [code] built in the game, [audio] mu
 ## Balance notes
 - `PAR` times in gameplay.js are guesses; adjust from real playtests.
 - 0.75 s alert wind-up: watch if dogs become too easy to escape.
+
+## Update, Oct 5 (build v67)
+- Bin Racers: code removed, art kept. A different kind of race may be designed later.
+- Monster chase: now a boss fight. Hit the mad scientist in his control room with pies while the monster chases you; floor zaps from his experiments. [code done] [audio]
+- Boss fight (Chef Crumble): bigger chef, game interface. [code done] [audio]
+- Noir: black-and-white filter removed (it hid the coloured snacks; the cars did not suit it either).
+- Dungeon: the best of the new worlds, but needs a lot more work. Rolling barrels replaced by saw blades (drawn in code for now). Art to refine when Krea credits are back: saw blade + groove, and a general pass.
+- Ice: snowy ground with slippery ice patches instead of the gummy cave. Art to refine later (snow walls currently reuse the snow-drift prop).
