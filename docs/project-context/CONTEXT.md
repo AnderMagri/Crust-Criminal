@@ -106,7 +106,10 @@ Ander — freelance product designer, studio Lighthouse Creative Lab. Mac repo p
 - **Per-world saves** (`bestKey`, `starKey`): call both `loadBest()` and `loadStars()` whenever `WORLD` changes.
 - **Themed worlds reuse the dog slot** for goblins, polar bears and flatfoots (`e.kind==='dog'`): dog-only sounds (bark, sniff, whine) are skipped when `THEMES[S.world]` is set.
 - **Nothing sits on top of wall blocks in the themed worlds** (`items:[]`): snack sprites up there looked like pickups that had spawned out of reach.
-- **Bonus modes (build v67).** Two buttons on the title screen, both run through `startMode` / `modeFrame` with their own update/draw but the game's interface: the bottom bar and clock, the pause menu (`pauseGame` accepts `state==='mode'`), `say()` bubbles, `toast()`, `showMsg()` result cards, drag to move and tap to throw.
+- **Title screen (build v69+):** one dropdown lists the worlds and the bonus modes (`mode:boss`, `mode:frank` set `pendingMode`; `onAction` starts it). Entries in `ALPHA` show the "ALPHA" tag. The result card shows three big stars (`setStars`) and stat tiles (`resultHtml`).
+- **Part 2 traffic per world** (`TRAF`): only real cars honk and brake; rovers ping, sleds jingle, blades are silent.
+- **Kitchen snacks:** `tune().snacks` (5 in the city, fewer in harder worlds). Until v70 a bug placed only one snack in every part 1.
+- **Bonus modes (build v67).** Both run through `startMode` / `modeFrame` with their own update/draw but the game's interface: the bottom bar and clock, the pause menu (`pauseGame` accepts `state==='mode'`), `say()` bubbles, `toast()`, `showMsg()` result cards, drag to move and tap to throw.
   - **Boss fight** (`MODES.boss`): Grand Chef Crumble. No state of the chef may last more than 5 s (safety net against getting stuck).
   - **Monster chase** (`MODES.frank`): a boss fight in the mad lab. The scientist paces a control room along the top, experimenting on a giant pie; the raccoon throws pies at him (the throw leads his walk) while the monster walks straight at the raccoon without stopping. The scientist's experiments electrify floor pads (they glow for 1 s first). A zap or a pie stops the monster for a moment; the monster blocks pies that pass close to him. Helpers shared with future fights: `mMove`, `mCoon`, `mJoy`, `mPill`, `mHearts`.
   - **Bin Racers was removed** (code deleted Oct 5; a different kind of race may come later). Its art stays in `w-props` / `w-sprites` (`ki_*`, `kc_*`, `kv_*`) and `tiles-k.webp`.
@@ -115,3 +118,22 @@ Ander — freelance product designer, studio Lighthouse Creative Lab. Mac repo p
 - **Ice is a snowy ground, not a cave** (theme `ice`): `genIce` scatters ice patches (`S.ice`, a set of "c,r" keys); the frozen road in part 2 is ice too. `onIce(x,y)` drives sliding: the player's steering blend drops (`updatePlayer`), and enemies move through `slideEnt` (inertia) and coast to a halt. The old gummy-cave props and gummy enemies (`gp_*`, `gm_*`) are unused but still in the atlases.
 - **A scared enemy stays scared:** `toSearch` ignores enemies in the `scared` state (and the monster), so noise such as munching the snack he just dropped cannot bring him straight back.
 - The service worker only caches complete, successful responses, and falls back to the cached page if the server returns an error.
+
+## Difficulty table and Night Shift (v71)
+
+- **One difficulty table.** `LEVEL` gives each world a starting level (city 0, forest 1, moon 2, dungeon 2, ice 3, noir 3). `tune()` turns `LEVEL[WORLD] + heat` into the numbers the generators use: part 1 guards, enemy speed and sight multipliers (applied at the end of `makeEnemy`), the warning time before a chase (`toAlert`), part 1 snacks, the chance of the fast dog and the cook's burst timer in part 2. To rebalance, change `LEVEL` or `tune()`, nothing else.
+- **Stars.** `PAR` is about three times a clean run. The middle star is "Never spotted" (`LV.spots===0`).
+- **Energy.** Moving while somebody is after you (`intensity>0`) drains `FLEE_DRAIN` times faster.
+- **Night Shift** (`mode:night` in the title dropdown, state object `NS`, numbers in `NSC`). Endless, in part 1 of the world picked last; there is no part 2 and no secret heart. `nsScene()` (called from `gpScene`) places the big pie machine in the far wall (`NS.mach`, drawn by `drawMachine`; the camera may scroll above the map for it), up to five windows in the side walls (`NS.wins`) and a few coins.
+  - **Loop:** a raccoon at a window orders one of the 12 `FLAVORS` (`nsOrder`). Coins come from scared guards (`nsDrop`: BOO or skunk; the purse refills after `NSC.purseSecs`, shown as a coin on the guard), from the floor, and sometimes from knocked-over items. At the machine with enough coins (`nsPrice()`), `nsBuy` hands over the pie for the most impatient order; `nsDeliver` at that window scores it.
+  - **Patience, two stages:** quiet for `o.t` seconds, then loud for `NSC.angry` seconds (every `NSC.shout` seconds `noiseAt` sends guards to the window), then `nsHungry`: a heart is lost. Three hearts for the whole shift, no refills. Two orders at once from `NSC.twoAt` pies.
+  - **Heat:** each delivery does `heat++` in place: guards speed up, a new guard may walk in at the door (added to `S.spawns` so it survives a life loss), the price creeps up, patience shrinks.
+  - **Score:** 100 plus a patience bonus per pie, times `nsMult()` (deliveries in a row without losing a heart, up to `NS_MULT`). Best score and pies are kept in `pieheist-night-best` and `pieheist-night-pies`. Always leave through `nightOff()` (resets `heat`).
+  - The friend picker shows once per shift start from the title; restarts skip it (`startNight(true)`). The call returns every `NSC.friendEvery` pies.
+
+## Friends (v72)
+
+- Every heist starts on the "Pick a friend" card (`pickFriend(after)`, state `'pick'`; the game and the clock wait until Play). All heist starts go through it: title tap, tap after a result card, R, Restart heist, and the start of a Night Shift. The last choice is remembered in `pieheist-friend`.
+- One call per heist (`FR.used`, reset in `newRun`; in Night Shift it returns every third pie). The round button above the bottom bar, or the F key, runs `callFriend()`. Hidden in boss fights.
+- `FRIENDS` holds the numbers (seconds, reach). **Skunk:** guards within reach get the BOO panic. **Possum:** every guard walks to it (`e.lure`) and stares, but can still spot the raccoon on the way. **Rats:** every guard chases a rat (`e.ratT`, `ratTick`) and does not look for the raccoon; touching one still costs a heart. Bears ignore all three.
+- `friendClear()` runs on every scene load and life loss. The animals are drawn with canvas shapes in `friendList` (placeholders until there is art).

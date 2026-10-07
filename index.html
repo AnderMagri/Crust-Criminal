@@ -117,9 +117,25 @@ canvas{display:block;touch-action:none}
 #title .worlds select{font:400 16px var(--disp);letter-spacing:.02em;color:#7a4f58;background:rgba(255,255,255,.85) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%237a4f58' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center;border:2px solid #fff;border-radius:999px;padding:8px 38px 8px 18px;cursor:pointer;-webkit-appearance:none;appearance:none;box-shadow:0 3px 0 rgba(0,0,0,.12)}
 #title #alphaTag{margin:6px auto 0;width:max-content;font:400 12px var(--disp);letter-spacing:.1em;color:#fff;background:#f08a4b;border:2px solid #fff;border-radius:999px;padding:3px 12px 2px;box-shadow:0 2px 0 #c06428}
 #title #alphaTag[hidden]{display:none}
-#title .modes{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;justify-content:center}
-#title .modes button{font:400 13px var(--disp);letter-spacing:.02em;color:#fff;background:#8e7fc4;border:2px solid #fff;border-radius:999px;padding:6px 12px;cursor:pointer;box-shadow:0 3px 0 #6a5aa6}
-#title .modes button[data-mode=frank]{background:#7cae6a;box-shadow:0 3px 0 #54823f}
+#friends{position:absolute;inset:0;z-index:6;display:grid;place-items:center;background:rgba(74,71,117,.45);padding:16px;text-align:center}
+#friends[hidden],#friendBtn[hidden]{display:none}
+#friends .card{width:min(100%,300px);display:flex;flex-direction:column;gap:10px;background:var(--paper);color:var(--ink);border:4px solid var(--pink);border-radius:26px;box-shadow:0 6px 0 rgba(242,124,154,.5);padding:16px 14px 14px}
+#friends .eyebrow{font-family:var(--disp);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--pinkD)}
+#friends h2{margin:0;font-family:var(--disp);font-weight:400;font-size:26px;line-height:1}
+#friends .frList{display:flex;flex-direction:column;gap:8px}
+#friends .fr{display:flex;align-items:center;gap:10px;text-align:left;color:var(--ink);background:#fff;border:3px solid #f3d5dc;border-radius:18px;padding:7px 10px;cursor:pointer;font:inherit}
+#friends .fr.on{border-color:var(--pink);background:#fff3f6;box-shadow:0 3px 0 rgba(242,124,154,.45)}
+#friends .fr svg{width:44px;height:44px;flex:none}
+#friends .fr b{display:block;font-family:var(--disp);font-weight:400;font-size:17px;line-height:1.1}
+#friends .fr i{display:block;font-style:normal;font-size:12.5px;line-height:1.25;opacity:.85}
+#friends .frPlay{font-family:var(--disp);font-size:20px;color:#fff;background:var(--pink);border:3px solid #fff;border-radius:999px;padding:9px 14px 7px;box-shadow:0 4px 0 var(--pinkD);cursor:pointer}
+#friendBtn{position:absolute;right:10px;bottom:106px;z-index:3;width:58px;height:58px;padding:0;display:grid;place-items:center;background:#fff;border:3px solid var(--pink);border-radius:50%;box-shadow:0 4px 0 rgba(242,124,154,.55);cursor:pointer;touch-action:manipulation}
+#friendBtn svg{width:42px;height:42px;display:block}
+#friendBtn .tg{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);font-family:var(--disp);font-size:10px;letter-spacing:.06em;color:#fff;background:var(--pink);border:2px solid #fff;border-radius:999px;padding:1px 7px 0;white-space:nowrap}
+#friendBtn.used{opacity:.4;filter:grayscale(1);box-shadow:none;cursor:default}
+#friendBtn.used .tg{background:#8a8a8a}
+#title #nsBest{margin:6px auto 0;width:max-content;max-width:86vw;font:400 12px var(--disp);letter-spacing:.04em;color:#fff;background:#8e7fc4;border:2px solid #fff;border-radius:999px;padding:3px 12px 2px;box-shadow:0 2px 0 #6a5aa6}
+#title #nsBest[hidden]{display:none}
 #title .worlds{flex-wrap:wrap;justify-content:center;max-width:92vw;border-radius:22px}
 #title .worlds button{padding:6px 12px;font-size:14px}
 #title .worlds button[data-world=dungeon].on{background:#7a6a90;box-shadow:0 3px 0 #574a70}
@@ -234,12 +250,12 @@ canvas{display:block;touch-action:none}
       <button id="music" class="hbtn" type="button" aria-pressed="false" aria-label="Toggle music"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 16.6V6.4l9-2.2v10.2" fill="none" stroke="#5b3f3c" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"/><path d="M9.2 8.6l9-2.2" stroke="#5b3f3c" stroke-width="1.9"/><ellipse cx="6.8" cy="16.9" rx="3" ry="2.4" fill="#ffd66b" stroke="#5b3f3c" stroke-width="1.7"/><ellipse cx="15.8" cy="14.7" rx="3" ry="2.4" fill="#ffd66b" stroke="#5b3f3c" stroke-width="1.7"/><circle cx="5.9" cy="16.2" r=".7" fill="#fff"/><circle cx="14.9" cy="14" r=".7" fill="#fff"/><path class="x" d="M4 4l16 16" stroke="#f0566f" stroke-width="2.6" stroke-linecap="round"/></svg></button>
       <button id="pauseBtn" class="hbtn" type="button" aria-label="Pause menu"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="5" width="4.6" height="14" rx="2.3" fill="#ff9fb6" stroke="#5b3f3c" stroke-width="1.8"/><rect x="13.9" y="5" width="4.6" height="14" rx="2.3" fill="#ff9fb6" stroke="#5b3f3c" stroke-width="1.8"/><path d="M7.2 7.6v3M15.6 7.6v3" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg></button>
     </div>
-    <div id="keys" hidden><span><b>WASD</b>/<b>←↑→↓</b> move</span><span><b>Space</b> jump</span><span><b>N</b> music</span><span><b>M</b> voices</span><span><b>Esc</b> menu</span><span><b>R</b> restart</span></div>
+    <div id="keys" hidden><span><b>WASD</b>/<b>←↑→↓</b> move</span><span><b>Space</b> jump</span><span><b>N</b> music</span><span><b>M</b> voices</span><span><b>F</b> friend</span><span><b>Esc</b> menu</span><span><b>R</b> restart</span></div>
 <div id="hideVig" aria-hidden="true"></div>
 <div id="hideChip" hidden>HIDDEN · stay still</div>
     <div id="toast" hidden></div>
     <div id="title">
-      <div class="logo"><img id="logoImg" src="assets/art/logo.webp" alt="Crust Criminal" onerror="this.hidden=true;document.getElementById('logoText').hidden=false"><h1 id="logoText" hidden>Crust<span>Criminal</span></h1><div class="worlds"><select id="worldSel" aria-label="World or mode"><optgroup label="Worlds"><option value="city">City</option><option value="forest">Forest</option><option value="moon">Moon</option><option value="dungeon">Dungeon · Alpha</option><option value="ice">Ice · Alpha</option><option value="noir">Noir · Alpha</option></optgroup><optgroup label="Bonus modes"><option value="mode:boss">Boss fight · Alpha</option><option value="mode:frank">Monster chase · Alpha</option></optgroup></select><div id="alphaTag" hidden>ALPHA · still being built</div></div></div>
+      <div class="logo"><img id="logoImg" src="assets/art/logo.webp" alt="Crust Criminal" onerror="this.hidden=true;document.getElementById('logoText').hidden=false"><h1 id="logoText" hidden>Crust<span>Criminal</span></h1><div class="worlds"><select id="worldSel" aria-label="World or mode"><optgroup label="Worlds"><option value="city">City</option><option value="forest">Forest</option><option value="moon">Moon</option><option value="dungeon">Dungeon · Alpha</option><option value="ice">Ice · Alpha</option><option value="noir">Noir · Alpha</option></optgroup><optgroup label="Bonus modes"><option value="mode:night">Night Shift · endless</option><option value="mode:boss">Boss fight · Alpha</option><option value="mode:frank">Monster chase · Alpha</option></optgroup></select><div id="alphaTag" hidden>ALPHA · still being built</div><div id="nsBest" hidden></div></div></div>
       <video id="titleVid" muted playsinline loop preload="auto" aria-hidden="true" hidden></video>
       <div id="tq" class="tq" hidden></div>
       <div class="bottom"><div class="start">Tap to start</div><button type="button" class="quitApp">Quit game</button><div class="small">Phone: drag to move, tap to jump · Keyboard: WASD/arrows to move, Space to jump</div><div class="ver" id="ver"></div></div>
@@ -255,6 +271,15 @@ canvas{display:block;touch-action:none}
         <button class="mbtn" id="mRestart" type="button">Restart heist</button>
         <button class="mbtn quit" id="mQuit" type="button">Quit to title</button>
         <div class="toggles"><button class="tog" id="mMusic" type="button">Music: on</button><button class="tog" id="mVoices" type="button">Voices: on</button></div>
+      </div>
+    </div>
+    <button id="friendBtn" type="button" hidden aria-label="Call your friend"><span class="ic" id="friendIc"></span><span class="tg" id="friendTg">CALL</span></button>
+    <div id="friends" hidden role="dialog" aria-modal="true" aria-labelledby="frTitle">
+      <div class="card">
+        <div class="eyebrow">One call per heist</div>
+        <h2 id="frTitle">Pick a friend</h2>
+        <div class="frList" id="frList"></div>
+        <button class="frPlay" id="frPlay" type="button">Play</button>
       </div>
     </div>
     <div id="msg" hidden>
@@ -378,10 +403,10 @@ function genKitchen(){
     // cooks
     const floor=[];for(let r=1;r<rows-1;r++)for(let c=1;c<cols-1;c++)if(g[r][c]==='.'&&D(c,r)>=0)floor.push({c,r});
     const cand=floor.filter(t=>D(t.c,t.r)>=12),sp=[];
-    for(let k=0;k<300&&sp.length<5;k++){const t=pick(cand);if(sp.every(o=>Math.abs(o.c-t.c)+Math.abs(o.r-t.r)>=7))sp.push(t)}
-    if(sp.length<4)continue;
+    for(let k=0;k<300&&sp.length<tune().guards;k++){const t=pick(cand);if(sp.every(o=>Math.abs(o.c-t.c)+Math.abs(o.r-t.r)>=7))sp.push(t)}
+    if(sp.length<Math.min(4,tune().guards))continue;
     const sn=[],pool=floor.filter(t=>D(t.c,t.r)>=6);
-    for(let k=0;k<60&&sn.length<9;k++){const t=pick(pool);if(sn.every(o=>Math.abs(o.c-t.c)+Math.abs(o.r-t.r)>=4))sn.push({x:t.c*TS+8,y:t.r*TS+10,type:sn.length===0&&Math.random()<.7?'donut':pick(['candy','candy','cookie','cookie','choc'])})}
+    for(let k=0;k<60&&sn.length<tune().snacks;k++){const t=pick(pool);if(sn.every(o=>Math.abs(o.x/TS-t.c)+Math.abs(o.y/TS-t.r)>=4))sn.push({x:t.c*TS+8,y:t.r*TS+10,type:sn.length===0&&Math.random()<.7?'donut':pick(['candy','candy','cookie','cookie','choc'])})}
     return {kind:'kitchen',snacks:sn,map:g.map(r=>r.join('')),cols,rows,start,pie,door:{c:dcol,r:dr,side},doorOpen:false,knocked:new Set(),debris:[],
       windowClosed:false,walk:floor,spawns:sp.map((t,k)=>({kind:'cook',c:t.c,r:t.r,style:k===0?'sous':'cook'})),cars:[],lanes:[]};
   }
@@ -435,13 +460,13 @@ function genStreet(){
     }
     const side=walk.filter(t=>t.r>6&&g[t.r][t.c]===','&&!regions.some(q=>q.type==='park'&&t.r>=q.r0&&t.r<=q.r1));
     for(let k=0;k<1&&side.length;k++){const t=side.splice(rnd(side.length),1)[0];spawns.push({kind:'cook',style:'cop',c:t.c,r:t.r})}
-    if(Math.random()<.2){const pool=walk.filter(t=>t.r>10&&t.r<R2-4);if(pool.length){const t=pick(pool);spawns.push({kind:'dog',style:'k9',c:t.c,r:t.r})}}
+    if(Math.random()<tune().k9){const pool=walk.filter(t=>t.r>10&&t.r<R2-4);if(pool.length){const t=pick(pool);spawns.push({kind:'dog',style:'k9',c:t.c,r:t.r})}}
     for(const L of lanes){const n=1+rnd(2),W=cols*TS;for(let k=0;k<n;k++)
       cars.push({x:(rnd(W)+k*W/2)%W,y:L.r*TS+27,dir:L.dir,sp:L.sp,color:pick(['#c0392b','#2e6fa8','#e0b12a','#3f8a4e','#8a4fa0','#dcdad2']),voice:CAR_VOICE,cd:0,bub:null,hcd:0,off:24})}
     const sn=[],sp2=walk.filter(t=>t.r>4);
     for(let k=0;k<60&&sn.length<6;k++){const t=pick(sp2);if(sn.every(o=>Math.abs(o.x/TS-t.c)+Math.abs(o.y/TS-t.r)>=4))sn.push({x:t.c*TS+8,y:t.r*TS+10,type:pick(['fries','fries','burger','candy'])})}
     return {kind:'street',snacks:sn,map:g.map(r=>r.join('')),cols,rows:R2,start:{x:dc*TS+8,y:2*TS+12},doorCol:dc,
-      home:{c:zc,r:hr},walk,spawns,lanes,cars,lamps,burstT:7,knocked:new Set(),debris:[]};
+      home:{c:zc,r:hr},walk,spawns,lanes,cars,lamps,burstT:tune().burst,knocked:new Set(),debris:[]};
   }
 }
 
@@ -814,9 +839,11 @@ function makeEnemy(sp,i){
   if(sp.style==='camper')Object.assign(e,{style:'camper',vo:'camper',voice:SOUS_VOICE,sp:{patrol:32,search:54,chase:66},view:92,lostMax:3,lines:LINES.camper,fat:false});
   if(sp.style==='k9')Object.assign(e,{style:'k9',voice:K9_VOICE,coat:'#2b2d38',sp:{patrol:40,search:74,chase:98},view:76,half:.6,lostMax:1.3,lines:LINES.k9});
   if(S.world==='moon')moonEnemy(e,sp);else if(THEMES[S.world])themeEnemy(e,sp);
+  {const T=tune();e.sp={patrol:e.sp.patrol*T.speed,search:e.sp.search*T.speed,chase:e.sp.chase*T.speed};e.view*=T.view}   // world difficulty + Night Shift heat
   return e;
 }
 function loadScene(sc){
+  friendClear();
   S=sc;clearBubbles();timers=[];dirty=true;if(!S.hidesPlaced)placeHides(S);
   player={x:S.start.x,y:S.start.y,vx:0,vy:0,dir:S.kind==='kitchen'?'up':'down',anim:0,carry:pieTaken,voice:COON_VOICE,cd:0,bub:null,energy:S.kind==='kitchen'?70:Math.max(45,energyCarry),rush:0,hungrySaid:0,emptySaid:0};
   enemies=S.spawns.map(makeEnemy);cars=S.cars;parts=[];grace=1;sceneT=0;chatT=2.5;
@@ -825,7 +852,7 @@ function loadScene(sc){
 }
 let energyCarry=70;
 let fartAt=-1;
-function newRun(){gpRun();time=0;pieTaken=false;energyCarry=70;fartAt=Math.random()<.02?8+Math.random()*40:-1;loadScene(THEMES[WORLD]?genThemeBase():WORLD==='forest'?genCamp():WORLD==='moon'?genMoonBase():genKitchen())}
+function newRun(){gpRun();FR.used=false;time=0;pieTaken=false;energyCarry=70;fartAt=Math.random()<.02?8+Math.random()*40:-1;loadScene(THEMES[WORLD]?genThemeBase():WORLD==='forest'?genCamp():WORLD==='moon'?genMoonBase():genKitchen())}
 function doFart(){
   fartAt=-1;SFX.fart();noiseAt(player.x,player.y,60);
   for(let i=0;i<10;i++)parts.push({x:player.x+(Math.random()*10-5),y:player.y-4+Math.random()*4,t:0,life:.9,col:'rgba(160,200,110,',sz:3});
@@ -833,6 +860,7 @@ function doFart(){
 }
 function setObj(){
   const o=$('obj');let t;
+  if(NS.on){o.textContent='Coins, pie machine, hungry window';o.classList.remove('run');return}
   if(S.kind==='kitchen')t=pieTaken?W3('Find the back door','Find the gate','Find the airlock'):'Find the pie';else t=W3('Get home to your trash can','Get home to your log','Get to your rocket');
   o.textContent=t;o.classList.toggle('run',pieTaken);
 }
@@ -846,12 +874,14 @@ addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(state==='bye')retu
   if(MOVE_KEYS.includes(k)||k===' ')e.preventDefault();
   if(k==='escape'||k==='p'){e.preventDefault();if(state==='paused')resumeGame();else pauseGame();return}
   if(state==='paused')return;
+  if(state==='pick'){e.preventDefault();frKey(k);return}
   keys[k]=true;
   if(k===' '&&state==='play')tryJump();
   else if(k===' '||k==='enter')onAction();
-  else if(k==='r'){if(state==='title')onAction();else{audio();newRun();state='play';hideMsg();sayStart()}}
+  else if(k==='r'){if(state==='title')onAction();else if(NS.on)startNight(true);else{audio();newRun();hideMsg();pickFriend(sayStart)}}
   else if(k==='m')setVoice(!voiceOn);
   else if(k==='n'){audio();setMusic(!musicOn)}
+  else if(k==='f'&&!e.shiftKey)callFriend();
   else if(k==='f'&&e.shiftKey&&state==='play')doFart();   // Shift+F: test the easter egg
   else if(state==='title'&&MOVE_KEYS.includes(k))onAction();
 });
@@ -859,12 +889,12 @@ addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;joy=null});
 function toCanvas(e){const b=cv.getBoundingClientRect();return{x:(e.clientX-b.left)*VW/b.width,y:(e.clientY-b.top)*VH/b.height}}
 const stage=$('stage');
-const BUILD='v68';   // shown on the title screen; keep in step with VERSION in sw.js
+const BUILD='v73';   // shown on the title screen; keep in step with VERSION in sw.js
 let selT=-1e9;   // last time the world dropdown was touched
 const grabFocus=()=>{try{window.focus();stage.focus({preventScroll:true})}catch(_){}};
 stage.addEventListener('pointerdown',e=>{
   grabFocus();
-  if(e.target.closest('#mute')||e.target.closest('#music')||e.target.closest('#title')||e.target.closest('#menu')||e.target.closest('#pauseBtn'))return;
+  if(e.target.closest('#mute')||e.target.closest('#music')||e.target.closest('#title')||e.target.closest('#menu')||e.target.closest('#pauseBtn')||e.target.closest('#friends')||e.target.closest('#friendBtn'))return;
   e.preventDefault();
   if(modeName){modeDown(e);return}
   if(state!=='play'){if(performance.now()-selT<700)return;onAction();return}
@@ -882,7 +912,6 @@ $('title').addEventListener('pointerdown',e=>{if(e.target.closest('select')){sel
   // a tap while the dropdown is open (or right after it closes) only dismisses it: phones can deliver the tap that picked an option to the page underneath
   if(document.activeElement===$('worldSel')||performance.now()-selT<700){e.preventDefault();e.stopPropagation();$('worldSel').blur();selT=performance.now();return}
   e.preventDefault();e.stopPropagation();grabFocus();
-  const mb=e.target.closest('[data-mode]');if(mb){audio();startMode(mb.dataset.mode);return}
   const wb=e.target.closest('[data-world]');if(wb){audio();setWorld(wb.dataset.world);return}
   if(e.target.closest('.quitApp')){quitGame();return}const first=!ac||ac.state!=='running';audio();
   if(e.target.closest('.start')||!first)onAction()});
@@ -900,7 +929,7 @@ function resumeGame(){if(state!=='paused')return;closeMenu();state=prevState}
 function syncMenuToggles(){$('mMusic').textContent='Music: '+(musicOn?'on':'off');$('mMusic').classList.toggle('off',!musicOn);$('mVoices').textContent='Voices: '+(voiceOn?'on':'off');$('mVoices').classList.toggle('off',!voiceOn)}
 $('pauseBtn').addEventListener('click',e=>{e.stopPropagation();audio();state==='paused'?resumeGame():pauseGame()});
 $('mResume').addEventListener('click',resumeGame);
-$('mRestart').addEventListener('click',()=>{if(modeName){closeMenu();startMode(modeName);return}closeMenu();clearBubbles();newRun();state='play';hideMsg();sayStart()});
+$('mRestart').addEventListener('click',()=>{if(modeName){closeMenu();startMode(modeName);return}if(NS.on){closeMenu();clearBubbles();startNight(true);return}closeMenu();clearBubbles();newRun();hideMsg();pickFriend(sayStart)});
 function quitGame(){
   // Wrapped Android app: really exit. Browser / installed web app: try to close; browsers usually refuse, so show a goodbye screen with everything stopped.
   try{const A=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;if(A&&A.exitApp){A.exitApp();return}}catch(e){}
@@ -913,7 +942,7 @@ $('byeAgain').addEventListener('click',()=>location.reload());
 $('bye').addEventListener('pointerdown',e=>e.stopPropagation());
 $('msgQuit').addEventListener('pointerdown',e=>{e.stopPropagation()});
 $('msgQuit').addEventListener('click',e=>{e.stopPropagation();$('mQuit').click()});
-$('mQuit').addEventListener('click',()=>{if(modeName){closeMenu();exitMode();return}closeMenu();clearBubbles();newRun();state='title';hideMsg();$('title').hidden=false;tqNext=1.2;const v=$('titleVid');if(v&&!v.hidden)v.play().catch(()=>{})});
+$('mQuit').addEventListener('click',()=>{if(modeName){closeMenu();exitMode();return}closeMenu();clearBubbles();nightOff();syncWorldChips();newRun();state='title';hideMsg();$('title').hidden=false;tqNext=1.2;const v=$('titleVid');if(v&&!v.hidden)v.play().catch(()=>{})});
 $('mMusic').addEventListener('click',()=>{setMusic(!musicOn);syncMenuToggles()});
 $('mVoices').addEventListener('click',()=>{setVoice(!voiceOn);syncMenuToggles()});
 $('menu').addEventListener('pointerdown',e=>{e.stopPropagation();if(e.target===$('menu')){e.preventDefault();resumeGame()}});
@@ -960,7 +989,7 @@ const SNACK={candy:15,cookie:20,choc:26,donut:45,fries:22,burger:32};
 function popText(x,y,txt,col){const el=document.createElement('div');el.className='pop';el.textContent=txt;if(col)el.style.color=col;
   el.style.left=((x-cam.x)*SCALE)+'px';el.style.top=((y-cam.y)*SCALE)+'px';$('stage').appendChild(el);setTimeout(()=>el.remove(),950)}
 function eatSnack(sn){
-  sn.eaten=true;player.energy=Math.min(100,player.energy+SNACK[sn.type]);popText(sn.x,sn.y-10,'+'+SNACK[sn.type]+' ENERGY');
+  sn.eaten=true;nsAdd(5);player.energy=Math.min(100,player.energy+SNACK[sn.type]);popText(sn.x,sn.y-10,'+'+SNACK[sn.type]+' ENERGY');
   SFX.nom();if(!(FX.sneaky>0))noiseAt(sn.x,sn.y,70);   // munching is loud: nearby cooks come to look (not with sneaky paws)
   if(sn.type==='cookie'){FX.sneaky=7;toast('SNEAKY PAWS!\nThey see less for 7s')}
   else if(sn.type==='burger'){FX.belly=12;toast('FULL BELLY!\nMove longer for 12s')}
@@ -980,7 +1009,7 @@ function tryJump(){
   if(!player.rush)player.energy=Math.max(0,player.energy-10);
   player.jump={sx:player.x,sy:player.y,tx:t.x,ty:t.y,t:0,dur:weak?.6:.42};if(S.world==='moon'){player.jump.dur*=1.8;player.jump.hi=2.2;moonJumpLine()}player.vx=player.vy=0;if(weak&&Math.random()<.5)say(player,pickCoon('empty'),true);
   const d=STEP[player.dir],tt=tileOf(player.x,player.y),c1=tt.c+d[0],r1=tt.r+d[1],ch=tileCh(c1,r1);
-  if(hasItem(c1,r1)){S.knocked.add(c1+','+r1);const bx=c1*TS+8+d[0]*9,by=r1*TS+12+d[1]*10,IT=itemList(),item=IT[Math.floor(hsh(c1,r1,13)*IT.length)];
+  if(hasItem(c1,r1)){S.knocked.add(c1+','+r1);if(NS.on&&Math.random()<.5)nsCoinAt(c1*TS+8+d[0]*12,r1*TS+12+d[1]*12);const bx=c1*TS+8+d[0]*9,by=r1*TS+12+d[1]*10,IT=itemList(),item=IT[Math.floor(hsh(c1,r1,13)*IT.length)];
     const spill=item==='ms_jelly'?['candy','choc']:(item==='m_jar1'||item==='m_jar2')?['cookie','cookie']:item==='jar'?['cookie','cookie']:item==='cake'?['choc','candy']:item==='f_honey'?['candy','cookie']:null;
     later(()=>{if(state!=='play')return;SFX.crash();shake=.12;S.debris.push({x:bx,y:by,k:hsh(c1,r1,7)});noiseAt(bx,by,130);
       if(spill){toast(item==='ms_jelly'?'ALIEN JELLY!':(item==='m_jar1'||item==='m_jar2')?'ALIEN COOKIES!':item==='jar'?'COOKIES!':item==='f_honey'?'HONEY!':'CAKE!');const px=d[1]?1:0,py=d[0]?1:0;   // spill sideways along the landing row
@@ -996,10 +1025,11 @@ function tryJump(){
 function sayStart(){later(()=>{if(state==='play'&&S.kind==='kitchen')toast('Moving uses ENERGY\nEat glowing snacks to refill')},2600);later(()=>{if(state==='play')say(player,pickCoon('start'),true)},250)}
 function onAction(){
   audio();
+  if(NS.on&&state==='caught'){startNight(true);return}
   if(state==='title'&&pendingMode){startMode(pendingMode)}
-  else if(state==='title'){state='play';$('title').hidden=true;hideMsg();SFX.start();sayStart()}
+  else if(state==='title'){$('title').hidden=true;hideMsg();pickFriend(()=>{SFX.start();sayStart()})}
   else if(state==='caught'&&S.kind!=='kitchen'&&pieTaken){LV.out=false;LV.retry=true;energyCarry=Math.max(50,energyCarry);enterStreet();LV.out=false}
-  else if(state==='caught'||state==='win'){LV.out=false;newRun();state='play';hideMsg();sayStart()}
+  else if(state==='caught'||state==='win'){LV.out=false;newRun();hideMsg();pickFriend(sayStart)}
   else if(state==='transition')enterStreet();
 }
 
@@ -1028,7 +1058,7 @@ function follow(e,spd,dt){
   e.fa=lerpAng(e.fa,Math.atan2(dy,dx),Math.min(1,10*dt));e.moving=true;e.anim+=dt*spd*.12;
   return false;
 }
-function toAlert(e,t=.45){if(e.kind==='bear'){bearSpot(e);return}if(t>.3)t=.75;if(e.state!=='alert'&&e.state!=='chase')gpSpot();e.state='alert';e.t=t;e.path=[];
+function toAlert(e,t=.45){if(e.kind==='bear'){bearSpot(e);return}if(t>.3)t=tune().windup;if(e.state!=='alert'&&e.state!=='chase')gpSpot();e.state='alert';e.t=t;e.path=[];
   if(e.kind==='dog'&&S.world!=='moon'&&!THEMES[S.world])SFX.bark(e);else SFX.alert();player.startT=now;if(e.style==='k9')toast('Police dog! RUN!');
   say(e,pick(pieTaken&&S.kind==='kitchen'?e.lines.pie:e.lines.spot),t>.3);
   const react=S.world==='moon'?(Math.random()<.5?'alien':'spotted'):S.world==='forest'&&e.style!=='bear'?(Math.random()<.5?'ranger':'spotted'):e.kind==='dog'&&Math.random()<.6?'dog':e.style==='cop'&&Math.random()<.6?'cops':'spotted';
@@ -1043,6 +1073,7 @@ function updateEnemies(dt,detect){
   enemies.forEach(e=>{
     e.moving=false;
     if(e.state==='scared'){scaredTick(e,dt);return}
+    if(e.ratT>0){ratTick(e,dt);return}
     if(e.kind==='bear'&&bearTick(e,dt,detect))return;
     const see=detect&&grace<=0&&sees(e);
     switch(e.state){
@@ -1085,6 +1116,7 @@ function caught(e,bonk){
   state='caught';shake=.35;SFX.caught();
   if(bonk){say(player,pickCoon('bonk'),true);if(!e.hw)later(()=>say(e,pick(LINES.car),true),200)}
   else{say(player,pickCoon('busted'),true);later(()=>say(e,pickE(e,e.lines.caught),true),300)}
+  if(NS.on){nightOver();return}
   const F=S.world==='forest',M=S.world==='moon',who=bonk?(M?'A rover':'A car'):THEMES[S.world]?themeWho(e):e.kind==='bear'?'A bear':M?(e.style==='blob'?'A space blob':e.style==='drone'?'A drone':e.style==='cmdr'?'The commander':'An alien'):e.kind==='dog'?'A dog':F?(e.style==='camper'?'A camper':'A ranger'):'A cook';
   later(()=>{if(state==='caught')showMsg(S.kind==='kitchen'?TW(W3('Part 1 · The Kitchen','Part 1 · The Campsite','Part 1 · The Moon Base'),'p1t'):TW(W3('Part 2 · The Street','Part 2 · The River','Part 2 · The Crater Field'),'p2t'),bonk?'Bonk! No hearts left':'Busted! No hearts left','bad',
     bonk?(e.hw?'A spinning blade got you. Wait for a gap between the blades.':'You got clipped crossing the road. Wait for a gap between cars.'):
@@ -1128,7 +1160,7 @@ function updatePlayer(dt){
   const E=player.energy,rush=player.rush>0;
   if(rush)player.rush-=dt;
   const moving=Math.hypot(player.vx,player.vy)>20;
-  if(!rush){if(moving)player.energy=Math.max(0,E-dt*(player.carry?1.9:1.4)*(FX.belly>0?.4:1));else if(E<40)player.energy=Math.min(40,E+dt*2.2)}
+  if(!rush){if(moving)player.energy=Math.max(0,E-dt*(player.carry?1.9:1.4)*(FX.belly>0?.4:1)*(intensity?FLEE_DRAIN:1));else if(E<40)player.energy=Math.min(40,E+dt*2.2)}
   const tired=player.energy<18,flat=player.energy<=0;
   if(tired&&!player.hungrySaid&&!flat){player.hungrySaid=1;say(player,pickCoon('hungry'),true)}
   if(player.energy>30)player.hungrySaid=0;
@@ -1156,7 +1188,7 @@ function updatePlayer(dt){
   if(sp>8){const a0=Math.floor(player.anim);player.anim+=dt*sp*.13;if(Math.floor(player.anim)!==a0&&sp>40)SFX.step()}
   if(sp>50&&Math.random()<dt*14)parts.push({x:player.x-player.vx*.05+(Math.random()*4-2),y:player.y-1,t:0,life:.35});
   if(S.kind==='kitchen'){
-    if(!pieTaken){const px=S.pie.c*TS+8,py=S.pie.r*TS+10;
+    if(!pieTaken&&!NS.on){const px=S.pie.c*TS+8,py=S.pie.r*TS+10;
       if(Math.hypot(player.x-px,player.y-py)<19){pieTaken=true;player.carry=true;S.doorOpen=true;
         toast(W3('Got the pie!\nThe back door is open','Got the pie!\nThe gate is open','Got the pie!\nThe airlock is open'));setObj();SFX.pie();pieFx={t0:now,x:px,y:py-6};hitStop=.22;shake=.15;
         for(let k=0;k<30;k++){const a=-Math.PI/2+(Math.random()-.5)*Math.PI*1.8,v=45+Math.random()*80;stars.push({x:px,y:py-8,vx:Math.cos(a)*v,vy:Math.sin(a)*v-20,t0:now+Math.random()*.08,life:.9+Math.random()*.5,r:2.6+Math.random()*2.8,rot:Math.random()*6,vr:(Math.random()-.5)*10,col:pick(['#ffe066','#ffd1dc','#fff','#ffb3c6','#bdf0dc'])})}
@@ -1207,7 +1239,7 @@ function updateStreet(dt){
 // ---------- camera ----------
 function updateCam(dt,snap){
   const W=S.cols*TS,H=S.rows*TS;
-  const tx=clamp(player.x+player.vx*.2-VW/2,0,Math.max(0,W-VW)),ty=clamp(player.y-10+player.vy*.35-VH/2,-6,Math.max(0,H-VH));
+  const tx=clamp(player.x+player.vx*.2-VW/2,0,Math.max(0,W-VW)),ty=clamp(player.y-10+player.vy*.35-VH/2,NS.on?-40:-6,Math.max(0,H-VH));   // Night Shift: room above the far wall for the pie machine
   if(snap){cam.x=tx;cam.y=ty}else{const k=Math.min(1,6*dt);cam.x+=(tx-cam.x)*k;cam.y+=(ty-cam.y)*k}
 }
 
@@ -1270,7 +1302,7 @@ function render(){
   for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++){const t=S.map[r][c];
     if(t==='G'){list.push({y:r*TS+15.5,grass:1,c,r});continue}
     if(t==='K'){list.push({y:r*TS+15,hide:1,c,r});continue}
-    if(S.kind==='kitchen'){if(r>0&&r<S.rows-1&&c>0&&c<S.cols-1&&'COTRSP'.includes(t)){list.push({y:r*TS-6,t,c,r});if(t==='C'&&!(S.knocked&&S.knocked.has(c+','+r))&&!isSink(c,r))list.push({y:r*TS-5.5,it:1,c,r});if(t==='P'&&!pieTaken)list.push({y:r*TS-5.4,pieIt:1,c,r});}}
+    if(S.kind==='kitchen'){if(r>0&&r<S.rows-1&&c>0&&c<S.cols-1&&'COTRSP'.includes(t)){list.push({y:r*TS-6,t,c,r});if(t==='C'&&!(S.knocked&&S.knocked.has(c+','+r))&&!isSink(c,r))list.push({y:r*TS-5.5,it:1,c,r});if(t==='P'&&!pieTaken&&!NS.on)list.push({y:r*TS-5.4,pieIt:1,c,r});}}
     else if('BZHXN'.includes(t))list.push({y:r*TS+(t==='X'?15:14),t,c,r})}
   if(S.kind==='kitchen')list.push({y:S.door.r*TS+16,t:'D'});else for(const l of S.lamps)if(Math.abs(l.y-cam.y-VH/2)<VH/2+50)list.push({y:l.y,lamp:l});
   for(const sn of (S.snacks||[]))if(!sn.eaten&&Math.abs(sn.y-cam.y-VH/2)<VH/2+30)list.push({y:sn.y-1,snack:sn});
@@ -1316,7 +1348,8 @@ function render(){
   if(pieFx&&now-pieFx.t0<.35){ctx.fillStyle=`rgba(255,250,235,${.55*(1-(now-pieFx.t0)/.35)})`;ctx.fillRect(0,0,VW,VH)}
   // screen-space: objective + threat pointers
   if(state==='play'||state==='title'){
-    if(S.kind==='kitchen'){if(!pieTaken)pointer(S.pie.c*TS+8,S.pie.r*TS+4,'#e8a64a','pie');else if(Math.sin(now*6)>-.3)pointer(S.door.c*TS+8,S.door.r*TS+8,'#3fae5a')}
+    if(NS.on)nsPointers();
+    else if(S.kind==='kitchen'){if(!pieTaken)pointer(S.pie.c*TS+8,S.pie.r*TS+4,'#e8a64a','pie');else if(Math.sin(now*6)>-.3)pointer(S.door.c*TS+8,S.door.r*TS+8,'#3fae5a')}
     else pointer(S.home.c*TS+8,S.home.r*TS+6,'#8fd694');
     enemies.forEach(e=>{if((e.state==='chase'||e.state==='alert')&&Math.hypot(e.x-player.x,e.y-player.y)<260)pointer(e.x,e.y-8,'#ff6a4d')});
   }
@@ -1777,7 +1810,7 @@ const FITEM=['f_honey','','f_honey','','f_honey'];   // '' = mushrooms: decorati
 
 function setWorld(w){if(w!=='forest'&&w!=='moon'&&!THEMES[w])w='city';WORLD=w;try{localStorage.setItem('pieheist-world',w)}catch(e){}loadBest();loadStars();syncWorldChips();loadClips();if(state==='title')newRun()}
 let pendingMode=null;const ALPHA=new Set(['dungeon','ice','noir','mode:boss','mode:frank']);
-function syncWorldChips(){const ws=document.getElementById('worldSel');if(ws)ws.value=pendingMode?'mode:'+pendingMode:WORLD;{const at=document.getElementById('alphaTag');if(at)at.hidden=!ALPHA.has(pendingMode?'mode:'+pendingMode:WORLD)}document.querySelectorAll('#title [data-world]').forEach(b=>{const on=b.dataset.world===WORLD;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))})}
+function syncWorldChips(){const ws=document.getElementById('worldSel');if(ws)ws.value=pendingMode?'mode:'+pendingMode:WORLD;{const nb=document.getElementById('nsBest');if(nb){nb.hidden=pendingMode!=='night';if(pendingMode==='night')nb.textContent=NS.bestPies?'Best shift: '+NS.bestPies+' pie'+(NS.bestPies===1?'':'s')+' \u00b7 '+NS.best+' pts':'Feed the family \u00b7 plays in the world you picked last'}}{const at=document.getElementById('alphaTag');if(at)at.hidden=!ALPHA.has(pendingMode?'mode:'+pendingMode:WORLD)}document.querySelectorAll('#title [data-world]').forEach(b=>{const on=b.dataset.world===WORLD;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))})}
 syncWorldChips();
 {const ws=document.getElementById('worldSel');if(ws){ws.addEventListener('change',()=>{selT=performance.now();audio();if(ws.value.startsWith('mode:')){pendingMode=ws.value.slice(5);syncWorldChips()}else{pendingMode=null;setWorld(ws.value)}ws.blur()});for(const t of['focus','blur','click'])ws.addEventListener(t,()=>{selT=performance.now()})}}
 
@@ -2299,11 +2332,12 @@ function tryBoo(){
   player.booT=now;player.booCd=now+3.5;player.vx=player.vy=0;say(player,pickCoon('boo'),true);
   if(e.kind==='bear'){later(()=>{if(state==='play'){e.fa=Math.atan2(player.y-e.y,player.x-e.x);bearSpot(e)}},250);
     later(()=>{if(state==='play')say(player,pickCoon('booBear'),true)},800);return true}
-  e.state='scared';e.t=2.6;e.st0=now;e.flee=Math.atan2(e.y-player.y,e.x-player.x);e.path=fleePath(e);e.runPath=e.path.length>0;hitStop=.12;shake=.12;SFX.scream(e);
+  e.state='scared';e.t=2.6;e.st0=now;e.flee=Math.atan2(e.y-player.y,e.x-player.x);e.path=fleePath(e);e.runPath=e.path.length>0;hitStop=.12;shake=.12;SFX.scream(e);nsDrop(e);
   later(()=>{if(state==='play')say(e,(e.vo&&ENEMY_VO[e.vo]?pickE(e,SCREAM[e.style]||SCREAM.cook):pick(SCREAM[e.style]||SCREAM[e.kind]||SCREAM.cook)),true)},380);   // after the raccoon's own "BOO!" has started, so the scream recording may overlap it (see laneMode)
   if(!e.dropped){e.dropped=1;S.snacks.push({x:e.x,y:e.y+2,type:e.style==='cop'?'donut':e.kind==='dog'?'candy':'cookie'})}
   const R=e.kind==='dog'?170:130;
   enemies.forEach(o=>{if(o!==e&&o.state!=='scared'&&Math.hypot(o.x-e.x,o.y-e.y)<R)toSearch(o,{x:e.x,y:e.y},o.lines.hear)});
+  nsAdd(25,e.x,e.y-40);
   if(!S.booTold){S.booTold=1;toast('BOO! Scared silly!\nBut the scream draws attention')}
   return true;
 }
@@ -2541,7 +2575,7 @@ setInterval(()=>{if(!ac||state!=='play'||!S||!S.world||ac.state!=='running')retu
 // ================= ROUND 5: LIVES + HIDDEN HEARTS, CHASE WARNING, SNACK POWER-UPS, STAR RATINGS =================
 const LV={lives:2,max:3,spots:0,lost:0,heartsFound:0,heartsTotal:0,inv:0,flash:0,warn:0,pulse:0};
 const FX={sneaky:0,belly:0};
-const PAR={city:130,forest:150,moon:170,dungeon:150,ice:150,noir:140};   // seconds for the 3rd star (full heist); tune here
+const PAR={city:75,forest:85,moon:90,dungeon:85,ice:95,noir:85};   // seconds for the 3rd star (full heist); tune here
 const starKey=()=>'pieheist-stars-'+WORLD;
 let bestStars=0;function loadStars(){bestStars=0;try{bestStars=parseInt(localStorage.getItem(starKey()))||0}catch(e){}}loadStars();
 
@@ -2549,7 +2583,9 @@ let bestStars=0;function loadStars(){bestStars=0;try{bestStars=parseInt(localSto
 function gpRun(){LV.spots=0;LV.lost=0;LV.heartsFound=0;LV.heartsTotal=0;FX.sneaky=FX.belly=0}
 // called from loadScene(): every part (kitchen / street) starts with 2 hearts and one hidden extra
 function gpScene(){
-  LV.lives=2;LV.inv=0;LV.warn=0;FX.sneaky=FX.belly=0;if(LV.retry)LV.retry=false;else LV.heartsTotal++;S.heart=null;   // a street retry is the same part: it does not add to the total
+  if(!NS.on)LV.lives=2;else if(NS.fresh){LV.lives=3;NS.fresh=false}   // Night Shift: three hearts for the whole shift
+  LV.inv=0;LV.warn=0;FX.sneaky=FX.belly=0;if(LV.retry)LV.retry=false;else LV.heartsTotal++;S.heart=null;   // a street retry is the same part: it does not add to the total
+  if(NS.on){nsScene();return}   // Night Shift: its own set-up, and no secret heart
   const walk=(S.walk||[]).filter(t=>!solidAt(t.c,t.r));
   const ok=t=>{const x=t.c*TS+8,y=t.r*TS+10,tc=tileCh(t.c,t.r);
     if(Math.hypot(x-S.start.x,y-S.start.y)<110)return false;
@@ -2577,7 +2613,7 @@ function drawHeartPickup(h){
   if(near>0){ctx.save();ctx.globalAlpha=near;ctx.fillStyle='rgba(255,159,182,.25)';ctx.beginPath();ctx.ellipse(h.x,h.y,8,3.2,0,0,TAU);ctx.fill();gpHeartPath(h.x,y,1.25,'#ff6f91','#7a2a3d');
     ctx.fillStyle='rgba(255,255,255,.9)';ctx.fillRect(Math.round(h.x-3),Math.round(y-3),2,2);ctx.restore()}
 }
-function gpList(list){if(S.heart&&!S.heart.got&&Math.abs(S.heart.y-cam.y-VH/2)<VH/2+30)list.push({y:S.heart.y-1,gp:()=>drawHeartPickup(S.heart)})}
+function gpList(list){friendList(list);if(NS.on)nsList(list);if(S.heart&&!S.heart.got&&Math.abs(S.heart.y-cam.y-VH/2)<VH/2+30)list.push({y:S.heart.y-1,gp:()=>drawHeartPickup(S.heart)})}
 function gpHud(){
   if(state!=='play'&&state!=='caught'&&state!=='win'&&state!=='transition')return;
   const n=Math.max(LV.lives,2),w=n*11+6;
@@ -2585,14 +2621,16 @@ function gpHud(){
   for(let i=0;i<n;i++){const full=i<LV.lives,x=12+i*11,y=11.5,beat=full&&LV.pulse>0?1+Math.sin(now*28)*.12:1;
     if(full)gpHeartPath(x,y,.95*beat,'#ff6f91','#fff');else{gpHeartPath(x,y,.95,'rgba(255,255,255,.28)','rgba(255,255,255,.4)')}}
   ctx.restore();
+  if(NS.on){const t=(NS.hold>=0?FLAVORS[NS.hold][0].toUpperCase()+' PIE':'COINS '+NS.coins+'/'+nsPrice())+'  \u00b7  '+NS.score+(NS.streak?'  x'+nsMult():'');ctx.font='400 6.5px "Titan One",sans-serif';const w=ctx.measureText(t).width+12;ctx.fillStyle='rgba(30,20,50,.32)';ctx.beginPath();ctx.roundRect(VW-4-w,4,w,15,7);ctx.fill();ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t,VW-4-w/2,11.8)}
   if(LV.flash>0){ctx.fillStyle=`rgba(240,86,111,${Math.min(.55,LV.flash)*.9})`;ctx.fillRect(0,0,VW,VH)}
   if(LV.warn>0){const a=Math.min(1,LV.warn/.7);const g=ctx.createRadialGradient(VW/2,VH/2,VH*.2,VW/2,VH/2,VH*.6);g.addColorStop(0,'rgba(240,86,111,0)');g.addColorStop(1,`rgba(240,86,111,${.7*a})`);ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH)}
 }
 function gpTick(dt){
+  if(NS.on){nsTick(dt);if(state!=='play')return}
   if(LV.inv>0)LV.inv-=dt;if(LV.flash>0)LV.flash-=dt*1.6;if(LV.warn>0)LV.warn-=dt;if(LV.pulse>0)LV.pulse-=dt;
   if(FX.sneaky>0)FX.sneaky-=dt;if(FX.belly>0)FX.belly-=dt;
   const h=S.heart;if(h&&!h.got&&Math.hypot(player.x-h.x,player.y-h.y)<11){
-    h.got=true;LV.heartsFound++;
+    h.got=true;LV.heartsFound++;nsAdd(50);
     if(LV.lives<LV.max){LV.lives++;popText(h.x,h.y-14,'+1 HEART!','#ff6f91');toast('SECRET HEART!\nExtra life')}
     else{player.energy=Math.min(100,player.energy+30);popText(h.x,h.y-14,'HEART! +30 ENERGY','#ff6f91');toast('SECRET HEART!\nHearts already full')}
     LV.pulse=1.2;SFX.pie&&SFX.pie();for(let i=0;i<14;i++)stars.push({x:h.x,y:h.y-8,vx:(Math.random()-.5)*90,vy:-20-Math.random()*60,t0:now,life:.8+Math.random()*.4,r:2+Math.random()*2,rot:Math.random()*6,vr:(Math.random()-.5)*8,col:pick(['#ff9fb6','#ff6f91','#fff'])});
@@ -2601,6 +2639,7 @@ function gpTick(dt){
 function gpSpot(){LV.spots++;LV.warn=.7}
 // lost a life but still in it: back to the start of this part, enemies reset, a few seconds of safety
 function gpLoseLife(e,bonk){
+  friendClear();if(NS.on)NS.streak=0;
   timers=[];LV.lives--;LV.lost++;LV.flash=.55;LV.inv=2.8;LV.pulse=.8;shake=.35;hitStop=.18;SFX.caught();
   say(player,bonk?pickCoon('bonk'):pickCoon('busted'),true);
   toast(LV.lives===1?'Ouch! LAST HEART':'Ouch! '+LV.lives+' hearts left');
@@ -2610,12 +2649,238 @@ function gpLoseLife(e,bonk){
   grace=Math.max(grace,LV.inv);hideVig(false);
   if(S.world==='forest'&&S.kind==='street'){player.onLog=null;player.wg=0}
 }
+// ================= FRIENDS: one call per heist =================
+// Picked on a card before every heist (the game waits in state 'pick'). The call is a global power:
+//   skunk  - guards near the raccoon run away in a panic (the BOO flee), then come back to look
+//   possum - plays dead where the raccoon stands; guards around walk over and stare, but still see the raccoon on the way
+//   rats   - every guard chases a rat and forgets the raccoon; bumping into one still costs a heart
+// Bears take no notice of any of them. To add a friend: one FRIENDS entry, one branch in callFriend, one in friendList.
+const FR_SVG={
+  skunk:'<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="13" cy="13" r="6" fill="#3a3340"/><circle cx="35" cy="13" r="6" fill="#3a3340"/><ellipse cx="24" cy="27" rx="17" ry="15" fill="#3a3340"/><path d="M20 12h8l2.5 15.5-6.5 9-6.5-9z" fill="#fff"/><circle cx="16.5" cy="26" r="2.4" fill="#fff"/><circle cx="31.5" cy="26" r="2.4" fill="#fff"/><circle cx="16.5" cy="26" r="1.1" fill="#3a3340"/><circle cx="31.5" cy="26" r="1.1" fill="#3a3340"/><ellipse cx="24" cy="36" rx="2.6" ry="1.9" fill="#f27c9a"/></svg>',
+  possum:'<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="12" cy="14" r="6" fill="#5b5560"/><circle cx="36" cy="14" r="6" fill="#5b5560"/><circle cx="12" cy="14" r="3" fill="#f6b6c6"/><circle cx="36" cy="14" r="3" fill="#f6b6c6"/><path d="M24 10c10 0 16 7 16 15 0 7-9 16-16 18-7-2-16-11-16-18 0-8 6-15 16-15z" fill="#f4f0ee" stroke="#b9b0b5" stroke-width="1.5"/><path d="M14.5 23l4 4m0-4l-4 4M29.5 23l4 4m0-4l-4 4" stroke="#3a3340" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="24" cy="39" rx="3" ry="2.2" fill="#f27c9a"/></svg>',
+  rats:'<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="11" cy="15" r="8" fill="#9b7b68"/><circle cx="37" cy="15" r="8" fill="#9b7b68"/><circle cx="11" cy="15" r="4.6" fill="#f6b6c6"/><circle cx="37" cy="15" r="4.6" fill="#f6b6c6"/><path d="M24 13c8 0 13 6 13 13 0 6-8 14-13 17-5-3-13-11-13-17 0-7 5-13 13-13z" fill="#b08f7a"/><circle cx="18.5" cy="26" r="2" fill="#3a3340"/><circle cx="29.5" cy="26" r="2" fill="#3a3340"/><ellipse cx="24" cy="40" rx="2.6" ry="2" fill="#f27c9a"/><path d="M15 36l-7-1M15 38l-6 2M33 36l7-1M33 38l6 2" stroke="#5b3f3c" stroke-width="1" stroke-linecap="round"/></svg>'};
+const FRIENDS={
+  skunk:{name:'Skunk',tag:'STINK',desc:'Stink bomb! Guards near you run away.',secs:4,reach:200},
+  possum:{name:'Possum',tag:'PLAY DEAD',desc:'Plays dead. Every guard on the map walks over to look.',secs:8,reach:1e9},
+  rats:{name:'Rats',tag:'RATS',desc:'Chaos! Every guard chases a rat and forgets you. Do not bump into them.',secs:7,count:6}};
+const FR_KEYS=Object.keys(FRIENDS);
+const FR={pick:'skunk',used:false,kind:null,t:0,t0:0,x:0,y:0,rats:[],after:null};
+try{const v=localStorage.getItem('pieheist-friend');if(FRIENDS[v])FR.pick=v}catch(e){}
+$('frList').innerHTML=FR_KEYS.map(k=>'<button type="button" class="fr" data-f="'+k+'">'+FR_SVG[k]+'<span><b>'+FRIENDS[k].name+'</b><i>'+FRIENDS[k].desc+'</i></span></button>').join('');
+function frSync(){document.querySelectorAll('#frList .fr').forEach(b=>{const on=b.dataset.f===FR.pick;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});$('friendIc').innerHTML=FR_SVG[FR.pick];$('friendTg').textContent=FRIENDS[FR.pick].tag}
+function pickFriend(after){FR.after=after||null;state='pick';joy=null;for(const k in keys)keys[k]=false;frSync();$('friends').hidden=false}
+function frGo(){if(state!=='pick')return;$('friends').hidden=true;try{localStorage.setItem('pieheist-friend',FR.pick)}catch(e){}state='play';grabFocus();const f=FR.after;FR.after=null;if(f)f()}
+function frKey(k){const i=FR_KEYS.indexOf(FR.pick),n=FR_KEYS.length;
+  if(k==='enter'||k===' ')frGo();else if(k==='arrowdown'||k==='s'||k==='arrowright'||k==='d'){FR.pick=FR_KEYS[(i+1)%n];frSync()}
+  else if(k==='arrowup'||k==='w'||k==='arrowleft'||k==='a'){FR.pick=FR_KEYS[(i+n-1)%n];frSync()}else if(k>='1'&&k<=String(n)){FR.pick=FR_KEYS[+k-1];frSync()}}
+$('frList').addEventListener('click',e=>{const b=e.target.closest('.fr');if(b){FR.pick=b.dataset.f;frSync()}});
+$('frPlay').addEventListener('click',e=>{e.stopPropagation();audio();frGo()});
+$('friendBtn').addEventListener('click',e=>{e.stopPropagation();callFriend();grabFocus()});
+function friendClear(){FR.kind=null;FR.t=0;FR.rats=[];for(const e of enemies){e.ratT=0;e.lure=0}}
+function callFriend(){
+  if(state!=='play'||modeName||FR.used||FR.kind)return;
+  const F=FRIENDS[FR.pick],near=e=>Math.hypot(e.x-player.x,e.y-player.y),who=enemies.filter(e=>e.kind!=='bear'&&e.state!=='scared').sort((a,b)=>near(a)-near(b));
+  FR.used=true;FR.kind=FR.pick;FR.t=F.secs;FR.t0=now;FR.x=player.x;FR.y=player.y;SFX.whistle();
+  if(FR.kind==='skunk'){let n=0;
+    for(const e of who){if(near(e)>F.reach)continue;e.state='scared';e.t=3+Math.random();e.st0=now;e.flee=Math.atan2(e.y-player.y,e.x-player.x);e.path=fleePath(e);e.runPath=e.path.length>0;nsDrop(e);if(!n++)SFX.scream(e)}
+    shake=.15;toast(n?'SKUNK!\nThey run from the stink':'SKUNK!\nNobody close enough to smell it')}
+  else if(FR.kind==='possum'){const t0=tileOf(FR.x,FR.y),ring=S.walk.filter(t=>{const d=Math.abs(t.c-t0.c)+Math.abs(t.r-t0.r);return d>=1&&d<=3});let n=0;
+    for(const e of who){if(near(e)>F.reach)continue;const t=ring.length?ring[n%ring.length]:t0;e.lure=1;e.state='search';e.path=bfsTo(e,center(t.c,t.r));if(n<2)say(e,n?'Is it... dead?':'What is THAT?',true);n++}
+    toast(n?'POSSUM!\nEveryone goes to look':'POSSUM!\nNobody close enough to notice')}
+  else{FR.rats=[];for(let i=0;i<F.count;i++)FR.rats.push({x:player.x,y:player.y,fa:i/F.count*6.283,anim:0,path:[],svx:0,svy:0,w:0});
+    who.forEach((e,i)=>{e.ratT=F.secs;e.rat=i%F.count;e.state='patrol';e.path=[];e.repath=0;if(i<2)say(e,i?'Get them!':'RATS!',true)});
+    toast('RATS!\nThey forgot you. Do not bump them')}
+}
+function friendTick(dt){
+  if(!FR.kind)return;FR.t-=dt;
+  if(FR.kind==='possum')for(const e of enemies){if(!e.lure)continue;
+    if(e.state==='alert'||e.state==='chase'||e.state==='scared')e.lure=0;                             // spotted the raccoon on the way: the possum is forgotten
+    else if(e.state==='look'){e.t=.5;e.base=Math.atan2(FR.y-e.y,FR.x-e.x)}}                         // standing around it, staring
+  if(FR.kind==='rats')for(const r of FR.rats){r.w-=dt;
+    if(!r.path.length&&r.w<=0){r.w=.3;const a=tileOf(r.x,r.y),pool=S.walk.filter(t=>Math.abs(t.c-a.c)+Math.abs(t.r-a.r)<12);if(pool.length){const t=pick(pool);r.path=bfsTo(r,center(t.c,t.r))}}
+    follow(r,108,dt)}
+  if(FR.t<=0){if(FR.kind==='possum')for(const e of enemies)if(e.lure){e.lure=0;if(e.state==='look')e.t=1.2}
+    FR.kind=null;FR.rats=[]}
+}
+function ratTick(e,dt){
+  const r=FR.rats[e.rat];e.ratT-=dt;
+  if(e.ratT<=0||!r){e.ratT=0;e.state='look';e.t=1.2;e.base=e.fa;e.path=[];return}
+  e.repath-=dt;if(e.repath<=0||!e.path.length){e.path=bfsTo(e,r);e.repath=.4}
+  follow(e,e.sp.chase,dt);
+  if(state==='play'&&!player.jump&&Math.hypot(player.x-e.x,player.y-e.y)<CATCH)caught(e);
+}
+function friendList(list){
+  if(!FR.kind)return;const a=now-FR.t0,fade=Math.min(1,Math.max(0,FR.t)/.6);
+  if(FR.kind==='skunk')list.push({y:FR.y-1,gp:()=>{const k=Math.min(1,a/.5);ctx.save();ctx.globalAlpha=.34*fade;ctx.fillStyle='#a6d84a';
+      for(let i=0;i<7;i++){const q=i*.9+now*.5,d=(18+i*7)*k;ctx.beginPath();ctx.arc(FR.x+Math.cos(q)*d,FR.y-6+Math.sin(q)*d*.6,(14+i%3*5)*k,0,6.3);ctx.fill()}
+      ctx.globalAlpha=fade;kShadow(FR.x,FR.y,5);ctx.fillStyle='#3a3340';ctx.beginPath();ctx.ellipse(FR.x,FR.y-4,5,3.6,0,0,6.3);ctx.fill();ctx.beginPath();ctx.ellipse(FR.x-5,FR.y-9,2.6,5,-.5,0,6.3);ctx.fill();
+      ctx.fillStyle='#fff';ctx.fillRect(FR.x-3.5,FR.y-6.6,7,1.5);ctx.beginPath();ctx.ellipse(FR.x-5.4,FR.y-10,1,3.4,-.5,0,6.3);ctx.fill();ctx.restore()}});
+  else if(FR.kind==='possum')list.push({y:FR.y,gp:()=>{ctx.save();ctx.globalAlpha=fade;kShadow(FR.x,FR.y,6);
+      ctx.strokeStyle='#f27c9a';ctx.lineWidth=1.2;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(FR.x-6,FR.y-3);ctx.quadraticCurveTo(FR.x-11,FR.y-2,FR.x-10,FR.y-7);ctx.stroke();
+      ctx.fillStyle='#d9d3d6';ctx.beginPath();ctx.ellipse(FR.x,FR.y-3.5,6.5,3.6,0,0,6.3);ctx.fill();ctx.fillStyle='#f4f0ee';ctx.beginPath();ctx.ellipse(FR.x+6,FR.y-4,3.4,2.8,0,0,6.3);ctx.fill();
+      ctx.strokeStyle='#b9b0b5';ctx.lineWidth=1.3;for(const dx of[-3,-1,2,4]){ctx.beginPath();ctx.moveTo(FR.x+dx,FR.y-6);ctx.lineTo(FR.x+dx+.6,FR.y-9.5-Math.sin(now*9+dx)*.5);ctx.stroke()}
+      ctx.strokeStyle='#3a3340';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(FR.x+5,FR.y-5.2);ctx.lineTo(FR.x+6.6,FR.y-3.6);ctx.moveTo(FR.x+6.6,FR.y-5.2);ctx.lineTo(FR.x+5,FR.y-3.6);ctx.stroke();
+      ctx.fillStyle='#f27c9a';ctx.beginPath();ctx.arc(FR.x+9.2,FR.y-3.6,.9,0,6.3);ctx.fill();ctx.restore()}});
+  else for(const r of FR.rats)list.push({y:r.y,gp:()=>{ctx.save();ctx.globalAlpha=fade;kShadow(r.x,r.y,3);ctx.translate(r.x,r.y-2-Math.abs(Math.sin(r.anim*2))*1);ctx.rotate(r.fa);
+      ctx.strokeStyle='#f6a6b8';ctx.lineWidth=.9;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-3,0);ctx.quadraticCurveTo(-6,Math.sin(now*20)*2,-8,0);ctx.stroke();
+      ctx.fillStyle='#9b7b68';ctx.beginPath();ctx.ellipse(0,0,4,2.4,0,0,6.3);ctx.fill();ctx.fillStyle='#b08f7a';ctx.beginPath();ctx.ellipse(3.4,0,2,1.7,0,0,6.3);ctx.fill();
+      ctx.fillStyle='#f6b6c6';ctx.beginPath();ctx.arc(2.6,-1.9,1.1,0,6.3);ctx.arc(2.6,1.9,1.1,0,6.3);ctx.fill();ctx.restore()}});
+}
+
+// ================= DIFFICULTY: one table for every world, plus "heat" for Night Shift =================
+const LEVEL={city:0,forest:1,moon:2,dungeon:2,ice:3,noir:3};   // how hard each world starts
+let heat=0;                                                    // Night Shift: +1 for every pie delivered
+const FLEE_DRAIN=1.5;                                          // energy drains this much faster while somebody is after you
+function tune(){const n=(LEVEL[WORLD]||0)+heat;return{n,
+  guards:4+Math.min(4,Math.floor((n+1)/2)),                    // part 1 guards: 4, 5, 5, 6, 6, 7, 7, 8
+  speed:Math.min(1.2,.95+.04*n),view:Math.min(1.3,.95+.05*n),  // enemy speed and sight, as multipliers (capped so the raccoon without a pie still outruns every cook)
+  windup:Math.max(.35,.85-.08*n),                              // seconds of warning before a chase starts
+  snacks:Math.max(2,5-Math.floor(n/2)),                        // snacks in part 1
+  k9:Math.min(.8,.1+.1*n),burst:Math.max(3,8-.8*n)}}           // part 2: chance of the fast dog, seconds until the cook bursts out
+
+// ================= NIGHT SHIFT: one map, coins, the pie machine and the hungry family =================
+// An endless mode in part 1 of the world picked last. Raccoons wait at windows in the side walls and ask for a pie
+// of one flavour. Scared guards drop coins (their purse refills slowly), a few coins lie around and knocked-over
+// items can drop one. The big pie machine in the far wall sells the pie the most impatient raccoon asked for; carry
+// it to that window. A waiting raccoon first gets loud (guards come to look), then goes home hungry, which costs a
+// heart. Three hearts, no refills. Every delivery makes the same map hotter. All the numbers are in NSC.
+const NS_MULT=5;   // deliveries in a row without losing a heart multiply the score up to this
+const nsMult=()=>Math.min(NS_MULT,1+NS.streak);
+const FLAVORS=[['Cherry','#e8475a'],['Blueberry','#5a6fd8'],['Strawberry','#ff7fa0'],['Mango','#ffb02e'],['Apple','#9ccc4e'],['Lemon','#ffe14a'],
+  ['Pumpkin','#e8842c'],['Chocolate','#7a4a32'],['Banana','#f7e08a'],['Peach','#ffb38a'],['Lime','#6fd08a'],['Grape','#9a5fd0']];
+const NSC={coinsStart:5,coinsPer:2,purse:2,purseSecs:25,price:3,priceMax:6,priceEvery:4,   // coins: on the floor at the start and after each delivery, per scared guard, per pie
+  calm:40,calmMin:20,calmLess:1.5,angry:15,shout:2.6,shoutR:170,                           // patience: quiet seconds (shrinking per pie), loud seconds, how often and how far the shouting carries
+  twoAt:2,friendEvery:3,guardsMax:8};                                                     // two orders at once from this many pies; the friend call returns every N pies
+const NS={on:false,pies:0,score:0,streak:0,fresh:false,best:0,bestPies:0,coins:0,hold:-1,wins:[],orders:[],drops:[],mach:null,next:0,told:0};
+try{NS.best=+localStorage.getItem('pieheist-night-best')||0;NS.bestPies=+localStorage.getItem('pieheist-night-pies')||0}catch(e){}
+const nsPrice=()=>Math.min(NSC.priceMax,NSC.price+Math.floor(NS.pies/NSC.priceEvery));
+const nsNear=(o,d)=>Math.hypot(player.x-o.x,player.y-o.y)<d;
+function startNight(again){audio();NS.on=true;NS.pies=0;NS.score=0;NS.streak=0;NS.fresh=true;heat=0;$('title').hidden=true;hideMsg();newRun();
+  const go=()=>{SFX.start();toast('NIGHT SHIFT\nScare guards for coins, buy pies');later(()=>{if(state==='play')say(player,pickCoon('start'),true)},250)};
+  if(again){state='play';go()}else pickFriend(go)}   // a new shift after losing keeps the same friend: straight back in
+function nightOff(){NS.on=false;heat=0}
+function nsAdd(n,x,y){if(!NS.on)return;const pts=Math.round(n*nsMult());NS.score+=pts;if(x!==undefined)popText(x,y,'+'+pts,'#ffc93c')}
+function nsFloor(far){const w=S.walk.filter(t=>!solidAt(t.c,t.r)&&Math.hypot(t.c*TS+8-player.x,t.r*TS+10-player.y)>far);return w.length?pick(w):null}
+function nsCoinAt(x,y){NS.drops.push({x,y,t0:now})}
+function nsScatter(n){for(let i=0;i<n;i++){const t=nsFloor(70);if(t)nsCoinAt(t.c*TS+8,t.r*TS+11)}}
+// set the map up for a shift: machine in the far wall, windows down both sides, a few coins on the floor
+function nsScene(){
+  NS.coins=0;NS.hold=-1;NS.orders=[];NS.drops=[];NS.next=1.5;NS.told=0;player.carry=false;
+  const walk=S.walk.filter(t=>!solidAt(t.c,t.r)),rTop=Math.min(...walk.map(t=>t.r)),mid=(S.cols-1)/2;
+  const m=walk.filter(t=>t.r===rTop).sort((a,b)=>Math.abs(a.c-mid)-Math.abs(b.c-mid))[0];NS.mach={c:m.c,r:m.r,x:m.c*TS+8,y:m.r*TS+10};
+  const cand=[];for(let r=rTop+5;r<S.rows-2;r++){const row=walk.filter(t=>t.r===r);if(!row.length)continue;
+    const L=Math.min(...row.map(t=>t.c)),R=Math.max(...row.map(t=>t.c)),dr=S.door?Math.abs(S.door.r-r):99,ds=S.door&&S.door.side;
+    if(L<=2&&!(ds==='L'&&dr<3))cand.push({c:L,r,side:-1});if(R>=S.cols-3&&!(ds==='R'&&dr<3))cand.push({c:R,r,side:1})}
+  NS.wins=[];for(let k=0;k<200&&NS.wins.length<5&&cand.length;k++){const t=pick(cand);if(NS.wins.every(w=>w.side!==t.side||Math.abs(w.r-t.r)>=5))NS.wins.push({c:t.c,r:t.r,side:t.side,x:t.c*TS+8,y:t.r*TS+10,wx:(t.c+t.side)*TS+8,wy:t.r*TS+8,busy:false,fed:-9})}
+  nsScatter(NSC.coinsStart);
+}
+// a scared guard drops what is in their purse; it fills up again after a while, so one guard is not a coin farm
+function nsDrop(e){
+  if(!NS.on||e.kind==='bear'||e.purseT>time)return;e.purseT=time+NSC.purseSecs;
+  for(let i=0;i<NSC.purse;i++){const a=Math.random()*6.283,x=e.x+Math.cos(a)*13,y=e.y+Math.sin(a)*11,t=tileOf(x,y);if(solidAt(t.c,t.r))nsCoinAt(e.x,e.y+1+i*2);else nsCoinAt(x,y)}
+}
+function nsOrder(){
+  const free=NS.wins.filter(w=>!w.busy);if(!free.length)return;const w=pick(free),used=NS.orders.map(o=>o.f);
+  let f=NS.hold>=0&&!used.includes(NS.hold)?NS.hold:-1;                                    // a pie already in your paws finds a taker
+  if(f<0)do{f=rnd(FLAVORS.length)}while(used.includes(f));
+  const max=Math.max(NSC.calmMin,NSC.calm-NSC.calmLess*NS.pies);w.busy=true;NS.orders.push({w,f,t:max,max,ang:NSC.angry,shout:0});
+  beep(880,.07,'triangle',.05);beep(1175,.09,'triangle',.05);toast(FLAVORS[f][0].toUpperCase()+' PIE wanted!\n'+(NS.pies?'Another hungry raccoon':'A raccoon is waiting at a window'));
+}
+function nsBuy(){
+  const o=NS.orders.slice().sort((a,b)=>(a.t>0?a.t+NSC.angry:a.ang)-(b.t>0?b.t+NSC.angry:b.ang))[0],m=NS.mach;
+  NS.coins-=nsPrice();NS.hold=o.f;player.carry=true;SFX.pie();pieFx={t0:now,x:m.x,y:m.y-8};hitStop=.12;
+  for(let k=0;k<16;k++){const a=-Math.PI/2+(Math.random()-.5)*2.6,v=40+Math.random()*60;stars.push({x:m.x,y:m.y-10,vx:Math.cos(a)*v,vy:Math.sin(a)*v-10,t0:now,life:.7+Math.random()*.4,r:2+Math.random()*2,rot:Math.random()*6,vr:(Math.random()-.5)*10,col:pick([FLAVORS[o.f][1],'#fff','#ffe066'])})}
+  toast(FLAVORS[o.f][0].toUpperCase()+' PIE!\nTake it to the window');
+}
+function nsDeliver(o){
+  const pts=(100+Math.round(Math.max(0,o.t))*2)*nsMult();NS.score+=pts;NS.pies++;NS.streak++;
+  NS.orders.splice(NS.orders.indexOf(o),1);o.w.busy=false;o.w.fed=now;NS.hold=-1;player.carry=false;NS.next=1.2;SFX.win();popText(o.w.x,o.w.y-30,'+'+pts,'#ffc93c');
+  for(let k=0;k<14;k++)stars.push({x:o.w.wx,y:o.w.wy,vx:(Math.random()-.5)*90,vy:-20-Math.random()*60,t0:now,life:.8+Math.random()*.4,r:2+Math.random()*2,rot:Math.random()*6,vr:(Math.random()-.5)*8,col:pick(['#ff9fb6',FLAVORS[o.f][1],'#fff'])});
+  // the same map, one notch hotter
+  const a=tune();heat++;const b=tune();let what='Guards got quicker';
+  for(const e of enemies){if(e.kind==='bear')continue;const k=b.speed/a.speed;e.sp={patrol:e.sp.patrol*k,search:e.sp.search*k,chase:e.sp.chase*k};e.view*=b.view/a.view}
+  if(b.guards>S.spawns.length&&S.spawns.length<NSC.guardsMax){const base=pick(S.spawns.filter(s=>s.kind!=='bear')),dc=S.door?S.door.c+(S.door.side==='L'?1:-1):-1;
+    const at=S.door&&!solidAt(dc,S.door.r)&&!nsNear({x:dc*TS+8,y:S.door.r*TS+10},90)?{c:dc,r:S.door.r}:nsFloor(140);
+    if(base&&at){const sp={...base,c:at.c,r:at.r,region:null};S.spawns.push(sp);enemies.push(makeEnemy(sp,enemies.length));what='A new guard walked in'}}
+  nsScatter(NSC.coinsPer);
+  if(S.snacks.filter(s=>!s.eaten).length<Math.max(2,b.snacks)){const t=nsFloor(60);if(t)S.snacks.push({x:t.c*TS+8,y:t.r*TS+10,type:pick(['candy','cookie','cookie','choc'])})}
+  let fr='';if(NS.pies%NSC.friendEvery===0&&FR.used){FR.used=false;fr='\nYour friend is ready again'}
+  toast('YUM! +'+pts+(NS.streak>1&&nsMult()>1?'  x'+nsMult()+' next':'')+'\n'+what+fr);
+}
+// went home hungry: a heart is gone, and with the last one the shift
+function nsHungry(o){
+  NS.orders.splice(NS.orders.indexOf(o),1);o.w.busy=false;NS.streak=0;NS.next=2;shake=.3;SFX.caught();
+  if(LV.lives>1){LV.lives--;LV.lost++;LV.flash=.55;LV.pulse=.8;toast('Too slow! Gone home hungry\n'+(LV.lives===1?'LAST HEART':LV.lives+' hearts left'));return}
+  LV.lives=0;LV.lost++;LV.out=true;state='caught';say(player,pickCoon('busted'),true);nightOver();
+}
+function nsTick(dt){
+  for(let i=NS.drops.length-1;i>=0;i--){const d=NS.drops[i];if(now-d.t0>.25&&nsNear(d,13)){NS.drops.splice(i,1);NS.coins++;beep(1320,.05,'square',.03);beep(1760,.07,'square',.03);popText(d.x,d.y-12,'+1','#ffc93c')}}
+  NS.next-=dt;if(NS.next<=0&&NS.orders.length<(NS.pies>=NSC.twoAt?2:1)){NS.next=5;nsOrder()}
+  for(const o of NS.orders.slice()){
+    if(o.t>0){o.t-=dt;if(o.t<=0)toast('The raccoon is getting LOUD!\nGuards can hear it')}
+    else{o.ang-=dt;o.shout-=dt;
+      if(o.shout<=0){o.shout=NSC.shout;o.yell=now;noiseAt(o.w.x,o.w.y,NSC.shoutR);tone(760,.09,{type:'square',vol:.05,slide:520});tone(820,.11,{type:'square',vol:.05,slide:480,when:ac&&ac.currentTime+.13})}
+      if(o.ang<=0){nsHungry(o);if(state!=='play')return}}}
+  if(NS.hold<0&&NS.orders.length&&nsNear(NS.mach,20)){if(NS.coins>=nsPrice())nsBuy();else if(now-NS.told>3){NS.told=now;toast('The pie costs '+nsPrice()+' coins\nYou have '+NS.coins)}}
+  if(NS.hold>=0){const o=NS.orders.find(o=>o.f===NS.hold&&nsNear(o.w,19));if(o)nsDeliver(o)}
+}
+function nsPointers(){
+  if(NS.hold>=0){const o=NS.orders.find(o=>o.f===NS.hold);if(o)pointer(o.w.wx,o.w.wy,FLAVORS[o.f][1])}
+  else if(NS.orders.length&&NS.coins>=nsPrice())pointer(NS.mach.x,NS.mach.y-12,'#ffc93c');
+  else if(NS.drops.length){const d=NS.drops.slice().sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y))[0];pointer(d.x,d.y,'#ffe9a8')}
+  for(const o of NS.orders)if(o.t<=0&&Math.sin(now*10)>0)pointer(o.w.wx,o.w.wy,'#ff5a4d');
+}
+function drawFlavPie(x,y,f,s=1){const col=FLAVORS[f][1];kE(x,y+.6*s,6.4*s,3.7*s,'#f1c27a',.7);kE(x,y-.2*s,4.9*s,2.6*s,col,.5);
+  ctx.strokeStyle='rgba(255,236,190,.9)';ctx.lineWidth=.7*s;ctx.beginPath();for(const k of[-2,0,2]){ctx.moveTo(x+k*s-1.2*s,y-2.2*s);ctx.lineTo(x+k*s+1.2*s,y+1.8*s)}ctx.stroke();kE(x-2*s,y-1.1*s,1.2*s,.5*s,'rgba(255,255,255,.6)',0)}
+function drawCoin(x,y,r){kE(x,y,r,r,'#ffc93c',.7);kE(x,y,r*.55,r*.55,'#ffe58a',0);kE(x-r*.3,y-r*.35,r*.22,r*.22,'#fff',0)}
+function drawMachine(){
+  const m=NS.mach,W=48,H=37,K=1.3,x=m.x-W/2,y=m.r*TS+4-H,ok=NS.hold<0&&NS.orders.length&&NS.coins>=nsPrice();
+  kShadow(m.x,y+H,28);ctx.save();ctx.translate(m.x,y+H);ctx.scale(K,K);ctx.translate(-m.x,-(y+H));
+  if(ok){ctx.save();ctx.globalAlpha=.35+.3*Math.sin(now*7);kRR(x-2,y-2,W+4,H+4,6,'#ffe066',0);ctx.restore()}
+  kRR(x,y,W,H,4,'#e8556f',1);kRR(x+2,y+1.5,W-4,7,2.5,'#fff6ea',.6);
+  ctx.fillStyle='#e8556f';ctx.font='400 6px "Titan One",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('PIES',m.x,y+5.4);
+  kRR(x+3,y+10.5,29,17,2,'#cfeaf7',.7);for(let i=0;i<6;i++)drawFlavPie(x+8+(i%3)*9.5,y+15.5+((i/3)|0)*7.5,(i*2+((now/3)|0))%FLAVORS.length,.55);
+  kRR(x+35,y+10.5,10,17,2,'#3a3340',.7);kRR(x+38.5,y+13,3,5,1,'#15141c',0);drawCoin(x+38,y+22.5,1.9);
+  ctx.fillStyle='#ffe58a';ctx.font='400 5px "Titan One",sans-serif';ctx.fillText(String(nsPrice()),x+42.4,y+22.9);
+  kRR(x+9,y+29.5,W-18,5.5,2,'#3a3340',.6);ctx.restore();
+}
+function drawNsWindow(w){
+  const o=NS.orders.find(o=>o.w===w),fed=now-w.fed<1.2,x=w.wx,y=w.wy,loud=o&&o.t<=0,j=loud?Math.sin(now*42)*.8:0;
+  kRR(x-7.5,y-9.5,15,15,2.5,'#34366a',.9);
+  if(o||fed){const hx=x+j,hy=y-1+(fed?Math.abs(Math.sin(now*12))*-1.5:0);
+    kE(hx-3.6,hy-4,1.9,2.1,'#7c7682',.6);kE(hx+3.6,hy-4,1.9,2.1,'#7c7682',.6);kE(hx,hy,5.4,4.6,'#b7b1bd',.7);
+    kE(hx-2.3,hy-.4,2.1,1.6,'#4f4856',0);kE(hx+2.3,hy-.4,2.1,1.6,'#4f4856',0);kE(hx-2.2,hy-.4,.7,.7,loud?'#ff5a4d':'#fff',0);kE(hx+2.2,hy-.4,.7,.7,loud?'#ff5a4d':'#fff',0);kE(hx,hy+1.9,.9,.7,'#3a2522',0);
+    if(fed){ctx.fillStyle='#ff6f91';ctx.font='6px sans-serif';ctx.textAlign='center';ctx.fillText('♥',hx+w.side*-9,hy-8-((now-w.fed)*8))}}
+  ctx.fillStyle='#f7a9b8';ctx.fillRect(x-7,y+4,14,1.6);
+}
+function drawNsBubble(o){
+  const w=o.w,loud=o.t<=0,bx=w.wx-w.side*17,by=w.wy-17+(loud?Math.sin(now*30)*.7:Math.sin(now*2.5)*.6),k=loud?Math.max(0,o.ang/NSC.angry):Math.max(0,o.t/o.max);
+  if(loud&&o.yell&&now-o.yell<.6){const a=(now-o.yell)/.6;ctx.strokeStyle=`rgba(255,90,77,${.8*(1-a)})`;ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(w.wx,w.wy,10+a*40,0,6.3);ctx.stroke()}
+  kRR(bx-10,by-9,20,18,5,loud?'#ffe3df':'#fff',.8);ctx.fillStyle=loud?'#ffe3df':'#fff';ctx.beginPath();ctx.moveTo(bx+w.side*7,by+3);ctx.lineTo(bx+w.side*13,by+9);ctx.lineTo(bx+w.side*5,by+7);ctx.fill();
+  drawFlavPie(bx,by-2.2,o.f,.95);ctx.fillStyle='#e9e2e6';ctx.fillRect(bx-7,by+4.4,14,2.4);ctx.fillStyle=loud?'#ff5a4d':k>.4?'#6fcf7f':'#ffb02e';ctx.fillRect(bx-7,by+4.4,14*k,2.4);
+  if(loud){ctx.fillStyle='#e0352b';ctx.font='400 7px "Titan One",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('!!',bx+w.side*-13,by-4)}
+}
+function nsList(list){
+  if(!NS.mach)return;const on=y=>Math.abs(y-cam.y-VH/2)<VH/2+50;
+  if(on(NS.mach.y))list.push({y:NS.mach.r*TS+2,gp:drawMachine});
+  for(const w of NS.wins)if(on(w.wy))list.push({y:w.wy-14,gp:()=>drawNsWindow(w)});
+  for(const o of NS.orders)if(on(o.w.wy))list.push({y:o.w.wy+40,gp:()=>drawNsBubble(o)});
+  for(const d of NS.drops)if(on(d.y))list.push({y:d.y,gp:()=>{const a=now-d.t0,hop=a<.3?Math.sin(a/.3*Math.PI)*7:Math.abs(Math.sin(now*3+d.x))*1.2;kShadow(d.x,d.y,3);drawCoin(d.x,d.y-3-hop,2.8)}});
+  for(const e of enemies)if(e.kind!=='bear'&&!(e.purseT>time)&&e.state!=='scared'&&on(e.y))list.push({y:e.y+.5,gp:()=>drawCoin(e.x+(e.kind==='dog'?7:8),e.y-(e.kind==='dog'?9:13),1.9)});
+  if(NS.hold>=0)list.push({y:player.y+1,gp:()=>{const y=player.y-47-(player.z||0)+Math.sin(now*4)*.8;kRR(player.x-8,y-5.5,16,11,5,'#fff',.7);drawFlavPie(player.x,y,NS.hold,.8)}});
+}
+function nightOver(){
+  const nb=NS.score>NS.best;if(nb){NS.best=NS.score;try{localStorage.setItem('pieheist-night-best',String(NS.score))}catch(e){}}
+  if(NS.pies>NS.bestPies){NS.bestPies=NS.pies;try{localStorage.setItem('pieheist-night-pies',String(NS.pies))}catch(e){}}
+  later(()=>{if(state!=='caught')return;showMsg('Night Shift','Shift over!','bad','','Tap to start a new shift');
+    const ms=$('mStats');if(ms){ms.innerHTML='<div class="row2"><div class="tile"><span class="k">Pies delivered</span><span class="v">'+NS.pies+'</span><span class="sub">Best '+NS.bestPies+'</span></div>'
+      +'<div class="tile"><span class="k">Score</span><span class="v sm">'+NS.score+'</span>'+(nb&&NS.score>0?'<span class="nb">NEW BEST</span>':'<span class="sub">Best '+NS.best+'</span>')+'</div></div>'
+      +'<div class="chips"><span class="chip">'+S.spawns.length+' guards at the end</span><span class="chip">'+fmt(time)+'</span></div>'+(nb&&NS.score>0?'<div class="ribbon">NEW BEST SHIFT</div>':'');ms.hidden=false}},600)}
 // ----- stars -----
 function gpStars(){
-  const s1=true,s2=LV.spots<=2,s3=time<=PAR[WORLD];
+  const s1=true,s2=LV.spots===0,s3=time<=PAR[WORLD];
   return {n:1+(s2?1:0)+(s3?1:0),s2,s3};
 }
-function gpStarHtml(n){return '★'.repeat(n)+'☆'.repeat(3-n)}
 // big result stars (three SVG stars, the middle one largest) shown at the top of the result card
 function setStars(n){const el=$('mStars');if(!el)return;const P='M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.8-6.3 3.8 1.7-7L2 9.2l7.1-.6z';
   el.setAttribute('aria-label',n+' of 3 stars');el.innerHTML=[0,1,2].map(i=>'<svg class="st'+(i===1?' mid':'')+(i<n?' on':'')+'" viewBox="0 0 24 24"><path d="'+P+'"/></svg>').join('');el.hidden=false}
@@ -2623,7 +2888,7 @@ function resultHtml(st,nb,newStars){
   const par=PAR[WORLD],g=(ok,t,d)=>'<div class="goal'+(ok?' ok':'')+'"><span class="b">'+(ok?'\u2605':'\u2606')+'</span><span class="t">'+t+'</span><span class="d">'+d+'</span></div>';
   return '<div class="row2"><div class="tile"><span class="k">Time</span><span class="v">'+fmt(time)+'</span>'+(nb?'<span class="nb">NEW BEST</span>':'<span class="sub">Best '+fmt(best)+'</span>')+'</div>'
     +'<div class="tile"><span class="k">Par</span><span class="v sm">'+fmt(par)+'</span><span class="sub">'+(time<=par?fmt(par-time)+' under':fmt(time-par)+' over')+'</span></div></div>'
-    +g(true,'Pie home','Done')+g(st.s2,'Spotted 2 times or less',LV.spots+' time'+(LV.spots===1?'':'s'))+g(st.s3,'Beat the par time',st.s3?'Yes':'Not yet')
+    +g(true,'Pie home','Done')+g(st.s2,'Never spotted',LV.spots?LV.spots+' time'+(LV.spots===1?'':'s'):'Clean')+g(st.s3,'Beat the par time',st.s3?'Yes':'Not yet')
     +'<div class="chips"><span class="chip">\u2665 '+Math.max(0,LV.lives)+'/'+LV.max+' hearts left</span><span class="chip">\u2661 Secret '+Math.min(LV.heartsFound,LV.heartsTotal)+'/'+LV.heartsTotal+'</span></div>'
     +(newStars?'<div class="ribbon">NEW BEST RATING</div>':'')}
 // ===== GAMEPLAY END =====
@@ -2834,6 +3099,7 @@ const sfx=n=>{try{SFX[n]&&SFX[n]()}catch(e){}};
 const mClamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const mProp=(n,x,y,k,flip)=>drawPropImg(n,x,y,!!flip,k||1);
 function startMode(n){
+  if(n==='night'){startNight();return}
   if(!MODES[n])return;
   audio();timers=[];clearBubbles();hideMsg();$('toast').hidden=true;
   modeName=n;state='mode';$('title').hidden=true;$('energy').hidden=true;$('keys').hidden=true;
@@ -3114,11 +3380,13 @@ function frame(ts){
   requestAnimationFrame(frame);   // first, so one bad frame can never stop the loop
   const t=ts/1000,dt=Math.min(.05,t-(last||t));last=t;now=t;
   if(state!=='paused'&&state!=='bye')tickTimers(dt);
+  {const fb=$('friendBtn'),hide=state!=='play'||!!modeName;if(fb.hidden!==hide)fb.hidden=hide;if(!hide)fb.classList.toggle('used',FR.used)}
   if(modeName){if(state==='mode')modeFrame(dt);return}   // paused: the fight simply holds still under the menu
   if(hitStop>0){hitStop-=dt}else if(state==='play'){
     if(fartAt>0&&time>fartAt&&!player.jump)doFart();
     time+=dt;grace-=dt;sceneT+=dt;updatePlayer(dt);if(state==='play')hideTick(dt);if(state==='play')autoBoo();if(state==='play')gpTick(dt);
     if(state==='play'){if(S.kind==='kitchen')updateKitchen(dt);else{if(S.world==='forest')updateRiver(dt);if(state==='play')updateStreet(dt)}}
+    if(state==='play')friendTick(dt);
     if(state==='play')updateEnemies(dt,true);
     if(state==='play')chatter(dt);
   }else if(state==='caught'&&S.kind==='street')for(const c of cars){c.x+=c.dir*c.sp*dt*.3}
