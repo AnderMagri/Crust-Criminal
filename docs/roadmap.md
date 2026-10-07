@@ -27,7 +27,7 @@ Status legend: [art] Krea sheets generated, [code] built in the game, [audio] mu
 - Boss mode: arena, projectile pies, health bar, phases.
 
 ## Balance notes
-- `PAR` times in gameplay.js are guesses; adjust from real playtests.
+- `par` times (in the `WORLDS` table) are guesses; adjust from real playtests.
 - 0.75 s alert wind-up: watch if dogs become too easy to escape.
 
 ## Update, Oct 5 (build v67)
